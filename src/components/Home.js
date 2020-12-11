@@ -10,7 +10,7 @@ class Home extends React.Component {
 		}
 
 		handleJoinRoom() {
-				this.props.history.push('/room');
+				this.props.history.push('/game');
 		}
 
 		render() {
