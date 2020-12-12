@@ -8,8 +8,11 @@ import Game from './components/Game';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 class App extends React.Component {
+  state ={ name : "debo"};
+  changeName = newName => this.setState({ name: newName });
   constructor(props) {
     super(props);
+    
   }
 
   render() {
@@ -20,8 +23,8 @@ class App extends React.Component {
               <Switch>
                 <Route path="/" exact component={Home} />
                 <Route path="/room" component={Room} />
-                <Route path="/entry" component={Entry} />
-                <Route path="/game" component={Game}/>
+                <Route path="/entry" render={()=> <Entry name={this.state.name} changeName={this.changeName} />} />
+                <Route path="/game" render={()=><Game name= {this.state.name} />} />
               </Switch>
             </React.Fragment>
           </div>

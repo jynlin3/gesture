@@ -11,9 +11,12 @@ try{
 
 class Game extends React.Component{
 
-    // constructor(props){
-    //     super(props);
-    // };
+    constructor(props){
+        super(props);
+        this.props = props;
+        console.log('props is empty')
+        console.log(this.props)
+    };
 
     componentDidMount(){
         this.GameServerRoomStart();
@@ -30,6 +33,36 @@ class Game extends React.Component{
                             server: server,
                             success: function(){
                                 console.log('hi Jyn, I;m in the server')
+                                console.log(this.props)
+                                gestureGameroom.attach({
+                                    plugin: "janus.plugin.videoroom",
+                                    success: function(){
+                                        //todo
+                                        console.log(typeof(gestureGameroom.getSessionId()))
+                                    },
+                                    error : function(){
+                                        //todo
+                                    },
+                                    consentDialog: function(){
+                                        //todo
+                                    },
+                                    onmessage: function(){
+                                        //todo
+                                    },
+                                    onlocalstream: function(){
+                                        // top priority
+                                    },
+                                    onremotestream: function(){
+                                        // second priority
+                                    },
+                                    oncleanup: function(){
+
+                                    },
+                                    detached: function(){
+
+                                    }
+
+                                })
                             },
                             error: function(err){
                                 // todo
@@ -51,8 +84,7 @@ class Game extends React.Component{
 
     render(){
         return(
-            <p> Wait a second</p>
-
+        <p> Wait a second</p>
         )
     }
 }
