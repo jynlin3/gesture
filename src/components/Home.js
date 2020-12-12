@@ -4,13 +4,14 @@ import React from 'react';
 class Home extends React.Component {
 		constructor(props) {
 				super(props);
+				console.log(props)
 				this.handleJoinRoom = this.handleJoinRoom.bind(this);
 		}
 		componentDidMount() {
 		}
 
 		handleJoinRoom() {
-				this.props.history.push('/game');
+				this.props.history.push('/entry');
 		}
 
 		render() {
@@ -21,11 +22,7 @@ class Home extends React.Component {
 										<p>
 												Welcome to <code>gesture</code> video room (powered by Janus).
 										</p>
-										<button
-												onClick={this.handleJoinRoom}
-										>
-												Join Room
-										</button>
+										<button onClick={this.handleJoinRoom}> Join Room </button>
 								</header>
 						</div>
 				)

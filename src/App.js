@@ -2,8 +2,9 @@ import React from 'react';
 
 import './App.css';
 import Room from './components/Room'; // remove room in the future
-import Game from './components/Game';
+import Entry from './components/Entry';
 import Home from './components/Home';
+import Game from './components/Game';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 class App extends React.Component {
@@ -19,7 +20,8 @@ class App extends React.Component {
               <Switch>
                 <Route path="/" exact component={Home} />
                 <Route path="/room" component={Room} />
-                <Route path="/game" component={Game} />
+                <Route path="/entry" component={Entry} />
+                <Route path="/game" component={Game}/>
               </Switch>
             </React.Fragment>
           </div>
