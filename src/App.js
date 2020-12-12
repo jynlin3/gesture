@@ -8,7 +8,7 @@ import Game from './components/Game';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 class App extends React.Component {
-  state ={ name : "debo"};
+  state ={ name : "debo" , sessionID: undefined};
   changeName = newName => this.setState({ name: newName });
   constructor(props) {
     super(props);

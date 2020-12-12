@@ -5,7 +5,8 @@ let server;
 try{
     server = require('./config.json').janusServer;
 }catch(err){
-    server = "http://localhost:8088/janus";
+    console.log(err);
+    // server = "http://localhost:8088/janus";
 }
 
 
@@ -14,7 +15,7 @@ class Game extends React.Component{
     constructor(props){
         super(props);
         this.props = props;
-        console.log('props is empty')
+        // console.log('props is empty')
         console.log(this.props)
     };
 
@@ -39,6 +40,8 @@ class Game extends React.Component{
                                     success: function(){
                                         //todo
                                         console.log(typeof(gestureGameroom.getSessionId()))
+                                        // this.props.sessionID = gestureGameroom.getSessionId();
+                                        console.log('sessionID =' + gestureGameroom.getSessionId())
                                     },
                                     error : function(){
                                         //todo
@@ -56,7 +59,7 @@ class Game extends React.Component{
                                         // second priority
                                     },
                                     oncleanup: function(){
-
+                                        // todo
                                     },
                                     detached: function(){
 
@@ -84,7 +87,7 @@ class Game extends React.Component{
 
     render(){
         return(
-        <p> Wait a second</p>
+        <p> Wait a second, {this.props.name}</p>
         )
     }
 }
