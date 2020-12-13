@@ -30,7 +30,12 @@ class Game extends React.Component{
     }
 
     componentDidMount(){
-        this.GameServerRoomStart();
+
+        var url = window.location.href.split('/')
+        let sessionNum = url[url.length-1];
+        if(sessionNum === "game"){
+            this.GameServerRoomStart();
+        }
         var check = ()=>{
             
             if( sessionID !== undefined){
@@ -40,7 +45,8 @@ class Game extends React.Component{
                 this.state = {sessionID: sessionID};
                 console.log(this.state.sessionID);
                 this.redirectToGameRoom(sessionID);
-                
+                console.log(window.location.href);
+
             }else{
                 setTimeout(check, 1000);
             }
@@ -49,6 +55,7 @@ class Game extends React.Component{
         console.log(this.state.sessionID)
         
         check();
+        
     }
     
     GameServerRoomStart(){
