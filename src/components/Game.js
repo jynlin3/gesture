@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {useHistory, withRouter} from 'react-router-dom';
+import React from 'react';
+import {withRouter} from 'react-router-dom';
 import Janus from './Janus';
 let server;
 let sessionID;
@@ -24,10 +24,7 @@ class Game extends React.Component{
         
     };
 
-    redirectToGameRoom = ()=>{
-        const {history} = this.props;
-        if(history.sessionID !== undefined) history.push('/game/' + history.sessionID )
-    }
+
 
     update(e){
         this.props.changeSessionID(e.target.value);
@@ -45,9 +42,6 @@ class Game extends React.Component{
                 this.state = {sessionID: sessionID};
                 console.log(this.state.sessionID);
                 this.props.history.push('/game/'+sessionID);
-                // this.update.bind(this);
-                // localStorage.setItem("janusGame", { "sessionID" :this.state.sessionID})
-                // window.location = this.state.sessionID;
                 
             }else{
                 setTimeout(check, 1000);
