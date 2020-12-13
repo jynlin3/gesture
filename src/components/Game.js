@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useState} from 'react';
+import {useHistory, withRouter} from 'react-router-dom';
 import Janus from './Janus';
 let server;
+let sessionID;
+
 
 try{
     server = require('./config.json').janusServer;
@@ -10,17 +13,53 @@ try{
 }
 
 
+
 class Game extends React.Component{
 
+    
     constructor(props){
         super(props);
         this.props = props;
-        // console.log('props is empty')
-        console.log(this.props)
+        this.state = {...props};
+        
     };
+
+    redirectToGameRoom = ()=>{
+        const {history} = this.props;
+        if(history.sessionID !== undefined) history.push('/game/' + history.sessionID )
+    }
+
+    update(e){
+        this.props.changeSessionID(e.target.value);
+    }
 
     componentDidMount(){
         this.GameServerRoomStart();
+        
+        var check = ()=>{
+            
+            if( sessionID !== undefined){
+                
+                console.log("Fuck I got you")
+                console.log(sessionID)
+                this.state = {sessionID: sessionID};
+                console.log(this.state.sessionID);
+                this.props.history.push('/game/'+sessionID);
+                // this.update.bind(this);
+                // localStorage.setItem("janusGame", { "sessionID" :this.state.sessionID})
+                // window.location = this.state.sessionID;
+                
+            }else{
+                setTimeout(check, 1000);
+            }
+        }
+        console.log('GIGIGIGIGIIGG')
+        console.log(this.state.sessionID)
+        
+        check();
+        
+        // localStorage.removeItem("janusGame") 
+        
     }
     
     GameServerRoomStart(){
@@ -33,15 +72,18 @@ class Game extends React.Component{
                         {
                             server: server,
                             success: function(){
-                                console.log('hi Jyn, I;m in the server')
-                                console.log(this.props)
+                                console.log("hi Jyn, I'm in the server");
+                                
                                 gestureGameroom.attach({
                                     plugin: "janus.plugin.videoroom",
                                     success: function(){
                                         //todo
                                         console.log(typeof(gestureGameroom.getSessionId()))
-                                        // this.props.sessionID = gestureGameroom.getSessionId();
                                         console.log('sessionID =' + gestureGameroom.getSessionId())
+                                        sessionID = gestureGameroom.getSessionId();
+                                        
+                                        
+                                        
                                     },
                                     error : function(){
                                         //todo
@@ -80,16 +122,22 @@ class Game extends React.Component{
                 }
             }
         );
+        
 
 
     }
 
 
     render(){
+        const {history} = this.props;
+
         return(
-        <p> Wait a second, {this.props.name}</p>
+            (history.sessionID !== undefined ) ?
+        <p> Wait a second, {this.props.name}, {sessionID}, {this.state.sessionID}</p>
+        :
+        <p>Just wait </p>
         )
     }
 }
 
-export default Game;
+export default withRouter(Game);
