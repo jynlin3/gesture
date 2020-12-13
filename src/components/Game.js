@@ -1,9 +1,8 @@
 import React from 'react';
-import {withRouter} from 'react-router-dom';
 import Janus from './Janus';
+import {withRouter} from 'react-router-dom';
 let server;
 let sessionID;
-
 
 try{
     server = require('./config.json').janusServer;
@@ -13,18 +12,18 @@ try{
 }
 
 
-
 class Game extends React.Component{
 
-    
     constructor(props){
         super(props);
         this.props = props;
         this.state = {...props};
-        
     };
 
-
+    redirectToGameRoom = (sessionID) =>{
+        const {history} = this.props;
+        history.push('/game/' + sessionID);
+    }
 
     update(e){
         this.props.changeSessionID(e.target.value);
@@ -32,7 +31,6 @@ class Game extends React.Component{
 
     componentDidMount(){
         this.GameServerRoomStart();
-        
         var check = ()=>{
             
             if( sessionID !== undefined){
@@ -41,7 +39,7 @@ class Game extends React.Component{
                 console.log(sessionID)
                 this.state = {sessionID: sessionID};
                 console.log(this.state.sessionID);
-                this.props.history.push('/game/'+sessionID);
+                this.redirectToGameRoom(sessionID);
                 
             }else{
                 setTimeout(check, 1000);
@@ -51,9 +49,6 @@ class Game extends React.Component{
         console.log(this.state.sessionID)
         
         check();
-        
-        // localStorage.removeItem("janusGame") 
-        
     }
     
     GameServerRoomStart(){
@@ -66,18 +61,16 @@ class Game extends React.Component{
                         {
                             server: server,
                             success: function(){
-                                console.log("hi Jyn, I'm in the server");
-                                
+                                console.log('hi Jyn, I;m in the server')
+                                console.log(this.props)
                                 gestureGameroom.attach({
                                     plugin: "janus.plugin.videoroom",
                                     success: function(){
                                         //todo
                                         console.log(typeof(gestureGameroom.getSessionId()))
+                                        // this.props.sessionID = gestureGameroom.getSessionId();
                                         console.log('sessionID =' + gestureGameroom.getSessionId())
                                         sessionID = gestureGameroom.getSessionId();
-                                        
-                                        
-                                        
                                     },
                                     error : function(){
                                         //todo
@@ -116,7 +109,6 @@ class Game extends React.Component{
                 }
             }
         );
-        
 
 
     }
