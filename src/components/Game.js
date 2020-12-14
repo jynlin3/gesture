@@ -157,6 +157,7 @@ class Game extends React.Component{
                     },
                     onlocalstream: function(stream) {
                         // The subscriber stream is recvonly, we don't expect anything here
+                        console.log("I'm in onlocal stream")
                     },
                     onremotestream: function(stream) {
                         console.log("Remote feed #" + remoteFeed.rfindex + ", stream:", stream);
@@ -212,7 +213,7 @@ class Game extends React.Component{
 
         Janus.init(
             {
-                debug: true,
+                debug: false,
                 dependencies: Janus.UseDefaultDependencies(),
                 callback: function(){
                     gestureGameroom = new Janus(
@@ -234,6 +235,11 @@ class Game extends React.Component{
                                         const register = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
                                         // myusername = reg;
                                         vroomHandle.send({ "message": register });
+
+
+
+
+
                                     },
                                     error : function(err){
                                         Janus.error("  -- Error attaching plugin...", err);
@@ -281,6 +287,9 @@ class Game extends React.Component{
                                                 console.error("The room has been destroyed");
                                             } else if (event === "event") {
                                                 // Any new feed to attach to?
+                                                console.log("when will I got this event")
+                                                console.log(msg["publishers"])
+                                                setTimeout(() => {  console.log("World!"); }, 2000);
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     console.log('new publishers!')
                                                     let list = msg["publishers"];

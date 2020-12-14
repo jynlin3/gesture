@@ -19,9 +19,7 @@ class Entry extends React.Component {
 
     // changeName = newName => this.setState({name: newName})
     
-    randomInt = (min, max) =>{
-        return Math.floor(Math.random()* (max-min +1 )) + min;
-    }
+
     
     handleJoinRoom() {
         this.props.history.push('/entry');
