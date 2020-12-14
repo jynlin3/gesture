@@ -39,21 +39,29 @@ class Game extends React.Component{
         let roomID = url_params[url_params.length-1]
         if(roomID !=="" && Number.isInteger(parseInt(roomID))){
             myroom = parseInt(roomID)
-            this.props.changeRoom(myroom);
+            this.state.changeRoom(myroom);
         }else if(roomID === ""){
             alert("room ID should be an integer, instead of empty")
         }else{
-            
             alert("room ID should be an integer" + {roomID})
         }
+        if(this.state.name==="debo"){
+            let userName = prompt("Please enter your name")
+            while(userName === ""){
+                userName = prompt("Please enter your nam again, don't let it be empty")
+            }
+            this.state.changeName(userName);
+        }
+        console.log("My name is :" + this.props.name)
+        console.log(this.state)
 
     };
 
 
 
-    update(e){
-        this.props.changeSessionID(e.target.value);
-    }
+    // update(e){
+    //     this.props.changeSessionID(e.target.value);
+    // }
 
     componentDidMount(){
         console.log("room ID = " + myroom)
@@ -290,7 +298,7 @@ class Game extends React.Component{
                                                 // Any new feed to attach to?
                                                 console.log("when will I got this event")
                                                 console.log(msg["publishers"])
-                                                setTimeout(() => {  console.log("World!"); }, 2000);
+                                                
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     console.log('new publishers!')
                                                     let list = msg["publishers"];
@@ -404,12 +412,13 @@ class Game extends React.Component{
 
 
     render(){
-
+        this.state = {...this.props};
+        console.log(this.state)
         return(
         <div className="App">
         <header className="App-header">
             <p>
-                Welcome to <code>gesture</code> video room (powered by Janus)
+                <code>gesture</code> video room, Name = {this.state.name} , room = {this.state.room}
             </p>
             <div>
                 <div id="myvideo" className="container shorter">

@@ -14,7 +14,7 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state ={ name : "debo" , room: this.randomInt(5678,5678) };
+    this.state ={ name : "debo" , room: this.randomInt(1234,1234) };
     // this.changeRoom(this.randomInt(1000000,10000000000));
     console.log("roomID in App:" + this.state.room);
   }
@@ -34,9 +34,9 @@ class App extends React.Component {
             <React.Fragment>
               <Switch>
                 <Route exaxt path="/" exact component={Home} />
-                <Route path="/room" component={Room} />
+                {/* <Route path="/room" component={Room} /> */}
                 <Route exact path="/entry" render={()=> <Entry name={this.state.name} room={this.state.room} changeName={this.changeName} changeRoom={this.changeRoom} />} />
-                <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room} changeRoom={this.changeRoom} />} />
+                <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room} changeRoom={this.changeRoom}  changeName={this.changeName}/>} />
               </Switch>
             </React.Fragment>
           </div>
