@@ -14,60 +14,50 @@ try{
     console.log(err);
     // server = "http://localhost:8088/janus";
 }
-let janusRoom = null;
+let gestureGameroom = null;
 let vroomHandle = null;
-let myroom = 1234;
+let myroom;
 let opaqueId = "videoroom-"+Janus.randomString(12);
 let mypvtid = null;
 let myusername = null;
 let feeds = [];
 let myid = null;
 let mystream = null;
+let peopleNum = 0;
 
 class Game extends React.Component{
 
     constructor(props){
         super(props);
-        this.props = props;
+        // this.props = props;
         this.state = {...props};
+        console.log('opaqueID' + opaqueId);
+        console.log(this.props)
+        console.log(this.state)
+        let url = window.location.href;
+        let url_params = url.split('/');
+        let roomID = url_params[url_params.length-1]
+        if(roomID !=="" && Number.isInteger(parseInt(roomID))){
+            myroom = parseInt(roomID)
+            this.state.changeRoom(myroom);
+        }else if(roomID === ""){
+            alert("room ID should be an integer, instead of empty")
+        }else{
+            
+            alert("room ID should be an integer" + {roomID})
+        }
+
     };
 
-    redirectToGameRoom = (sessionID) =>{
-        const {history} = this.props;
-        history.push('/game/' + sessionID);
-    }
+
 
     update(e){
         this.props.changeSessionID(e.target.value);
     }
 
     componentDidMount(){
-
-        var url = window.location.href.split('/')
-        let sessionNum = url[url.length-1];
-        console.log("here I go" + sessionNum);
-        // if(sessionNum === "game"){
-            this.GameServerRoomStart();
-        // }
-        var check = ()=>{
-            
-            if( sessionID !== undefined){
-                console.log("who am I" + this.state.sessionID);
-                console.log("Fuck I got you")
-                console.log(sessionID)
-                this.state = {sessionID: sessionID};
-                console.log("let me in" + this.state.sessionID);
-                this.redirectToGameRoom(sessionID);
-                console.log(window.location.href);
-
-            }else{
-                setTimeout(check, 1000);
-            }
-        }
-        console.log('GIGIGIGIGIIGG')
-        console.log(this.state.sessionID)
-        
-        check();
+        console.log("room ID = " + myroom)
+        this.GameServerRoomStart();
         
     }
     
@@ -94,7 +84,7 @@ class Game extends React.Component{
         function newRemoteFeed(id, display, audio, video) {
             // A new feed has been published, create a new plugin handle and attach to it as a subscriber
             let remoteFeed = null;
-            janusRoom.attach(
+            gestureGameroom.attach(
                 {
                     plugin: "janus.plugin.videoroom",
                     opaqueId: opaqueId,
@@ -225,7 +215,7 @@ class Game extends React.Component{
                 debug: true,
                 dependencies: Janus.UseDefaultDependencies(),
                 callback: function(){
-                    var gestureGameroom = new Janus(
+                    gestureGameroom = new Janus(
                         {
                             server: server,
                             success: function(){
@@ -235,7 +225,6 @@ class Game extends React.Component{
                                     plugin: "janus.plugin.videoroom",
                                     success: function(pluginHandle){
                                         vroomHandle = pluginHandle;
-                                        sessionID = gestureGameroom.getSessionId();
                                         Janus.log("Plugin attached! (" + vroomHandle.getPlugin() + ", id=" + vroomHandle.getId() + ")");
                                         Janus.log("  -- This is a publisher/manager");
                                         // console.log(typeof(gestureGameroom.getSessionId()))
@@ -283,6 +272,7 @@ class Game extends React.Component{
                                                         let audio = list[f]["audio_codec"];
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
+                                                        console.log('somebody in the same room : ' + {id} )
                                                     }
                                                 }
                                             } else if (event === "destroyed") {
@@ -372,6 +362,7 @@ class Game extends React.Component{
                             },
                             destroyed:function(){
                                 // todo
+                                console.log()
                                 console.log('destroyed');
                             }
                         }
@@ -385,12 +376,8 @@ class Game extends React.Component{
 
 
     render(){
-        const {history} = this.props;
 
         return(
-            (history.sessionID !== undefined ) ?
-        <p> Wait a second, {this.props.name}, {sessionID}, {this.state.sessionID}</p>
-        :
         <div className="App">
         <header className="App-header">
             <p>
@@ -431,4 +418,4 @@ class Game extends React.Component{
     }
 }
 
-export default withRouter(Game);
+export default Game;
