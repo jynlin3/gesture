@@ -39,7 +39,7 @@ class Game extends React.Component{
         let roomID = url_params[url_params.length-1]
         if(roomID !=="" && Number.isInteger(parseInt(roomID))){
             myroom = parseInt(roomID)
-            this.state.changeRoom(myroom);
+            this.props.changeRoom(myroom);
         }else if(roomID === ""){
             alert("room ID should be an integer, instead of empty")
         }else{
@@ -58,6 +58,9 @@ class Game extends React.Component{
     componentDidMount(){
         console.log("room ID = " + myroom)
         this.GameServerRoomStart();
+        console.log("how many peoplein the room?");
+        console.log(feeds);
+        
         
     }
     
@@ -213,7 +216,7 @@ class Game extends React.Component{
 
         Janus.init(
             {
-                debug: false,
+                debug: true,
                 dependencies: Janus.UseDefaultDependencies(),
                 callback: function(){
                     gestureGameroom = new Janus(
@@ -235,10 +238,6 @@ class Game extends React.Component{
                                         const register = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
                                         // myusername = reg;
                                         vroomHandle.send({ "message": register });
-
-
-
-
 
                                     },
                                     error : function(err){
@@ -279,7 +278,9 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
+                                                        newRemoteFeed(id, display, audio, video);
                                                     }
+                                                    
                                                 }
                                             } else if (event === "destroyed") {
                                                 // The room has been destroyed
@@ -303,6 +304,19 @@ class Game extends React.Component{
                                                     }
                                                 } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
                                                     // One of the publishers has gone away?
+                                                    // let leaving = msg["leaving"]
+                                                    // Janus.log("Publisher left:"+ leaving)
+                                                    // let remoteFeed = null;
+                                                    // for(let i=1; i<6 ; i++){
+                                                    //     if (feeds[i] && feeds[i].rfid == leaving){
+                                                    //         remoteFeed = feeds[i];
+                                                    //         break;
+                                                    //     } 
+                                                    // }
+                                                    // if(remoteFeed != null){
+                                                    //     feeds[remoteFeed.rfid] = null;
+                                                    //     remoteFeed.detach();
+                                                    // }
                                                 } else if (msg["unpublished"] !== undefined && msg["unpublished"] !== null) {
                                                     // One of the publishers has unpublished?
                                                     if (msg["unpublished"] === 'ok') {
@@ -318,10 +332,14 @@ class Game extends React.Component{
                                                 }
                                             }
                                         }
+                                        console.log("wait my message isnt sent")
+                                        console.log(jsep)
                                         if (jsep !== undefined && jsep !== null) {
                                             Janus.debug("Got room event. Handling SDP as well...");
                                             Janus.debug(jsep);
                                             vroomHandle.handleRemoteJsep({jsep: jsep});
+                                            console.log("hope I can get some publishers here")
+                                            console.log(msg["publishers"])
                                             // Check if any of the media we wanted to publish has
                                             // been rejected (e.g., wrong or unsupported codec)
                                             let audio = msg["audio_codec"];
@@ -373,6 +391,7 @@ class Game extends React.Component{
                                 // todo
                                 console.log()
                                 console.log('destroyed');
+                                window.location.reload();
                             }
                         }
                     );
