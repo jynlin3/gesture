@@ -8,6 +8,23 @@ let server;
 let sessionID;
 
 
+/**
+ * have a set of ids array
+ * randomly divide into two parts
+ * 
+ * take one as the 
+ * 1st 30 sec to look the questions
+ * 1st->2nd : show gussture to the next one. 30 sec to perform
+ * 2nd->3rd : show guessture to the next one
+ * ...
+ * last: 30 sec to answer
+ * 
+ * input has the question
+ * output: right or wrong to Jyn
+ * 
+ */
+
+
 try{
     server = require('./config.json').janusServer;
 }catch(err){
@@ -24,6 +41,30 @@ let feeds = [];
 let myid = null;
 let mystream = null;
 let peopleNum = 0;
+let userIds = [1, 2, 3, 4, 5, 6, 7, 8];
+let team1 = [];
+let team2 = [];
+let questions = ["Birthday"];
+let team1Competing;
+let firstPlayer;
+let audience;
+let waiting;
+
+// function Enum(constantsList) {
+//     for (var i in constantsList) {
+//         this[constantsList[i]] = i;
+//     }
+// }
+// const Roles = new Enum
+// (
+//     ["FirstPlayer",
+//     "Observer",
+//     "Performer",
+//     "LastPlayer",
+//     "Audience",
+//     "SameTeamPlayer"]
+// );
+
 
 class Game extends React.Component{
 
@@ -31,9 +72,6 @@ class Game extends React.Component{
         super(props);
         // this.props = props;
         this.state = {...props};
-        console.log('opaqueID' + opaqueId);
-        console.log(this.props)
-        console.log(this.state)
         let url = window.location.href;
         let url_params = url.split('/');
         let roomID = url_params[url_params.length-1]
@@ -47,9 +85,11 @@ class Game extends React.Component{
             alert("room ID should be an integer" + {roomID})
         }
 
+        firstPlayer = new Set();
+        audience = new Set();
+        waiting = new Set();
+        team1Competing = true;
     };
-
-
 
     update(e){
         this.props.changeSessionID(e.target.value);
@@ -57,11 +97,45 @@ class Game extends React.Component{
 
     componentDidMount(){
         console.log("room ID = " + myroom)
-        this.GameServerRoomStart();
-        
+        this.GameServerRoomStart();        
+    }
+    
+    splitTeams(userIds){
+        let numMembers = userIds.length() / 2;
+        team1 = userIds.slice(0, numMembers - 1);
+        team2 = userIds.slice(numMembers);
+    }
+
+    setRoles(){  
+        // starting game
+        // if (roleMap.size === 0){
+        //     var i;
+        //     for (i of team2){
+        //         roleMap[i] = "Audience";
+        //     }
+        //     roleMap[team1[Math.random() * team1.length()]] = "FirstPlayer";
+        //     for (var j = 0; j < team1.length(); ++j){
+        //         if (!roleMap.has(team1[j])){
+        //             roleMap[team1[j]] = "SameTeamPlayer";
+        //         }
+        //     }
+        // }
+
+        if (team1Competing){
+            firstPlayer.add(team1[0]);
+            for (let i = 1; i < team1.length(); ++i){
+                waiting.add(team1[i]);
+            }
+            for (let i = 0; i < team2.length(); ++i){
+                audience.add(team2[i]);
+            }
+        }
+    
     }
     
     GameServerRoomStart(){
+
+
         function publishOwnFeed(useAudio) {
             // Publish our stream
             vroomHandle.createOffer(
@@ -210,6 +284,7 @@ class Game extends React.Component{
                 });
         }
 
+        // set roles
 
         Janus.init(
             {
@@ -220,8 +295,6 @@ class Game extends React.Component{
                         {
                             server: server,
                             success: function(){
-                                console.log('hi Jyn, I;m in the server')
-                                console.log(this.props)
                                 gestureGameroom.attach({
                                     plugin: "janus.plugin.videoroom",
                                     success: function(pluginHandle){
@@ -235,11 +308,6 @@ class Game extends React.Component{
                                         const register = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
                                         // myusername = reg;
                                         vroomHandle.send({ "message": register });
-
-
-
-
-
                                     },
                                     error : function(err){
                                         Janus.error("  -- Error attaching plugin...", err);
@@ -257,8 +325,6 @@ class Game extends React.Component{
                                         Janus.debug(" ::: Got a message (publisher) :::");
                                         Janus.debug(msg);
                                         let event = msg["videoroom"];
-                                        // console.log(msg)
-                                        // console.log(jsep)
                                         Janus.debug("Event: " + event);
                                         if (event != undefined && event != null) {
                                             if (event === "joined") {
@@ -385,46 +451,86 @@ class Game extends React.Component{
 
 
     render(){
-
+        // if (firstPlayer.has())
         return(
-        <div className="App">
-        <header className="App-header">
-            <p>
-                Welcome to <code>gesture</code> video room (powered by Janus)
-            </p>
-            <div>
-                <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
-                </div>
-                {/*<div className="panel-body" id="videolocal"></div>*/}
+
+             <div className="App">
+                 <header className="App-header">
+                     <p>
+                         Welcome to <code>gesture</code> video room (powered by Janus)
+                     </p>
+                     <div>
+                         <div id="myvideo" className="container shorter">
+                             <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
+                         </div>
+                         {/*<div className="panel-body" id="videolocal"></div>*/}
+                     </div>
+                 </header>
+                 <h3 id="title"></h3>
+                 <Container>
+                     <Row>
+                         <Col>
+                             <div id="videoremote1" className="container">
+                                 <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                             </div>
+                             <h3 id="callername">{'Participant 1'}</h3>
+                         </Col>
+                         <Col>
+                             <div id="videoremote2" className="container">
+                                 <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                             </div>
+                             <h3 id="callername">{'Participant 2'}</h3>
+                         </Col>
+                         <Col>
+                             <div id="videoremote3" className="container">
+                                 <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                             </div>
+                             <h3 id="callername">{'Participant 3'}</h3>
+                         </Col>
+                     </Row>
+                 </Container>
             </div>
-        </header>
-        <h3 id="title"></h3>
-        <Container>
-            <Row>
-                <Col>
-                    <div id="videoremote1" className="container">
-                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                    </div>
-                    <h3 id="callername">{'Participant 1'}</h3>
-                </Col>
-                <Col>
-                    <div id="videoremote2" className="container">
-                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                    </div>
-                    <h3 id="callername">{'Participant 2'}</h3>
-                </Col>
-                <Col>
-                    <div id="videoremote3" className="container">
-                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                    </div>
-                    <h3 id="callername">{'Participant 3'}</h3>
-                </Col>
-            </Row>
-        </Container>
-    </div>
         )
     }
 }
+
+// conditional rendering
+// function userInterface(role){
+//     if (role === FirstPlayer){
+//         return <Question />;
+//     }
+//     if (role === Audience || Performer || Observer){
+//         return <Competing />;
+//     }else{
+//         return <Waiting />;
+//     }
+// }
+
+// function Question(){
+//     return (
+//         <div className="App">
+//             <h2> Current Score: </h2>;
+//             <h3> questions[0] </h3>
+//         </div>
+//     )
+// }
+
+// function Competing(){
+//     return (
+//         <div className="App">
+//             <h2>  </h2>
+//         </div>
+//     )
+// }
+
+// function Waiting(){
+//     return(
+//         <div className="App">
+//             <h2>
+//                 Just wait
+//             </h2>
+//         </div>
+//     )
+// }
 
 export default Game;
