@@ -345,6 +345,22 @@ class Game extends React.Component{
                                                     console.log('all people here');
                                                     console.log(GlobalPeopleID);
                                                 } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
+                                                    var leaving = msg["leaving"];
+                                                    Janus.log("Publisher left: " + leaving);
+                                                    var remoteFeed = null;
+                                                    for(var i=1; i<6; i++) {
+                                                        if(feeds[i] && feeds[i].rfid == leaving) {
+                                                            remoteFeed = feeds[i];
+                                                            break;
+                                                        }
+                                                    }
+                                                    if(remoteFeed != null) {
+                                                        Janus.debug("Feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") has left the room, detaching");
+                                                        $('#remote'+remoteFeed.rfindex).empty().hide();
+                                                        $('#videoremote'+remoteFeed.rfindex).empty();
+                                                        feeds[remoteFeed.rfindex] = null;
+                                                        remoteFeed.detach();
+                                                    }
                                                     // One of the publishers has gone away?
                                                     // let leaving = msg["leaving"]
                                                     // Janus.log("Publisher left:"+ leaving)
