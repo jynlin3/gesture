@@ -43,13 +43,32 @@ router.route("/getRandomWord").get(function(req, res){
                     if(err){
                         res.send(err);
                     }else{
-                        console.log(result);
                         res.status(200);
                     }
                 }
             );
         }
     });
+});
+
+router.route('/updateCorrectRate').put(function(req, res){
+    if (!req.query.word || !req.query.correct)
+        res.json({message:"Wrong input"});
+    else{
+        var word = req.query.word;
+
+        noun.findOne({item: word}, function (err, result){
+                if(err){
+                    res.send(err);
+                }
+                else{
+                    var total_count = result.total_count + 1;
+                    var correct_count = req.query.correct == 1 ? result.correct_count + 1 : result.correct_count;
+                    noun.updateOne({item: word}, {correct_rate: correct_count/total_count, correct_count: correct_count, total_count:total_count}, function(error, result){});
+                    res.json({message:"OK"});
+                }
+        });
+    }
 });
 
 app.listen(PORT, function(){
