@@ -14,7 +14,7 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state ={ name : "debo" , room: this.randomInt(1234,1234) };
+    this.state ={ name : "debo" , room: this.randomInt(5678,5678) };
     // this.changeRoom(this.randomInt(1000000,10000000000));
     console.log("roomID in App:" + this.state.room);
   }

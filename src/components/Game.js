@@ -7,7 +7,6 @@ import {Container, Row, Col} from 'react-bootstrap'
 let server;
 let sessionID;
 
-
 try{
     server = require('./config.json').janusServer;
 }catch(err){
@@ -24,6 +23,8 @@ let feeds = [];
 let myid = null;
 let mystream = null;
 let peopleNum = 0;
+let GlobalPeopleID = []
+
 
 class Game extends React.Component{
 
@@ -52,8 +53,8 @@ class Game extends React.Component{
             }
             this.state.changeName(userName);
         }
-        console.log("My name is :" + this.props.name)
-        console.log(this.state)
+        // console.log("My name is :" + this.props.name)
+        // console.log(this.state)
 
     };
 
@@ -64,10 +65,19 @@ class Game extends React.Component{
     // }
 
     componentDidMount(){
-        console.log("room ID = " + myroom)
+        // console.log("room ID = " + myroom)
         this.GameServerRoomStart();
-        console.log("how many peoplein the room?");
-        console.log(feeds);
+        console.log("how many people in the room?");
+        if(!feeds){
+            console.log('no people in the room')
+        }else{
+            for(let i = 0; i < feeds.length;i++){
+                console.log('feed '+ i + ' id :' + feeds[i].id)
+                console.log('feed '+ i + ' rfid :' + feeds[i].rfid)
+            }
+        }
+        // console.log(feeds);
+        
         
         
     }
@@ -168,7 +178,7 @@ class Game extends React.Component{
                     },
                     onlocalstream: function(stream) {
                         // The subscriber stream is recvonly, we don't expect anything here
-                        console.log("I'm in onlocal stream")
+                        // console.log("I'm in onlocal stream")
                     },
                     onremotestream: function(stream) {
                         console.log("Remote feed #" + remoteFeed.rfindex + ", stream:", stream);
@@ -231,8 +241,8 @@ class Game extends React.Component{
                         {
                             server: server,
                             success: function(){
-                                console.log('hi Jyn, I;m in the server')
-                                console.log(this.props)
+                                // console.log('hi Jyn, I;m in the server')
+                                // console.log(this.props)
                                 gestureGameroom.attach({
                                     plugin: "janus.plugin.videoroom",
                                     success: function(pluginHandle){
@@ -273,6 +283,7 @@ class Game extends React.Component{
                                                 myid = msg["id"];
                                                 mypvtid = msg["private_id"];
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
+                                                GlobalPeopleID.unshift(myid);
                                                 publishOwnFeed(true);
                                                 // Any new feed to attach to?
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
@@ -286,6 +297,7 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
+                                                        GlobalPeopleID.unshift(id)
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
                                                     
@@ -296,8 +308,8 @@ class Game extends React.Component{
                                                 console.error("The room has been destroyed");
                                             } else if (event === "event") {
                                                 // Any new feed to attach to?
-                                                console.log("when will I got this event")
-                                                console.log(msg["publishers"])
+                                                // console.log("when will I got this event")
+                                                // console.log(msg["publishers"])
                                                 
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     console.log('new publishers!')
@@ -308,8 +320,11 @@ class Game extends React.Component{
                                                         let audio = list[f]["audio_codec"];
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
+                                                        GlobalPeopleID.push(id)
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
+                                                    console.log('all people here');
+                                                    console.log(GlobalPeopleID);
                                                 } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
                                                     // One of the publishers has gone away?
                                                     // let leaving = msg["leaving"]
@@ -340,14 +355,14 @@ class Game extends React.Component{
                                                 }
                                             }
                                         }
-                                        console.log("wait my message isnt sent")
-                                        console.log(jsep)
+                                        // console.log("wait my message isnt sent")
+                                        // console.log(jsep)
                                         if (jsep !== undefined && jsep !== null) {
                                             Janus.debug("Got room event. Handling SDP as well...");
                                             Janus.debug(jsep);
                                             vroomHandle.handleRemoteJsep({jsep: jsep});
-                                            console.log("hope I can get some publishers here")
-                                            console.log(msg["publishers"])
+                                            // console.log("hope I can get some publishers here")
+                                            // console.log(msg["publishers"])
                                             // Check if any of the media we wanted to publish has
                                             // been rejected (e.g., wrong or unsupported codec)
                                             let audio = msg["audio_codec"];
@@ -412,8 +427,10 @@ class Game extends React.Component{
 
 
     render(){
+        console.log('all people here');
+        console.log(GlobalPeopleID);
         this.state = {...this.props};
-        console.log(this.state)
+        // console.log(this.state)
         return(
         <div className="App">
         <header className="App-header">
