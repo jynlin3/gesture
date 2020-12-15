@@ -27,6 +27,7 @@ app.use("/", router);
 
 let noun = require("./model");
 router.route("/getRandomWord").get(function(req, res){
+    console.log("/getRandomWord ");
 
     // get the count of all words
     noun.countDocuments({}, function(err, count){
@@ -56,6 +57,9 @@ router.route('/updateCorrectRate').put(function(req, res){
         res.json({message:"Wrong input"});
     else{
         var word = req.query.word;
+        var correct = req.query.correct;
+
+        console.log(`/updateCorrectRate word=${word} correct=${correct}`)
 
         noun.findOne({item: word}, function (err, result){
                 if(err){
@@ -63,7 +67,7 @@ router.route('/updateCorrectRate').put(function(req, res){
                 }
                 else{
                     var total_count = result.total_count + 1;
-                    var correct_count = req.query.correct == 1 ? result.correct_count + 1 : result.correct_count;
+                    var correct_count = correct == 1 ? result.correct_count + 1 : result.correct_count;
                     noun.updateOne({item: word}, {correct_rate: correct_count/total_count, correct_count: correct_count, total_count:total_count}, function(error, result){});
                     res.json({message:"OK"});
                 }
