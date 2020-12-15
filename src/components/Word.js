@@ -17,7 +17,7 @@ export default class Word extends Component{
     componentDidMount(){
 
         // get random word from db
-        axios.get("http://localhost:4000/getRandomWord").then(res =>{
+        axios.get("/getRandomWord").then(res =>{
             console.log(res);
             this.setState({
                 // the generated word is stored in `res.data.item`
@@ -28,7 +28,7 @@ export default class Word extends Component{
         // update correct rate with input: word and correct (1 or 0)
         var word = "rose";
         var correct = 1;
-        axios.put(`http://localhost:4000/updateCorrectRate?word=${word}&correct=${correct}`).then(res=>{
+        axios.put(`/updateCorrectRate?word=${word}&correct=${correct}`).then(res=>{
             console.log(res);
             this.setState({
                 update_result: res.data.message
