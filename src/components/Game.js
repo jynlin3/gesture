@@ -160,6 +160,9 @@ class Game extends React.Component{
                                 Janus.log("Successfully attached to feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") in room " + msg["room"]);
                                 $('#remote'+remoteFeed.rfindex).removeClass('hide').html(remoteFeed.rfdisplay).show();
                             }
+                            console.log('all people here')
+                            console.log(GlobalPeopleID)
+                            console.log(feeds)
                         }
                         if(jsep) {
                             Janus.debug("Handling SDP as well...", jsep);
@@ -322,6 +325,9 @@ class Game extends React.Component{
                                                             }
                                                         }
                                                     }
+                                                    console.log('all people here');
+                                                    console.log(GlobalPeopleID);
+                                                    console.log(feeds)
                                                 }
                                             } else if (event === "destroyed") {
                                                 // The room has been destroyed
@@ -344,11 +350,14 @@ class Game extends React.Component{
                                                     }
                                                     console.log('all people here');
                                                     console.log(GlobalPeopleID);
+                                                    console.log(feeds)
                                                 } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
                                                     var leaving = msg["leaving"];
                                                     Janus.log("Publisher left: " + leaving);
                                                     var remoteFeed = null;
                                                     for(var i=1; i<6; i++) {
+                                                        console.log('letme see the feeds')
+                                                        console.log(feeds)
                                                         if(feeds[i] && feeds[i].rfid == leaving) {
                                                             remoteFeed = feeds[i];
                                                             break;
@@ -361,20 +370,27 @@ class Game extends React.Component{
                                                         feeds[remoteFeed.rfindex] = null;
                                                         remoteFeed.detach();
                                                     }
-                                                    // One of the publishers has gone away?
-                                                    // let leaving = msg["leaving"]
-                                                    // Janus.log("Publisher left:"+ leaving)
-                                                    // let remoteFeed = null;
-                                                    // for(let i=1; i<6 ; i++){
-                                                    //     if (feeds[i] && feeds[i].rfid == leaving){
-                                                    //         remoteFeed = feeds[i];
-                                                    //         break;
-                                                    //     } 
-                                                    // }
-                                                    // if(remoteFeed != null){
-                                                    //     feeds[remoteFeed.rfid] = null;
-                                                    //     remoteFeed.detach();
-                                                    // }
+                                                    console.log('all people here');
+                                                    console.log(GlobalPeopleID);
+                                                    console.log(feeds)
+                                                    let tmp = 0
+                                                    for(let i=0; i< GlobalPeopleID.length; i++){
+                                                        tmp = 0
+                                                        for(let f in feeds){
+                                                            if( (f!= null || f != undefined) && f.rfid == GlobalPeopleID[i].id){
+                                                                tmp += 1;
+                                                                break;
+                                                            }
+                                                        }
+                                                        if(tmp == 0 && GlobalPeopleID[i].id != myid){
+                                                            GlobalPeopleID.splice(i,1);
+                                                        }
+                                                        
+                                                    }
+                                                    console.log('all people here');
+                                                    console.log(GlobalPeopleID);
+                                                    console.log(feeds)
+
                                                 } else if (msg["unpublished"] !== undefined && msg["unpublished"] !== null) {
                                                     // One of the publishers has unpublished?
                                                     if (msg["unpublished"] === 'ok') {
@@ -388,6 +404,10 @@ class Game extends React.Component{
                                                         alert(msg["error"]);
                                                     }
                                                 }
+                                                // for(let i= 0; i<6;i++){
+                                                //     document.getElementById('#callername'+i).innerHTML = GlobalPeopleID[i] ? GlobalPeopleID[i].name : "participant"+i;
+                                                //     document.getElementById('#callername'+i).focus();
+                                                // }
                                             }
                                         }
                                         if (jsep !== undefined && jsep !== null) {
@@ -439,6 +459,9 @@ class Game extends React.Component{
                                     onremotestream: function(){
                                         // second priority
                                     },
+
+
+
                                     oncleanup: function(){
                                         Janus.log(" ::: Got a cleanup notification: we are unpublished now :::");
                                         mystream = null;
@@ -480,7 +503,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                            <h3 id={"callername"+value}>{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
                         </Col> 
                     )
                 })}
@@ -492,7 +515,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                            <h3 id={"callername"+value}>{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
                         </Col> 
                     )
                 })}
@@ -504,7 +527,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id="callername">{GlobalPeopleID[value]? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                            <h3 id={"callername"+value}>{GlobalPeopleID[value]? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
                         </Col> 
                     )
                 })}
@@ -527,7 +550,6 @@ class Game extends React.Component{
                             <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
                         </Row>)
                     })}
-                    
                 </Col>
                 <Col>
                     { teamB.map((value, index) => {
@@ -550,6 +572,7 @@ class Game extends React.Component{
     render(){
         console.log('all people here');
         console.log(GlobalPeopleID);
+        console.log(feeds)
         console.log('A team')
         console.log(arrayA)
         console.log('B team')
