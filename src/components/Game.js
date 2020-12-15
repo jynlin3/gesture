@@ -6,9 +6,7 @@ import $ from 'jquery';
 import {Container, Row, Col} from 'react-bootstrap'
 import { findAllByTestId } from '@testing-library/react';
 import Countdown from 'react-countdown';
-import ReactDOM from 'react-dom';
 let server;
-let sessionID;
 
 
 /**
@@ -43,24 +41,23 @@ let myusername = null;
 let feeds = [];
 let myid = null;
 let mystream = null;
-let peopleNum = 0;
-let userIds = [1, 2, 3, 4, 5, 6, 7, 8];
+let userIds = [1, 2, 3, 4, 5, 6];
 let team1 = [];
 let team2 = [];
 let questions = ["Birthday", "JavaScript", "Sucks"];
 let team1Competing;
-let firstPlayer;
-let audience;
 let waiting;
-let id = 1;
+let id = 2;
 let scores = [];
+// idx, player id
+let player = {};
+// idx, player id
+let observer = {};
 
 
 class Game extends React.Component{
-
     constructor(props){
         super(props);
-        // this.props = props;
         this.state = {...props};
         let url = window.location.href;
         let url_params = url.split('/');
@@ -75,13 +72,11 @@ class Game extends React.Component{
             alert("room ID should be an integer" + {roomID})
         }
 
-        firstPlayer = new Set();
-        audience = new Set();
         waiting = new Set();
         team1Competing = true;
         this.splitTeams(userIds);
-        this.setRoles();
         this.scores = [0, 0];
+        // this.AutoRefresh(6000);
     };
 
     update(e){
@@ -89,48 +84,66 @@ class Game extends React.Component{
     }
 
     componentDidMount(){
-        console.log("room ID = " + myroom)
         this.GameServerRoomStart();        
     }
     
-
     splitTeams(userIds){
         let numMembers = userIds.length / 2;
         team1 = userIds.slice(0, numMembers);
         team2 = userIds.slice(numMembers);
-    }
-
-    setRoles(){  
-        // starting game
-        // if (roleMap.size === 0){
-        //     var i;
-        //     for (i of team2){
-        //         roleMap[i] = "Audience";
-        //     }
-        //     roleMap[team1[Math.random() * team1.length()]] = "FirstPlayer";
-        //     for (var j = 0; j < team1.length(); ++j){
-        //         if (!roleMap.has(team1[j])){
-        //             roleMap[team1[j]] = "SameTeamPlayer";
-        //         }
-        //     }
-        // }
-
         if (team1Competing){
-            firstPlayer.add(team1[0]);
             for (let i = 1; i < team1.length; ++i){
                 waiting.add(team1[i]);
             }
-            for (let i = 0; i < team2.length; ++i){
-                audience.add(team2[i]);
+        }else{
+            for (let i = 1; i < team2.length; ++i){
+                waiting.add(team2[i]);
             }
         }
-    
-        this.GameServerRoomStart();
-        console.log("how many peoplein the room?");
-        console.log(feeds);
-        console.log(this.props);
-        
-        
+    }
+
+    updateRole(){
+        // prevent starting round
+        let numMembers = userIds.length / 2;
+        if (waiting.size !== numMembers - 1){
+            let newIndex = this.player.index + 1;
+            let newPlayer = userIds[newIndex];
+            this.player = {
+                "id": newPlayer,
+                "index": newIndex
+            }
+            let newObserId = newIndex + 1;
+            this.observer = {
+                "id": userIds[newObserId],
+                "index": newObserId
+            } 
+            waiting.delete(userIds[newObserId]);
+        }else{
+            // first round after waiting, update the player and observer
+            if (team1Competing){
+                this.player = {
+                    "id": team1[0],
+                    "index": 0
+                };
+                this.observer = {
+                    "id": team1[1],
+                    "index": 1
+                };
+            }else{
+                this.player = {
+                    "id": team2[0],
+                    "index": numMembers
+                };
+                this.observer = {
+                    "id": team2[1],
+                    "index": numMembers
+                };
+            }
+        }
+    }
+
+    AutoRefresh( t ) {
+        setTimeout("location.reload(true);", t);
     }
 
     pickQuestion(){
@@ -288,8 +301,6 @@ class Game extends React.Component{
                     }
                 });
         }
-
-        // set roles
 
         Janus.init(
             {
@@ -469,38 +480,107 @@ class Game extends React.Component{
                     );
                 }
             }
-        );
+        );        
+    }
 
+    // conditional rendering`
+    Question(){
+        return (
+            <div className="App">
+                <h2 id="question"></h2>
+                {this.Timer()}
+            </div>
+        )
+    }
 
+    Competing(){
+        return (
+            <div className="App">
+                {this.Timer()};
+                <header className="App-header">
+                    <p>
+                        Current Score: <span id="scores">0 : 0</span>
+                    </p>
+                </header>
+                <Container>
+                    <Row>
+                        <Col>
+                            <div id="myvideo" className="container">
+                                <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
+                            </div>
+                        </Col>
+                        <Col>
+                            <div id="videoremote1" className="container">
+                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                            </div>
+                            <h3 id="callername">{'Participant 1'}</h3>
+                        </Col>
+                    </Row>
+                </Container>
+            </div>
+        )
+    }
+
+    // Completionist = () => <span>You are good to go!</span>;
+    // Renderer callback with condition
+    renderer = ({ seconds, completed }) => {
+        if (completed) {
+            // Render a completed state
+            this.updateRole();
+            id++;            
+            return <span> You are good to go! </span>;
+        } else {
+            // Render a countdown
+            return <span>{seconds} seconds</span>;
+        }
+    }
+
+    Timer(){
+        return (
+            <div>
+                <Countdown
+                    date={Date.now() + 5000}
+                    renderer={this.renderer}
+                />,
+            </div>
+        )
     }
 
     render(){
-        if (firstPlayer.has(id)){
+        if ((userIds.length / 2) - 1 === waiting.size){
             return (
                 <div className="App">
                     <h1>Please perform this topic only by body language:</h1> 
-                    <Question></Question>
+                    {this.Question()}
                 </div>                
             )
+        }else if (player.id === id){
+            // be the publisher
+        }else if (observer.id === id){
+            // be the subscriber
         }else if (waiting.has(id)){
+            let idx = document.getElementById("wait");
+            for (let i = 0; i < userIds.length; ++i){
+                if (userIds[i] === id){
+                    idx.innerHTML = (this.player.index - i);
+                    break;
+                }
+            }
             return (
                 <div className="App">
-                    <h1>Please perform this topic only by body language:</h1> 
-                    <p id="Question"> Birthday</p>
-                    <Waiting></Waiting>
+                    <h1> WAIT.....</h1>
+                    <h2> Wait for <span id="wait"></span> people</h2>
                 </div>
             )     
-        }else if (audience.has(id)){
+        }else{
             return (
                 <div className="App">
                     <h1>Guess what the topic is:</h1> 
-                    <Competing></Competing>
+                    {this.Competing()}
                 </div>
             )
         }
     }
-
-
 }
 
 
@@ -518,80 +598,6 @@ window.onload = function(){
     }
     
 }
-// conditional rendering`
-function Question(){
-    return (
-        <div className="App">
-            <h2 id="question"></h2>
-            <Timer></Timer>
-        </div>
-    )
-}
 
-function Competing(){
-
-    return (
-        <div className="App">
-            <Timer></Timer>
-            <header className="App-header">
-                <p>
-                    Current Score: <span id="scores">0 : 0</span>
-                </p>
-            </header>
-            <Container>
-                <Row>
-                    <Col>
-                        <div id="myvideo" className="container">
-                            <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
-                        </div>
-                    </Col>
-                    <Col>
-                        <div id="videoremote1" className="container">
-                            <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                        </div>
-                        <h3 id="callername">{'Participant 1'}</h3>
-                    </Col>
-                </Row>
-            </Container>
-        </div>
-    )
-    scores = [0, 0];
-    document.getElementById("scores").innerHTML = scores;
-}
-
-function Waiting(){
-    return(
-        <div className="App">
-            <h2>
-                Just wait
-            </h2>
-        </div>
-    )
-}
-
-const Completionist = () => <span>You are good to go!</span>;
-
-
-// Renderer callback with condition
-const renderer = ({ seconds, completed }) => {
-  if (completed) {
-    // Render a completed state
-    return <Completionist />;
-  } else {
-    // Render a countdown
-    return <span>{seconds} seconds</span>;
-  }
-};
-
-function Timer(){
-    return (
-        <div>
-            <Countdown
-                date={Date.now() + 30000}
-                renderer={renderer}
-            />,
-        </div>
-    )
-}
 
 export default Game;
