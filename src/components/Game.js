@@ -96,7 +96,7 @@ class Game extends React.Component{
             vroomHandle.createOffer(
                 {
                     // media: { audioRecv: false, videoRecv: false, audioSend: useAudio, videoSend: true },	// Publishers are sendonly
-                    media: { audioRecv: true, videoRecv: true, audioSend: useAudio, videoSend: true },
+                    media: { audioRecv: false, videoRecv: true, audioSend: useAudio, videoSend: true },
                     success: function(jsep) {
                         Janus.debug("Got publisher SDP!");
                         Janus.debug(jsep);
@@ -398,12 +398,15 @@ class Game extends React.Component{
                                         // $('#videoremote'+myIndexInRoom).append('<video class="rounded centered" id="waitingvideo' + myIndexInRoom + '" width="100%" height="100%" />');
                                         $('#videoremote'+myIndexInRoom).append('<video class="rounded centered relative hide" id="remotevideo' + myIndexInRoom + '" width="100%" height="100%" autoplay playsinline/>');
                                         Janus.attachMediaStream($('#remotevideo'+myIndexInRoom).get(0), stream);
+                                        document.querySelector('#remotevideo'+myIndexInRoom).muted= true;
                                         // const video = document.querySelector('videoremote'+myIndexInRoom);
                                         const videoTracks = stream.getVideoTracks();
                                         console.log(`Using video device: ${videoTracks[0].label}`);
                                         console.log('videoremote'+myIndexInRoom)
                                         console.log(video)
                                         video.srcObject = stream;
+                                        document.querySelector('video#localvideo').muted= true;
+                                        document.querySelector('video#localvideo').style.visibility= "hidden";
                                     },
                                     onremotestream: function(){
                                         // second priority
