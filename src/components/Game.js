@@ -196,7 +196,7 @@ class Game extends React.Component{
                         let addButtons = false;
                         if($('#remotevideo'+remoteFeed.rfindex).length === 0) {
                             // No remote video yet
-                            $('#videoremote'+remoteFeed.rfindex).children('img').remove();
+                            // $('#videoremote'+remoteFeed.rfindex).children('img').remove();
                             $('#videoremote'+remoteFeed.rfindex).append('<video class="rounded centered" id="waitingvideo' + remoteFeed.rfindex + '" width="100%" height="100%" />');
                             $('#videoremote'+remoteFeed.rfindex).append('<video class="rounded centered relative hide" id="remotevideo' + remoteFeed.rfindex + '" width="100%" height="100%" autoplay playsinline/>');
                             // Show the video, hide the spinner and show the resolution when we get a playing event
@@ -224,8 +224,8 @@ class Game extends React.Component{
                             // No remote video
                             $('#remotevideo'+remoteFeed.rfindex).hide();
                             if($('#videoremote'+remoteFeed.rfindex + ' .no-video-container').length === 0) {
-                                $('#videoremote'+remoteFeed.rfindex).append(
-                                    '<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
+                                // $('#videoremote'+remoteFeed.rfindex).append(
+                                //     '<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
                             }
                         } else {
                             $('#videoremote'+remoteFeed.rfindex+ ' .no-video-container').remove();
@@ -237,7 +237,7 @@ class Game extends React.Component{
                         if(remoteFeed.spinner)
                             remoteFeed.spinner.stop();
                         $('#remotevideo'+remoteFeed.rfindex).remove();
-                        $('#videoremote'+remoteFeed.rfindex).append('<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
+                        // $('#videoremote'+remoteFeed.rfindex).append('<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
                     }
                 });
         }
@@ -406,7 +406,7 @@ class Game extends React.Component{
                                         console.log("my index in room : " + myIndexInRoom);
                                         const video = document.querySelector('video#localvideo');
                                         
-                                        $('#videoremote'+myIndexInRoom).children('img').remove();
+                                        // $('#videoremote'+myIndexInRoom).children('img').remove();
                                         // $('#videoremote'+myIndexInRoom).append('<video class="rounded centered" id="waitingvideo' + myIndexInRoom + '" width="100%" height="100%" />');
                                         $('#videoremote'+myIndexInRoom).append('<video class="rounded centered relative hide" id="remotevideo' + myIndexInRoom + '" width="100%" height="100%" autoplay playsinline/>');
                                         Janus.attachMediaStream($('#remotevideo'+myIndexInRoom).get(0), stream);
@@ -462,7 +462,7 @@ class Game extends React.Component{
                     return(      
                         <Col>         
                             <div id={"videoremote"+(value)} className="container">
-                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
                             <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
                         </Col> 
@@ -474,7 +474,7 @@ class Game extends React.Component{
                     return(      
                         <Col>         
                             <div id={"videoremote"+(value)} className="container">
-                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
                             <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
                         </Col> 
@@ -486,7 +486,7 @@ class Game extends React.Component{
                     return(      
                         <Col>         
                             <div id={"videoremote"+(value)} className="container">
-                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
                             <h3 id="callername">{GlobalPeopleID[value]? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
                         </Col> 
@@ -506,7 +506,7 @@ class Game extends React.Component{
                         return(                
                         <Row>
                             <div id={"videoremote"+(value+1)} className="container">
-                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
                             <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
                         </Row>)
@@ -518,7 +518,7 @@ class Game extends React.Component{
                         return(                
                         <Row>
                             <div id={"videoremote"+(value+1)} className="container">
-                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
                             <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name : 'participant'+{value}}</h3>
                         </Row>)
