@@ -7,7 +7,6 @@ import {Container, Row, Col} from 'react-bootstrap'
 let server;
 let sessionID;
 
-
 try{
     server = require('./config.json').janusServer;
 }catch(err){
@@ -24,6 +23,16 @@ let feeds = [];
 let myid = null;
 let mystream = null;
 let peopleNum = 0;
+let GlobalPeopleID = []
+let myIndexInRoom=0;
+let userName;
+let teamA = [0,2,4]
+let teamB = [1,3,5]
+let arr1 = [0,1]
+let arr2 = [2,3]
+let arr3 = [4,5]
+let arrayA = [null,null,null]
+let arrayB = [null,null,null]
 
 class Game extends React.Component{
 
@@ -39,27 +48,46 @@ class Game extends React.Component{
         let roomID = url_params[url_params.length-1]
         if(roomID !=="" && Number.isInteger(parseInt(roomID))){
             myroom = parseInt(roomID)
-            this.props.changeRoom(myroom);
+            this.state.changeRoom(myroom);
         }else if(roomID === ""){
             alert("room ID should be an integer, instead of empty")
         }else{
-            
             alert("room ID should be an integer" + {roomID})
         }
+        if(this.state.name==="debo"){
+            userName = prompt("Please enter your name")
+            while(userName === ""){
+                userName = prompt("Please enter your nam again, don't let it be empty")
+            }
+            this.state.changeName(userName);
+        }else{
+            userName =this.state.name;
+        }
+        // console.log("My name is :" + this.props.name)
+        // console.log(this.state)
 
     };
 
 
 
-    update(e){
-        this.props.changeSessionID(e.target.value);
-    }
+    // update(e){
+    //     this.props.changeSessionID(e.target.value);
+    // }
 
     componentDidMount(){
-        console.log("room ID = " + myroom)
+        // console.log("room ID = " + myroom)
         this.GameServerRoomStart();
-        console.log("how many peoplein the room?");
-        console.log(feeds);
+        console.log("how many people in the room?");
+        if(!feeds){
+            console.log('no people in the room')
+        }else{
+            for(let i = 0; i < feeds.length;i++){
+                console.log('feed '+ i + ' id :' + feeds[i].id)
+                console.log('feed '+ i + ' rfid :' + feeds[i].rfid)
+            }
+        }
+        // console.log(feeds);
+        
         
         
     }
@@ -69,7 +97,8 @@ class Game extends React.Component{
             // Publish our stream
             vroomHandle.createOffer(
                 {
-                    media: { audioRecv: false, videoRecv: false, audioSend: useAudio, videoSend: true },	// Publishers are sendonly
+                    // media: { audioRecv: false, videoRecv: false, audioSend: useAudio, videoSend: true },	// Publishers are sendonly
+                    media: { audioRecv: false, videoRecv: true, audioSend: useAudio, videoSend: true },
                     success: function(jsep) {
                         Janus.debug("Got publisher SDP!");
                         Janus.debug(jsep);
@@ -160,14 +189,14 @@ class Game extends React.Component{
                     },
                     onlocalstream: function(stream) {
                         // The subscriber stream is recvonly, we don't expect anything here
-                        console.log("I'm in onlocal stream")
+                        // console.log("I'm in onlocal stream")
                     },
                     onremotestream: function(stream) {
                         console.log("Remote feed #" + remoteFeed.rfindex + ", stream:", stream);
                         let addButtons = false;
                         if($('#remotevideo'+remoteFeed.rfindex).length === 0) {
                             // No remote video yet
-                            $('#videoremote'+remoteFeed.rfindex).children('img').remove();
+                            // $('#videoremote'+remoteFeed.rfindex).children('img').remove();
                             $('#videoremote'+remoteFeed.rfindex).append('<video class="rounded centered" id="waitingvideo' + remoteFeed.rfindex + '" width="100%" height="100%" />');
                             $('#videoremote'+remoteFeed.rfindex).append('<video class="rounded centered relative hide" id="remotevideo' + remoteFeed.rfindex + '" width="100%" height="100%" autoplay playsinline/>');
                             // Show the video, hide the spinner and show the resolution when we get a playing event
@@ -195,8 +224,8 @@ class Game extends React.Component{
                             // No remote video
                             $('#remotevideo'+remoteFeed.rfindex).hide();
                             if($('#videoremote'+remoteFeed.rfindex + ' .no-video-container').length === 0) {
-                                $('#videoremote'+remoteFeed.rfindex).append(
-                                    '<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
+                                // $('#videoremote'+remoteFeed.rfindex).append(
+                                //     '<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
                             }
                         } else {
                             $('#videoremote'+remoteFeed.rfindex+ ' .no-video-container').remove();
@@ -208,7 +237,7 @@ class Game extends React.Component{
                         if(remoteFeed.spinner)
                             remoteFeed.spinner.stop();
                         $('#remotevideo'+remoteFeed.rfindex).remove();
-                        $('#videoremote'+remoteFeed.rfindex).append('<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
+                        // $('#videoremote'+remoteFeed.rfindex).append('<img src="' + offline + '" id="img1" class="card-media-image" style="width:300px;height:250px"></img>');
                     }
                 });
         }
@@ -223,21 +252,18 @@ class Game extends React.Component{
                         {
                             server: server,
                             success: function(){
-                                console.log('hi Jyn, I;m in the server')
-                                console.log(this.props)
                                 gestureGameroom.attach({
                                     plugin: "janus.plugin.videoroom",
                                     success: function(pluginHandle){
                                         vroomHandle = pluginHandle;
                                         Janus.log("Plugin attached! (" + vroomHandle.getPlugin() + ", id=" + vroomHandle.getId() + ")");
                                         Janus.log("  -- This is a publisher/manager");
-                                        // console.log(typeof(gestureGameroom.getSessionId()))
-                                        // // this.props.sessionID = gestureGameroom.getSessionId();
-                                        // console.log('sessionID =' + gestureGameroom.getSessionId())
-                                        let reg = Janus.randomString(12);
-                                        const register = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
-                                        // myusername = reg;
-                                        vroomHandle.send({ "message": register });
+                                        let reg = userName;
+                                        console.log("display name:"+ reg + ",type:"+ typeof(reg));
+                                        const createRegister = { "request": "create", "room": myroom, "permanent": false,"is_private":false, "publishers":6 };
+                                        vroomHandle.send({ "message": createRegister });
+                                        const joinRegister = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
+                                        vroomHandle.send({ "message": joinRegister });
 
                                     },
                                     error : function(err){
@@ -265,7 +291,11 @@ class Game extends React.Component{
                                                 myid = msg["id"];
                                                 mypvtid = msg["private_id"];
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
+                                                GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
+
+                                                // newRemoteFeed(myid, userName, )
+
                                                 // Any new feed to attach to?
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     let list = msg["publishers"];
@@ -278,9 +308,20 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
+                                                        GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
-                                                    
+                                                    for(let i=0;i < 6;i++){
+                                                        if(GlobalPeopleID[i] == undefined){
+                                                            break
+                                                        }else{
+                                                            if(i%2 === 0){
+                                                                arrayA[Math.floor(i/2)] = GlobalPeopleID[i]
+                                                            }else{
+                                                                arrayB[Math.floor(i/2)] = GlobalPeopleID[i]
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             } else if (event === "destroyed") {
                                                 // The room has been destroyed
@@ -288,9 +329,7 @@ class Game extends React.Component{
                                                 console.error("The room has been destroyed");
                                             } else if (event === "event") {
                                                 // Any new feed to attach to?
-                                                console.log("when will I got this event")
-                                                console.log(msg["publishers"])
-                                                setTimeout(() => {  console.log("World!"); }, 2000);
+                                                
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     console.log('new publishers!')
                                                     let list = msg["publishers"];
@@ -300,9 +339,28 @@ class Game extends React.Component{
                                                         let audio = list[f]["audio_codec"];
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
+                                                        GlobalPeopleID.push({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
+                                                    console.log('all people here');
+                                                    console.log(GlobalPeopleID);
                                                 } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
+                                                    var leaving = msg["leaving"];
+                                                    Janus.log("Publisher left: " + leaving);
+                                                    var remoteFeed = null;
+                                                    for(var i=1; i<6; i++) {
+                                                        if(feeds[i] && feeds[i].rfid == leaving) {
+                                                            remoteFeed = feeds[i];
+                                                            break;
+                                                        }
+                                                    }
+                                                    if(remoteFeed != null) {
+                                                        Janus.debug("Feed " + remoteFeed.rfid + " (" + remoteFeed.rfdisplay + ") has left the room, detaching");
+                                                        $('#remote'+remoteFeed.rfindex).empty().hide();
+                                                        $('#videoremote'+remoteFeed.rfindex).empty();
+                                                        feeds[remoteFeed.rfindex] = null;
+                                                        remoteFeed.detach();
+                                                    }
                                                     // One of the publishers has gone away?
                                                     // let leaving = msg["leaving"]
                                                     // Janus.log("Publisher left:"+ leaving)
@@ -332,14 +390,10 @@ class Game extends React.Component{
                                                 }
                                             }
                                         }
-                                        console.log("wait my message isnt sent")
-                                        console.log(jsep)
                                         if (jsep !== undefined && jsep !== null) {
                                             Janus.debug("Got room event. Handling SDP as well...");
                                             Janus.debug(jsep);
                                             vroomHandle.handleRemoteJsep({jsep: jsep});
-                                            console.log("hope I can get some publishers here")
-                                            console.log(msg["publishers"])
                                             // Check if any of the media we wanted to publish has
                                             // been rejected (e.g., wrong or unsupported codec)
                                             let audio = msg["audio_codec"];
@@ -365,10 +419,22 @@ class Game extends React.Component{
                                         // top priority
                                         console.log(" ::: Got a local stream :::", stream);
                                         mystream = stream;
+                                        console.log("my index in room : " + myIndexInRoom);
                                         const video = document.querySelector('video#localvideo');
+                                        
+                                        // $('#videoremote'+myIndexInRoom).children('img').remove();
+                                        // $('#videoremote'+myIndexInRoom).append('<video class="rounded centered" id="waitingvideo' + myIndexInRoom + '" width="100%" height="100%" />');
+                                        $('#videoremote'+myIndexInRoom).append('<video class="rounded centered relative hide" id="remotevideo' + myIndexInRoom + '" width="100%" height="100%" autoplay playsinline/>');
+                                        Janus.attachMediaStream($('#remotevideo'+myIndexInRoom).get(0), stream);
+                                        document.querySelector('#remotevideo'+myIndexInRoom).muted= true;
+                                        // const video = document.querySelector('videoremote'+myIndexInRoom);
                                         const videoTracks = stream.getVideoTracks();
                                         console.log(`Using video device: ${videoTracks[0].label}`);
+                                        console.log('videoremote'+myIndexInRoom)
+                                        console.log(video)
                                         video.srcObject = stream;
+                                        document.querySelector('video#localvideo').muted= true;
+                                        document.querySelector('video#localvideo').style.visibility= "hidden";
                                     },
                                     onremotestream: function(){
                                         // second priority
@@ -398,18 +464,103 @@ class Game extends React.Component{
                 }
             }
         );
-
-
     }
 
+    teamtemplate2(){
+        return (
+        <Container>
+            <Row>
+                <Col>  <h1> Team A</h1> </Col>
+                <Col>  <h1> Team B</h1></Col>
+            </Row>
+            <Row>
+                { arr1.map((value, index) => {
+                    return(      
+                        <Col>         
+                            <div id={"videoremote"+(value)} className="container">
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                            </div>
+                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                        </Col> 
+                    )
+                })}
+            </Row>
+            <Row>
+                { arr2.map((value, index) => {
+                    return(      
+                        <Col>         
+                            <div id={"videoremote"+(value)} className="container">
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                            </div>
+                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                        </Col> 
+                    )
+                })}
+            </Row>
+            <Row>
+                { arr3.map((value, index) => {
+                    return(      
+                        <Col>         
+                            <div id={"videoremote"+(value)} className="container">
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                            </div>
+                            <h3 id="callername">{GlobalPeopleID[value]? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                        </Col> 
+                    )
+                })}
+            </Row>
+
+        </Container>
+        )
+    }
+
+    teamtemplate(){
+        return(
+            <Container>
+                <Col>
+                    { teamA.map((value, index) => {
+                        return(                
+                        <Row>
+                            <div id={"videoremote"+(value+1)} className="container">
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                            </div>
+                            <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
+                        </Row>)
+                    })}
+                    
+                </Col>
+                <Col>
+                    { teamB.map((value, index) => {
+                        return(                
+                        <Row>
+                            <div id={"videoremote"+(value+1)} className="container">
+                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                            </div>
+                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name : 'participant'+{value}}</h3>
+                        </Row>)
+                    })}
+                    
+                </Col>
+                
+            </Container>
+        )
+    }
+    
 
     render(){
-
+        console.log('all people here');
+        console.log(GlobalPeopleID);
+        console.log('A team')
+        console.log(arrayA)
+        console.log('B team')
+        console.log(arrayB)
+        this.state = {...this.props};
+        // console.log(this.state)
         return(
         <div className="App">
         <header className="App-header">
             <p>
-                Welcome to <code>gesture</code> video room (powered by Janus)
+                <code>gesture</code> video room, Name = {this.state.name} , room = {this.state.room}
             </p>
             <div>
                 <div id="myvideo" className="container shorter">
@@ -419,28 +570,7 @@ class Game extends React.Component{
             </div>
         </header>
         <h3 id="title"></h3>
-        <Container>
-            <Row>
-                <Col>
-                    <div id="videoremote1" className="container">
-                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                    </div>
-                    <h3 id="callername">{'Participant 1'}</h3>
-                </Col>
-                <Col>
-                    <div id="videoremote2" className="container">
-                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                    </div>
-                    <h3 id="callername">{'Participant 2'}</h3>
-                </Col>
-                <Col>
-                    <div id="videoremote3" className="container">
-                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
-                    </div>
-                    <h3 id="callername">{'Participant 3'}</h3>
-                </Col>
-            </Row>
-        </Container>
+        {this.teamtemplate2()}
     </div>
         )
     }
