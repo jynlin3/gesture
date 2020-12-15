@@ -256,7 +256,7 @@ class Game extends React.Component{
                                         // console.log('sessionID =' + gestureGameroom.getSessionId())
                                         let reg = userName;
                                         console.log("display name:"+ reg + ",type:"+ typeof(reg));
-                                        const createRegister = { "request": "create", "room": myroom, "permanent": false,"is_private":false };
+                                        const createRegister = { "request": "create", "room": myroom, "permanent": false,"is_private":false, "publishers":6 };
                                         vroomHandle.send({ "message": createRegister });
                                         const joinRegister = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
                                         vroomHandle.send({ "message": joinRegister });
@@ -287,7 +287,7 @@ class Game extends React.Component{
                                                 myid = msg["id"];
                                                 mypvtid = msg["private_id"];
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
-                                                GlobalPeopleID.unshift(myid);
+                                                GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
                                                 // Any new feed to attach to?
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
@@ -301,7 +301,7 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
-                                                        GlobalPeopleID.unshift(id)
+                                                        GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
                                                     
@@ -324,7 +324,7 @@ class Game extends React.Component{
                                                         let audio = list[f]["audio_codec"];
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
-                                                        GlobalPeopleID.push(id)
+                                                        GlobalPeopleID.push({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
                                                     console.log('all people here');
@@ -470,6 +470,27 @@ class Game extends React.Component{
                     <h3 id="callername">{'Participant 3'}</h3>
                 </Col>
             </Row>
+            <Row>
+                <Col>
+                    <div id="videoremote4" className="container">
+                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                    </div>
+                    <h3 id="callername">{'Participant 1'}</h3>
+                </Col>
+                <Col>
+                    <div id="videoremote5" className="container">
+                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                    </div>
+                    <h3 id="callername">{'Participant 2'}</h3>
+                </Col>
+                <Col>
+                    <div id="videoremote6" className="container">
+                        <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                    </div>
+                    <h3 id="callername">{'Participant 3'}</h3>
+                </Col>
+            </Row>
+
         </Container>
     </div>
         )
