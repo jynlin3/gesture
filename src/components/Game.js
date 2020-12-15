@@ -26,11 +26,13 @@ let peopleNum = 0;
 let GlobalPeopleID = []
 let myIndexInRoom=0;
 let userName;
-let teamA = [0,1,2]
-let teamB = [3,4,5]
+let teamA = [0,2,4]
+let teamB = [1,3,5]
 let arr1 = [0,1]
 let arr2 = [2,3]
 let arr3 = [4,5]
+let arrayA = [null,null,null]
+let arrayB = [null,null,null]
 
 class Game extends React.Component{
 
@@ -309,7 +311,17 @@ class Game extends React.Component{
                                                         GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
-
+                                                    for(let i=0;i < 6;i++){
+                                                        if(GlobalPeopleID[i] == undefined){
+                                                            break
+                                                        }else{
+                                                            if(i%2 === 0){
+                                                                arrayA[Math.floor(i/2)] = GlobalPeopleID[i]
+                                                            }else{
+                                                                arrayB[Math.floor(i/2)] = GlobalPeopleID[i]
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             } else if (event === "destroyed") {
                                                 // The room has been destroyed
@@ -522,6 +534,10 @@ class Game extends React.Component{
     render(){
         console.log('all people here');
         console.log(GlobalPeopleID);
+        console.log('A team')
+        console.log(arrayA)
+        console.log('B team')
+        console.log(arrayB)
         this.state = {...this.props};
         // console.log(this.state)
         return(
