@@ -95,7 +95,8 @@ class Game extends React.Component{
             // Publish our stream
             vroomHandle.createOffer(
                 {
-                    media: { audioRecv: false, videoRecv: false, audioSend: useAudio, videoSend: true },	// Publishers are sendonly
+                    // media: { audioRecv: false, videoRecv: false, audioSend: useAudio, videoSend: true },	// Publishers are sendonly
+                    media: { audioRecv: true, videoRecv: true, audioSend: useAudio, videoSend: true },
                     success: function(jsep) {
                         Janus.debug("Got publisher SDP!");
                         Janus.debug(jsep);
@@ -290,6 +291,9 @@ class Game extends React.Component{
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
                                                 GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
+
+                                                // newRemoteFeed(myid, userName, )
+
                                                 // Any new feed to attach to?
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     let list = msg["publishers"];
@@ -390,15 +394,15 @@ class Game extends React.Component{
                                         console.log("my index in room : " + myIndexInRoom);
                                         const video = document.querySelector('video#localvideo');
                                         
-                                        // $('#videoremote'+myIndexInRoom).children('img').remove();
-                                        // // $('#videoremote'+myIndexInRoom).append('<video class="rounded centered" id="waitingvideo' + myIndexInRoom + '" width="100%" height="100%" />');
-                                        // $('#videoremote'+myIndexInRoom).append('<video class="rounded centered relative hide" id="remotevideo' + myIndexInRoom + '" width="100%" height="100%" autoplay playsinline/>');
-                                        // Janus.attachMediaStream($('#remotevideo'+myIndexInRoom).get(0), stream);
+                                        $('#videoremote'+myIndexInRoom).children('img').remove();
+                                        // $('#videoremote'+myIndexInRoom).append('<video class="rounded centered" id="waitingvideo' + myIndexInRoom + '" width="100%" height="100%" />');
+                                        $('#videoremote'+myIndexInRoom).append('<video class="rounded centered relative hide" id="remotevideo' + myIndexInRoom + '" width="100%" height="100%" autoplay playsinline/>');
+                                        Janus.attachMediaStream($('#remotevideo'+myIndexInRoom).get(0), stream);
                                         // const video = document.querySelector('videoremote'+myIndexInRoom);
-                                        // const videoTracks = stream.getVideoTracks();
-                                        // console.log(`Using video device: ${videoTracks[0].label}`);
-                                        // console.log('videoremote'+myIndexInRoom)
-                                        // console.log(video)
+                                        const videoTracks = stream.getVideoTracks();
+                                        console.log(`Using video device: ${videoTracks[0].label}`);
+                                        console.log('videoremote'+myIndexInRoom)
+                                        console.log(video)
                                         video.srcObject = stream;
                                     },
                                     onremotestream: function(){
