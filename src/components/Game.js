@@ -5,6 +5,8 @@ import offline from "../images/offline.jpg";
 import $ from 'jquery';
 import {Container, Row, Col} from 'react-bootstrap'
 import { findAllByTestId } from '@testing-library/react';
+import Countdown from 'react-countdown';
+import ReactDOM from 'react-dom';
 let server;
 let sessionID;
 
@@ -80,9 +82,6 @@ class Game extends React.Component{
         this.splitTeams(userIds);
         this.setRoles();
         this.scores = [0, 0];
-        for (let i of firstPlayer) console.log("first player", i);
-        for (let i of waiting) console.log("waiting", i);
-        for (let i of audience) console.log("audience", i);
     };
 
     update(e){
@@ -477,12 +476,11 @@ class Game extends React.Component{
 
     render(){
         if (firstPlayer.has(id)){
-  
             return (
                 <div className="App">
                     <h1>Please perform this topic only by body language:</h1> 
                     <Question></Question>
-                </div>
+                </div>                
             )
         }else if (waiting.has(id)){
             return (
@@ -501,17 +499,21 @@ class Game extends React.Component{
             )
         }
     }
+
+
 }
+
+
 
 window.onload = function(){
 
     let q = document.getElementById("question");
-    if (typeof q !== null && q !== 'undefined'){
+    if (q !== null && q !== 'undefined'){
         let idx = Math.floor(Math.random() * questions.length);
         q.innerHTML = questions[idx];
     }
     scores.values = document.getElementById("scores");
-    if (typeof scores !== null && scores !== 'undefined'){
+    if (scores !== null && scores !== 'undefined'){
         scores.innerHTML = this.scores;
     }
     
@@ -521,7 +523,7 @@ function Question(){
     return (
         <div className="App">
             <h2 id="question"></h2>
-            <h3>  </h3>
+            <Timer></Timer>
         </div>
     )
 }
@@ -530,6 +532,7 @@ function Competing(){
 
     return (
         <div className="App">
+            <Timer></Timer>
             <header className="App-header">
                 <p>
                     Current Score: <span id="scores">0 : 0</span>
@@ -562,6 +565,31 @@ function Waiting(){
             <h2>
                 Just wait
             </h2>
+        </div>
+    )
+}
+
+const Completionist = () => <span>You are good to go!</span>;
+
+
+// Renderer callback with condition
+const renderer = ({ seconds, completed }) => {
+  if (completed) {
+    // Render a completed state
+    return <Completionist />;
+  } else {
+    // Render a countdown
+    return <span>{seconds} seconds</span>;
+  }
+};
+
+function Timer(){
+    return (
+        <div>
+            <Countdown
+                date={Date.now() + 30000}
+                renderer={renderer}
+            />,
         </div>
     )
 }
