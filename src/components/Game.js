@@ -24,7 +24,7 @@ let myid = null;
 let mystream = null;
 let peopleNum = 0;
 let GlobalPeopleID = []
-
+let userName;
 
 class Game extends React.Component{
 
@@ -47,7 +47,7 @@ class Game extends React.Component{
             alert("room ID should be an integer" + {roomID})
         }
         if(this.state.name==="debo"){
-            let userName = prompt("Please enter your name")
+            userName = prompt("Please enter your name")
             while(userName === ""){
                 userName = prompt("Please enter your nam again, don't let it be empty")
             }
@@ -253,9 +253,11 @@ class Game extends React.Component{
                                         // // this.props.sessionID = gestureGameroom.getSessionId();
                                         // console.log('sessionID =' + gestureGameroom.getSessionId())
                                         let reg = Janus.randomString(12);
-                                        const register = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
-                                        // myusername = reg;
-                                        vroomHandle.send({ "message": register });
+                                        console.log("display name:"+ reg + ",type:"+ typeof(reg));
+                                        const createRegister = { "request": "create", "room": myroom, "permanent": false,"is_private":false };
+                                        vroomHandle.send({ "message": createRegister });
+                                        const joinRegister = { "request": "join", "room": myroom, "ptype": "publisher", "display": reg };
+                                        vroomHandle.send({ "message": joinRegister });
 
                                     },
                                     error : function(err){
