@@ -52,6 +52,8 @@ class Game extends React.Component{
                 userName = prompt("Please enter your nam again, don't let it be empty")
             }
             this.state.changeName(userName);
+        }else{
+            userName =this.state.name;
         }
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
@@ -252,7 +254,7 @@ class Game extends React.Component{
                                         // console.log(typeof(gestureGameroom.getSessionId()))
                                         // // this.props.sessionID = gestureGameroom.getSessionId();
                                         // console.log('sessionID =' + gestureGameroom.getSessionId())
-                                        let reg = Janus.randomString(12);
+                                        let reg = userName;
                                         console.log("display name:"+ reg + ",type:"+ typeof(reg));
                                         const createRegister = { "request": "create", "room": myroom, "permanent": false,"is_private":false };
                                         vroomHandle.send({ "message": createRegister });
