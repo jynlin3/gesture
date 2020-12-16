@@ -4,9 +4,11 @@ import {withRouter} from 'react-router-dom';
 import offline from "../images/offline.jpg";
 import $ from 'jquery';
 import {Container, Row, Col} from 'react-bootstrap'
+import Countdown from 'react-countdown';
+
+
 let server;
 let sessionID;
-
 try{
     server = require('./config.json').janusServer;
 }catch(err){
@@ -70,6 +72,7 @@ class Game extends React.Component{
             userName =this.state.name;
         }
         this.changeTeam = this.changeTeam.bind(this);
+        this.startGame = this.startGame.bind(this);
         // this.askServer = this.askServer.bind(this);
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
@@ -596,7 +599,73 @@ class Game extends React.Component{
             }
         }
     }
+    renderer = ({ seconds, completed }) => {
+        if (completed) {
+            // Render a completed state
+            // this.startGame();           
+            return <span> You are good to go! </span>;
+        } else {
+            // Render a countdown
+            return <span>{seconds} seconds</span>;
+        }
+    }
 
+    Timer(){
+        return (
+            <div>
+                <Countdown
+                    date={Date.now() + 5000}
+                    renderer={this.renderer}
+                />,
+            </div>
+        )
+    }
+    test(){
+        console.log('hi')
+    }
+    helper = () =>{
+        const Row =  document.createElement("Row")
+        const Col = document.createElement("Col")
+        const h1 = document.createElement('h4')
+        h1.setAttribute("id","timer")
+        const newContent = document.createTextNode("Hi there and greetings!");
+        Row.appendChild(Col);
+        Col.appendChild(h1);
+        h1.appendChild(newContent)
+        return Row;        
+        
+    }
+
+    anotherHelper = () =>{
+        const div = document.createElement('div')
+        const h1 = document.createElement('h4')
+        h1.setAttribute("id","timer")
+        const newContent = document.createTextNode("Hi there and greetings!");
+        div.appendChild(h1)
+        h1.appendChild(newContent)
+        return div;   
+    }
+    startGame = (e) =>{
+        console.log(e);
+        let a = document.getElementById("container");
+        console.log(a);
+        let tmp = this.anotherHelper();
+        // if(!document.getElementById(`timer`)){
+
+        // }
+        if(!document.getElementById('timer')){
+            document.getElementById("container").appendChild(tmp);
+        }
+        let i = 30;
+        while(i > 0){
+            setTimeout(this.test, 1000000)
+            i = i - 1;
+            console.log(document.getElementById('timer'))
+            document.getElementById('timer').innerHTML = i+'secondes'
+        }
+
+
+    }
 
     // askServer(){
     //     let listParticipantReq = {"request" : "listparticipants", "room" : myroom}
@@ -650,36 +719,36 @@ class Game extends React.Component{
         )
     }
 
-    teamtemplate(){
-        return(
-            <Container>
-                <Col>
-                    { teamA.map((value, index) => {
-                        return(                
-                        <Row>
-                            <div id={"videoremote"+(value+1)} className="container">
-                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                            </div>
-                            <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
-                        </Row>)
-                    })}
-                </Col>
-                <Col>
-                    { teamB.map((value, index) => {
-                        return(                
-                        <Row>
-                            <div id={"videoremote"+(value+1)} className="container">
-                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                            </div>
-                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name : 'participant'+{value}}</h3>
-                        </Row>)
-                    })}
+    // teamtemplate(){
+    //     return(
+    //         <Container>
+    //             <Col>
+    //                 { teamA.map((value, index) => {
+    //                     return(                
+    //                     <Row>
+    //                         <div id={"videoremote"+(value+1)} className="container">
+    //                             {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+    //                         </div>
+    //                         <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
+    //                     </Row>)
+    //                 })}
+    //             </Col>
+    //             <Col>
+    //                 { teamB.map((value, index) => {
+    //                     return(                
+    //                     <Row>
+    //                         <div id={"videoremote"+(value+1)} className="container">
+    //                             {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+    //                         </div>
+    //                         <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name : 'participant'+{value}}</h3>
+    //                     </Row>)
+    //                 })}
                     
-                </Col>
+    //             </Col>
                 
-            </Container>
-        )
-    }
+    //         </Container>
+    //     )
+    // }
     
 
 
@@ -693,23 +762,14 @@ class Game extends React.Component{
         console.log(arrayB)
         console.log($('#callername0'));
         console.log(userName);
-        var test = this;
-        // this.state.changePlayers(GlobalPeopleID)
-        // $('#callername1').innerHTML = {userName}
-        // $('#callername1').focus()
-        // this.state = {...this.props};
-        // console.log(this.state
+
 
         return(
         <div className="App">
         <header className="App-header">
         
-            {/* <div>
-                <button id="A"  onClick={this.changeTeam("A")} width="10%" margin-right="100px"> Join </button>
-                <button id="B"  onClick={this.changeTeam("B")} width="10%"> Join </button> 
-            </div> */}
 
-            <Container class="teams">
+            <Container class="teams" id="container">
                 <Row>
                     <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
                 </Row>
@@ -731,6 +791,11 @@ class Game extends React.Component{
                 <Row>
                     <Col><p id="Ateam3">""</p></Col>
                     <Col><p id="Bteam3">""</p></Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <button id="start"  onClick={this.startGame}> start </button> 
+                    </Col>
                 </Row>
             </Container>
             <div id="myvideo" className="container shorter">
