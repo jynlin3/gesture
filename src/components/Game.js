@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Janus from './Janus';
 import {withRouter} from 'react-router-dom';
 import offline from "../images/offline.jpg";
@@ -33,16 +33,22 @@ let arr2 = [2,3]
 let arr3 = [4,5]
 let arrayA = [null,null,null]
 let arrayB = [null,null,null]
+let res = null;
+let listReq = null;
+
 
 class Game extends React.Component{
+    
 
     constructor(props){
         super(props);
         // this.props = props;
         this.state = {...props};
+
         console.log('opaqueID' + opaqueId);
         console.log(this.props)
         console.log(this.state)
+        
         let url = window.location.href;
         let url_params = url.split('/');
         let roomID = url_params[url_params.length-1]
@@ -63,6 +69,8 @@ class Game extends React.Component{
         }else{
             userName =this.state.name;
         }
+        this.changeTeam = this.changeTeam.bind(this);
+        // this.askServer = this.askServer.bind(this);
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
 
@@ -77,21 +85,42 @@ class Game extends React.Component{
     componentDidMount(){
         // console.log("room ID = " + myroom)
         this.GameServerRoomStart();
-        console.log("how many people in the room?");
-        if(!feeds){
-            console.log('no people in the room')
-        }else{
-            for(let i = 0; i < feeds.length;i++){
-                console.log('feed '+ i + ' id :' + feeds[i].id)
-                console.log('feed '+ i + ' rfid :' + feeds[i].rfid)
-            }
-        }
+        // this.state.changePlayers({...GlobalPeopleID})
+        // console.log("how many people in the room?");
+        // if(!feeds){
+        //     console.log('no people in the room')
+        // }else{
+        //     for(let i = 0; i < feeds.length;i++){
+        //         console.log('feed '+ i + ' id :' + feeds[i].id)
+        //         console.log('feed '+ i + ' rfid :' + feeds[i].rfid)
+        //     }
+        // }
         // console.log(feeds);
-        
+        // this.forceUpdate();
         
         
     }
+
+    // componentDidUpdate(){
+    //     console.log('When will I come here')
+    //     // this.state.changePlayers(GlobalPeopleID)
+    //     // console.log(this.state.players)
+    // }
     
+    // setOrderderPeopleName(){
+    //     for(let i = 0;i < 6; i++){
+    //         this.state.orderedPeopleName[i] = GlobalPeopleID[i] ? GlobalPeopleID[i] : {id: null, name:"no participant"}
+    //     }
+    // }
+
+    updatePlayers(){
+        this.state.changePlayers(GlobalPeopleID);
+        while(this.state.players.length < 6){
+            this.state.players.push({id:null, id:"uknown"})
+        }
+        
+    }
+
     GameServerRoomStart(){
         function publishOwnFeed(useAudio) {
             // Publish our stream
@@ -163,6 +192,8 @@ class Game extends React.Component{
                             console.log('all people here')
                             console.log(GlobalPeopleID)
                             console.log(feeds)
+                            // this.state.changePlayers();
+                            // console.log(this.state);
                         }
                         if(jsep) {
                             Janus.debug("Handling SDP as well...", jsep);
@@ -245,12 +276,13 @@ class Game extends React.Component{
                 });
         }
 
-
+        console.log(this.state);
         Janus.init(
             {
                 debug: true,
                 dependencies: Janus.UseDefaultDependencies(),
                 callback: function(){
+                    
                     gestureGameroom = new Janus(
                         {
                             server: server,
@@ -289,6 +321,8 @@ class Game extends React.Component{
                                         // console.log(jsep)
                                         Janus.debug("Event: " + event);
                                         if (event != undefined && event != null) {
+                                            
+                                            
                                             if (event === "joined") {
                                                 // Publisher/manager created, negotiate WebRTC and attach to existing feeds, if any
                                                 myid = msg["id"];
@@ -296,7 +330,10 @@ class Game extends React.Component{
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
                                                 GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
-
+                                                // console.log($('#callername0'));
+                                                // console.log(userName);
+                                                // $('#callername1').innerHTML = {userName}
+                                                // $('#callername1').focus()
                                                 // newRemoteFeed(myid, userName, )
 
                                                 // Any new feed to attach to?
@@ -314,20 +351,17 @@ class Game extends React.Component{
                                                         GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
-                                                    for(let i=0;i < 6;i++){
-                                                        if(GlobalPeopleID[i] == undefined){
-                                                            break
-                                                        }else{
-                                                            if(i%2 === 0){
-                                                                arrayA[Math.floor(i/2)] = GlobalPeopleID[i]
-                                                            }else{
-                                                                arrayB[Math.floor(i/2)] = GlobalPeopleID[i]
-                                                            }
-                                                        }
-                                                    }
+
                                                     console.log('all people here');
                                                     console.log(GlobalPeopleID);
                                                     console.log(feeds)
+                                                    // this.state.changePlayers();
+                                                    // console.log(this.state);
+                                                    // this.state.changePlayers(GlobalPeopleID)
+                                                    
+                                                    
+                                                    
+                                                    
                                                 }
                                             } else if (event === "destroyed") {
                                                 // The room has been destroyed
@@ -336,6 +370,15 @@ class Game extends React.Component{
                                             } else if (event === "event") {
                                                 // Any new feed to attach to?
                                                 
+                                                if(!vroomHandle){
+                                                    listReq = {"request" : "listparticipants", "room" :myroom}
+                                                    res = vroomHandle.send({"message":listReq})
+                                                    console.log("list all participants")
+                                                    console.log(res);
+
+                                                }
+
+
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
                                                     console.log('new publishers!')
                                                     let list = msg["publishers"];
@@ -351,6 +394,11 @@ class Game extends React.Component{
                                                     console.log('all people here');
                                                     console.log(GlobalPeopleID);
                                                     console.log(feeds)
+
+
+
+                                                    // this.updatePlayers();
+                                                    // this.state.changePlayers();
                                                 } else if (msg["leaving"] !== undefined && msg["leaving"] !== null) {
                                                     var leaving = msg["leaving"];
                                                     Janus.log("Publisher left: " + leaving);
@@ -391,6 +439,9 @@ class Game extends React.Component{
                                                     console.log(GlobalPeopleID);
                                                     console.log(feeds)
 
+                                                    // this.state.changePlayers();
+                                                    // console.log(this.state);
+
                                                 } else if (msg["unpublished"] !== undefined && msg["unpublished"] !== null) {
                                                     // One of the publishers has unpublished?
                                                     if (msg["unpublished"] === 'ok') {
@@ -405,9 +456,12 @@ class Game extends React.Component{
                                                     }
                                                 }
                                                 // for(let i= 0; i<6;i++){
+                                                //     console.log("I wanna know the caller")
+                                                //     console.log(document.getElementById('#callername'+i).innerHTML)
                                                 //     document.getElementById('#callername'+i).innerHTML = GlobalPeopleID[i] ? GlobalPeopleID[i].name : "participant"+i;
                                                 //     document.getElementById('#callername'+i).focus();
                                                 // }
+                                                
                                             }
                                         }
                                         if (jsep !== undefined && jsep !== null) {
@@ -455,6 +509,14 @@ class Game extends React.Component{
                                         video.srcObject = stream;
                                         document.querySelector('video#localvideo').muted= true;
                                         document.querySelector('video#localvideo').style.visibility= "hidden";
+                                        // if(!$('#caller0')){
+                                        //     $('#videoremote0').append(<h3 id="caller0" >{userName}</h3>)
+                                        // }
+                                        // console.log($('#callername0'));
+                                        // console.log(userName);
+                                        // $('#callername0').innerHTML = {userName}
+                                        // $('#callername0').focus()
+                                        
                                     },
                                     onremotestream: function(){
                                         // second priority
@@ -489,13 +551,64 @@ class Game extends React.Component{
         );
     }
 
+    changeTeam = (e) => {
+        // console.log('hi')
+        // e.preventDefault();
+        let teamId = e.target.id;
+        console.log(e);
+        console.log(e.target)
+        console.log('are you in changeTeam')
+        console.log(teamId)
+        console.log(document.getElementById(teamId+'team'+1))
+        let inTeam = 0;
+        let tmp = "";
+        for(let i = 1; i < 4;i++){
+            console.log(teamId+'team'+i)
+            console.log(document.getElementById(teamId+'team'+i)) 
+            console.log('""')       
+            if(document.getElementById(teamId+'team'+i) == null){
+                break;
+            }
+            tmp = document.getElementById(teamId+'team'+i).innerHTML
+            console.log(tmp);
+            if(tmp === '""' || tmp == null){
+                document.getElementById(teamId+'team'+i).innerHTML = userName;
+                inTeam = inTeam +  1;
+                break;
+            }
+        }
+        console.log('inTeam : ' + inTeam)
+        if(inTeam == 0){
+            console.error("This Team is full")
+        }else{
+            if(teamId == "A"){
+                teamId = "B";
+            }else{
+                teamId = "A";
+            }
+            for(let i = 1; i < 4;i++){
+                tmp = document.getElementById(teamId+'team'+i).innerHTML
+                console.log(tmp)
+                if(tmp == userName){
+                    document.getElementById(teamId+'team'+i).innerHTML = '""';
+                    break;
+                }
+            }
+        }
+    }
+
+
+    // askServer(){
+    //     let listParticipantReq = {"request" : "listparticipants", "room" : myroom}
+    //     let resList = vroomHandle.send({"message": listParticipantReq})
+    //     Janus.debug(resList);
+    // }
+
     teamtemplate2(){
+        console.log(this.state)
         return (
         <Container>
-            <Row>
-                <Col>  <h1> Team A</h1> </Col>
-                <Col>  <h1> Team B</h1></Col>
-            </Row>
+
             <Row>
                 { arr1.map((value, index) => {
                     return(      
@@ -503,7 +616,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id={"callername"+value}>{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                            <h3 id={"callername"+value}> {this.state.players[value] ? this.state.players[value].name : "no name"} </h3>
                         </Col> 
                     )
                 })}
@@ -515,7 +628,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id={"callername"+value}>{GlobalPeopleID[value] ? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                            <h3 id={"callername"+value}> {this.state.players[value] ? this.state.players[value].name : "no name"}</h3>
                         </Col> 
                     )
                 })}
@@ -527,7 +640,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id={"callername"+value}>{GlobalPeopleID[value]? GlobalPeopleID[value].name   : 'participant'+{value}}</h3>
+                            <h3 id={"callername"+value}> {this.state.players[value] ? this.state.players[value].name : "no name"}</h3>
                         </Col> 
                     )
                 })}
@@ -569,6 +682,7 @@ class Game extends React.Component{
     }
     
 
+
     render(){
         console.log('all people here');
         console.log(GlobalPeopleID);
@@ -577,24 +691,59 @@ class Game extends React.Component{
         console.log(arrayA)
         console.log('B team')
         console.log(arrayB)
-        this.state = {...this.props};
-        // console.log(this.state)
+        console.log($('#callername0'));
+        console.log(userName);
+        var test = this;
+        // this.state.changePlayers(GlobalPeopleID)
+        // $('#callername1').innerHTML = {userName}
+        // $('#callername1').focus()
+        // this.state = {...this.props};
+        // console.log(this.state
+
         return(
         <div className="App">
         <header className="App-header">
-            <p>
-                <code>gesture</code> video room, Name = {this.state.name} , room = {this.state.room}
-            </p>
-            <div>
-                <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
-                </div>
-                {/*<div className="panel-body" id="videolocal"></div>*/}
+        
+            {/* <div>
+                <button id="A"  onClick={this.changeTeam("A")} width="10%" margin-right="100px"> Join </button>
+                <button id="B"  onClick={this.changeTeam("B")} width="10%"> Join </button> 
+            </div> */}
+
+            <Container class="teams">
+                <Row>
+                    <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
+                </Row>
+                
+                <Row>
+
+                    <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
+                    <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+
+                </Row>
+                <Row>
+                    <Col><p id="Ateam1">""</p></Col>
+                    <Col><p id="Bteam1">""</p></Col>
+                </Row>
+                <Row>
+                    <Col><p id="Ateam2">""</p></Col>
+                    <Col><p id="Bteam2">""</p></Col>
+                </Row>
+                <Row>
+                    <Col><p id="Ateam3">""</p></Col>
+                    <Col><p id="Bteam3">""</p></Col>
+                </Row>
+            </Container>
+            <div id="myvideo" className="container shorter">
+                <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
             </div>
         </header>
-        <h3 id="title"></h3>
-        {this.teamtemplate2()}
-    </div>
+            <p width="100%" height="100%">
+                <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
+            </p>
+                {this.teamtemplate2()}
+
+        </div>
+
         )
     }
 }
