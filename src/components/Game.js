@@ -518,6 +518,7 @@ class Game extends React.Component{
                                                     console.log('all people here');
                                                     console.log(GlobalPeopleID);
                                                     console.log(feeds)
+                                                    
                                                     let tmp = 0
                                                     for(let i=0; i< GlobalPeopleID.length; i++){
                                                         tmp = 0
@@ -750,73 +751,73 @@ class Game extends React.Component{
             }
         }
     }
-    renderer = ({ seconds, completed }) => {
-        if (completed) {
-            // Render a completed state
-            // this.startGame();           
-            return <span> You are good to go! </span>;
-        } else {
-            // Render a countdown
-            return <span>{seconds} seconds</span>;
-        }
-    }
+    // renderer = ({ seconds, completed }) => {
+    //     if (completed) {
+    //         // Render a completed state
+    //         // this.startGame();           
+    //         return <span> You are good to go! </span>;
+    //     } else {
+    //         // Render a countdown
+    //         return <span>{seconds} seconds</span>;
+    //     }
+    // }
 
-    Timer(){
-        return (
-            <div>
-                <Countdown
-                    date={Date.now() + 5000}
-                    renderer={this.renderer}
-                />,
-            </div>
-        )
-    }
-    test(){
-        console.log('hi')
-    }
-    helper = () =>{
-        const Row =  document.createElement("Row")
-        const Col = document.createElement("Col")
-        const h1 = document.createElement('h4')
-        h1.setAttribute("id","timer")
-        const newContent = document.createTextNode("Hi there and greetings!");
-        Row.appendChild(Col);
-        Col.appendChild(h1);
-        h1.appendChild(newContent)
-        return Row;        
+    // Timer(){
+    //     return (
+    //         <div>
+    //             <Countdown
+    //                 date={Date.now() + 5000}
+    //                 renderer={this.renderer}
+    //             />,
+    //         </div>
+    //     )
+    // }
+    // test(){
+    //     console.log('hi')
+    // }
+    // helper = () =>{
+    //     const Row =  document.createElement("Row")
+    //     const Col = document.createElement("Col")
+    //     const h1 = document.createElement('h4')
+    //     h1.setAttribute("id","timer")
+    //     const newContent = document.createTextNode("Hi there and greetings!");
+    //     Row.appendChild(Col);
+    //     Col.appendChild(h1);
+    //     h1.appendChild(newContent)
+    //     return Row;        
         
-    }
+    // }
 
-    anotherHelper = () =>{
-        const div = document.createElement('div')
-        const h1 = document.createElement('h4')
-        h1.setAttribute("id","timer")
-        const newContent = document.createTextNode("Hi there and greetings!");
-        div.appendChild(h1)
-        h1.appendChild(newContent)
-        return div;   
-    }
-    startGame = (e) =>{
-        console.log(e);
-        let a = document.getElementById("container");
-        console.log(a);
-        let tmp = this.anotherHelper();
-        // if(!document.getElementById(`timer`)){
+    // anotherHelper = () =>{
+    //     const div = document.createElement('div')
+    //     const h1 = document.createElement('h4')
+    //     h1.setAttribute("id","timer")
+    //     const newContent = document.createTextNode("Hi there and greetings!");
+    //     div.appendChild(h1)
+    //     h1.appendChild(newContent)
+    //     return div;   
+    // }
+    // startGame = (e) =>{
+    //     console.log(e);
+    //     let a = document.getElementById("container");
+    //     console.log(a);
+    //     let tmp = this.anotherHelper();
+    //     // if(!document.getElementById(`timer`)){
 
-        // }
-        if(!document.getElementById('timer')){
-            document.getElementById("container").appendChild(tmp);
-        }
-        let i = 30;
-        while(i > 0){
-            setTimeout(this.test, 1000000)
-            i = i - 1;
-            console.log(document.getElementById('timer'))
-            document.getElementById('timer').innerHTML = i+'secondes'
-        }
+    //     // }
+    //     if(!document.getElementById('timer')){
+    //         document.getElementById("container").appendChild(tmp);
+    //     }
+    //     let i = 30;
+    //     while(i > 0){
+    //         setTimeout(this.test, 1000000)
+    //         i = i - 1;
+    //         console.log(document.getElementById('timer'))
+    //         document.getElementById('timer').innerHTML = i+'secondes'
+    //     }
 
 
-    }
+    // }
 
     // askServer(){
     //     let listParticipantReq = {"request" : "listparticipants", "room" : myroom}
@@ -891,8 +892,8 @@ class Game extends React.Component{
 
 
     render(){
-
-        
+        console.log("all the people in blobal people ID")
+        console.log(GlobalPeopleID)
         if (GlobalPeopleID.length !== 6){
 
             return(
