@@ -4,11 +4,27 @@ import {withRouter} from 'react-router-dom';
 import offline from "../images/offline.jpg";
 import $ from 'jquery';
 import {Container, Row, Col} from 'react-bootstrap'
+import { findAllByTestId } from '@testing-library/react';
 import Countdown from 'react-countdown';
-
+import { connect } from 'react-redux';
 
 let server;
-let sessionID;
+/**
+ * have a set of ids arrays
+ * randomly divide into two parts
+ * 
+ * take one as the 
+ * 1st 30 sec to look the questions
+ * 1st->2nd : show gussture to the next one. 30 sec to perform
+ * 2nd->3rd : show guessture to the next one
+ * ...
+ * last: 30 sec to answer
+ * 
+ * input has the question
+ * output: right or wrong to Jyn
+ * 
+*/
+
 try{
     server = require('./config.json').janusServer;
 }catch(err){
@@ -24,7 +40,19 @@ let myusername = null;
 let feeds = [];
 let myid = null;
 let mystream = null;
-let peopleNum = 0;
+let userIds = [1, 2, 3, 4, 5, 6];
+let team1 = [];
+let team2 = [];
+let questions = ["Birthday", "JavaScript", "Sucks"];
+let team1Competing;
+let w;
+let scores = [];
+// idx, player id
+let player = {};
+// idx, player id
+let observer = {};
+let question;
+
 let GlobalPeopleID = []
 let myIndexInRoom=0;
 let userName;
@@ -38,19 +66,26 @@ let arrayB = [null,null,null]
 let res = null;
 let listReq = null;
 
+// before loading
+window.onload = function(){
+
+    let q = document.getElementById("question");
+    if (q !== null && q !== 'undefined'){
+        let idx = Math.floor(Math.random() * questions.length);
+        q.innerHTML = questions[idx];
+        question = questions[idx];
+    }
+    scores.values = document.getElementById("scores");
+    if (scores !== null && scores !== 'undefined'){
+        scores.innerHTML = this.scores;
+    }
+    
+}
 
 class Game extends React.Component{
-    
-
     constructor(props){
         super(props);
-        // this.props = props;
         this.state = {...props};
-
-        console.log('opaqueID' + opaqueId);
-        console.log(this.props)
-        console.log(this.state)
-        
         let url = window.location.href;
         let url_params = url.split('/');
         let roomID = url_params[url_params.length-1]
@@ -77,31 +112,108 @@ class Game extends React.Component{
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
 
-    };
+        w = new Set();
+        team1Competing = true;
+        this.state = {
+            waiting: new Set(),
+            player: {},
+            observer: {}, 
+            question: question
+        };
+        this.splitTeams(userIds);
+        this.scores = [0, 0];
+        this.state.id = 1;
+        this.state.startGame = 0
+        this.addWaiting = this.addWaiting.bind(this);
+        this.removeWaiting = this.removeWaiting.bind(this);
+        this.startGame = this.startGame.bind(this)
+    }
+    
+    addWaiting(id){
+        this.setState((waiting) => ({            
+            waiting: new Set(waiting).add(id)
+        }));
+    }
 
-
+    removeWaiting(id){
+        this.setState(({waiting}) =>{
+            const newWait = new Set(waiting);
+            newWait.delete(id);
+            return {
+                waiting : newWait
+            };
+        });
+    }
 
     // update(e){
     //     this.props.changeSessionID(e.target.value);
     // }
 
     componentDidMount(){
-        // console.log("room ID = " + myroom)
-        this.GameServerRoomStart();
-        // this.state.changePlayers({...GlobalPeopleID})
-        // console.log("how many people in the room?");
-        // if(!feeds){
-        //     console.log('no people in the room')
-        // }else{
-        //     for(let i = 0; i < feeds.length;i++){
-        //         console.log('feed '+ i + ' id :' + feeds[i].id)
-        //         console.log('feed '+ i + ' rfid :' + feeds[i].rfid)
-        //     }
-        // }
-        // console.log(feeds);
-        // this.forceUpdate();
-        
-        
+        this.GameServerRoomStart();        
+    }
+    
+    splitTeams(userIds){
+        let numMembers = userIds.length / 2;
+        team1 = userIds.slice(0, numMembers);
+        team2 = userIds.slice(numMembers);
+        if (team1Competing){
+            for (let i = 1; i < team1.length; ++i){
+                this.state.waiting.add(team1[i]);
+                // this.addWaiting(team1[i]);
+            }
+        }else{
+            for (let i = 1; i < team2.length; ++i){
+                // this.state.waiting.add(team2[i]);
+                this.addWaiting(team2[i]);
+            }
+        }
+    }
+
+    updateRole(){
+        // prevent starting round
+        let numMembers = userIds.length / 2;
+        if (this.state.waiting.size !== numMembers - 1){
+            let newIndex = this.state.player.index + 1;
+            let newPlayer = userIds[newIndex];
+            this.state.player = {
+                "id": newPlayer,
+                "index": newIndex
+            }
+            let newObserIdx = newIndex + 1;
+            this.state.observer = {
+                "id": userIds[newObserIdx],
+                "index": newObserIdx
+            } 
+            this.removeWaiting(userIds[newObserIdx])
+        }else{
+            // first round after waiting, update the player and observer
+            if (team1Competing){
+                this.state.player = {
+                    "id": team1[0],
+                    "index": 0
+                };
+                this.state.observer = {
+                    "id": team1[1],
+                    "index": 1
+                };
+            }else{
+                this.state.player = {
+                    "id": team2[0],
+                    "index": numMembers
+                };
+                this.state.observer = {
+                    "id": team2[1],
+                    "index": numMembers
+                };
+            }
+            this.removeWaiting(this.state.observer.id);
+        }
+
+    }
+
+    AutoRefresh( t ) {
+        setTimeout("location.reload(true);", t);
     }
 
     // componentDidUpdate(){
@@ -125,6 +237,8 @@ class Game extends React.Component{
     }
 
     GameServerRoomStart(){
+
+
         function publishOwnFeed(useAudio) {
             // Publish our stream
             vroomHandle.createOffer(
@@ -279,7 +393,7 @@ class Game extends React.Component{
                 });
         }
 
-        console.log(this.state);
+
         Janus.init(
             {
                 debug: true,
@@ -320,8 +434,6 @@ class Game extends React.Component{
                                         Janus.debug(" ::: Got a message (publisher) :::");
                                         Janus.debug(msg);
                                         let event = msg["videoroom"];
-                                        // console.log(msg)
-                                        // console.log(jsep)
                                         Janus.debug("Event: " + event);
                                         if (event != undefined && event != null) {
                                             
@@ -353,17 +465,7 @@ class Game extends React.Component{
                                                         console.log('somebody in the same room : ' + {id} )
                                                         GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
-                                                    }
-
-                                                    console.log('all people here');
-                                                    console.log(GlobalPeopleID);
-                                                    console.log(feeds)
-                                                    // this.state.changePlayers();
-                                                    // console.log(this.state);
-                                                    // this.state.changePlayers(GlobalPeopleID)
-                                                    
-                                                    
-                                                    
+                                                    }                                
                                                     
                                                 }
                                             } else if (event === "destroyed") {
@@ -376,9 +478,6 @@ class Game extends React.Component{
                                                 if(!vroomHandle){
                                                     listReq = {"request" : "listparticipants", "room" :myroom}
                                                     res = vroomHandle.send({"message":listReq})
-                                                    console.log("list all participants")
-                                                    console.log(res);
-
                                                 }
 
 
@@ -394,11 +493,6 @@ class Game extends React.Component{
                                                         GlobalPeopleID.push({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
-                                                    console.log('all people here');
-                                                    console.log(GlobalPeopleID);
-                                                    console.log(feeds)
-
-
 
                                                     // this.updatePlayers();
                                                     // this.state.changePlayers();
@@ -551,6 +645,68 @@ class Game extends React.Component{
                     );
                 }
             }
+        );        
+    }
+
+    // conditional rendering`
+    Question(){
+        return (
+            <div className="App">
+                <h2 id="question"></h2>
+                {this.Timer()}
+            </div>
+        )
+    }
+
+    Competing(){
+        return (
+            <div className="App">
+                {this.Timer()};
+                <header className="App-header">
+                    <p>
+                        Current Score: <span id="scores">0 : 0</span>
+                    </p>
+                </header>
+                <Container>
+                    <Row>
+                        <Col>
+                            <div id="myvideo" className="container">
+                                <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
+                            </div>
+                        </Col>
+                        <Col>
+                            <div id="videoremote1" className="container">
+                                <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img>
+                            </div>
+                            <h3 id="callername">{'Participant 1'}</h3>
+                        </Col>
+                    </Row>
+                </Container>
+            </div>
+        )
+    }
+
+    // Renderer callback with condition
+    renderer = ({ seconds, completed }) => {
+        if (completed) {
+            // Render a completed state
+            this.updateRole();
+            this.props.timeUp();
+            return <span> You are good to go! </span>;
+        } else {
+            // Render a countdown
+            return <span>{seconds} seconds</span>;
+        }
+    }
+
+    Timer(){
+        return (
+            <div>
+                <Countdown
+                    date={Date.now() + 5000}
+                    renderer={this.renderer}
+                />,
+            </div>
         );
     }
 
@@ -558,11 +714,6 @@ class Game extends React.Component{
         // console.log('hi')
         // e.preventDefault();
         let teamId = e.target.id;
-        console.log(e);
-        console.log(e.target)
-        console.log('are you in changeTeam')
-        console.log(teamId)
-        console.log(document.getElementById(teamId+'team'+1))
         let inTeam = 0;
         let tmp = "";
         for(let i = 1; i < 4;i++){
@@ -685,7 +836,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id={"callername"+value}> {this.state.players[value] ? this.state.players[value].name : "no name"} </h3>
+                            <h3 id={"callername"+value}> no name </h3>
                         </Col> 
                     )
                 })}
@@ -697,7 +848,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id={"callername"+value}> {this.state.players[value] ? this.state.players[value].name : "no name"}</h3>
+                            <h3 id={"callername"+value}> no name </h3>
                         </Col> 
                     )
                 })}
@@ -709,7 +860,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id={"callername"+value}> {this.state.players[value] ? this.state.players[value].name : "no name"}</h3>
+                            <h3 id={"callername"+value}> no name</h3>
                         </Col> 
                     )
                 })}
@@ -719,98 +870,143 @@ class Game extends React.Component{
         )
     }
 
-    // teamtemplate(){
-    //     return(
-    //         <Container>
-    //             <Col>
-    //                 { teamA.map((value, index) => {
-    //                     return(                
-    //                     <Row>
-    //                         <div id={"videoremote"+(value+1)} className="container">
-    //                             {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-    //                         </div>
-    //                         <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
-    //                     </Row>)
-    //                 })}
-    //             </Col>
-    //             <Col>
-    //                 { teamB.map((value, index) => {
-    //                     return(                
-    //                     <Row>
-    //                         <div id={"videoremote"+(value+1)} className="container">
-    //                             {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-    //                         </div>
-    //                         <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name : 'participant'+{value}}</h3>
-    //                     </Row>)
-    //                 })}
-                    
-    //             </Col>
-                
-    //         </Container>
-    //     )
-    // }
-    
+    waitForPeople(){
+        let idx = document.createElement("wait");
+        for (let i = 0; i < userIds.length; ++i){
+            if (userIds[i] === this.state.id){
+                if (Object.keys(this.state.player).length === 0){
+                    idx.innerHTML = i;
+                }else{
+                    idx.innerHTML = this.state.player.index - i;
+                }
+                break;
+            }
+        }
+    }
+
+    startGame =  () =>{ 
+        this.state.startGame = 1
+        console.log(this.state)
+    }
 
 
     render(){
-        console.log('all people here');
-        console.log(GlobalPeopleID);
-        console.log(feeds)
-        console.log('A team')
-        console.log(arrayA)
-        console.log('B team')
-        console.log(arrayB)
-        console.log($('#callername0'));
-        console.log(userName);
 
-
-        return(
-        <div className="App">
-        <header className="App-header">
         
+        if (GlobalPeopleID.length !== 6){
 
-            <Container class="teams" id="container">
-                <Row>
-                    <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
-                </Row>
-                
-                <Row>
+            return(
+                <div className="App">
+                <header className="App-header">
+                    <Container class="teams">
+                        <Row>
+                            <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
+                        </Row>
+                        
+                        <Row>
+        
+                            <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
+                            <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+        
+                        </Row>
+                        <Row>
+                            <Col><p id="Ateam1">""</p></Col>
+                            <Col><p id="Bteam1">""</p></Col>
+                        </Row>
+                        <Row>
+                            <Col><p id="Ateam2">""</p></Col>
+                            <Col><p id="Bteam2">""</p></Col>
+                        </Row>
+                        <Row>
+                            <Col><p id="Ateam3">""</p></Col>
+                            <Col><p id="Bteam3">""</p></Col>
+                        </Row>
 
-                    <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
-                    <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+                        <Row>
+                        <Col><button id="start"  onClick={this.startGame}> Start </button> </Col>
+                        </Row>
+                    </Container>
+                    <div id="myvideo" className="container shorter">
+                        <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
+                </header>
+                    <p width="100%" height="100%">
+                        <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
+                    </p>
+                        {this.teamtemplate2()}
+        
+                </div>
+            )
+        }else if (this.props.round === userIds.length / 2 + 1){
+            return(
+            <div>
+                <label for="answer"> Answer: </label>
+                <input type="text" id="answer" name="answer"></input>
+                <input type="submit" value="Submit"></input>
+                {this.Timer()}
 
-                </Row>
-                <Row>
-                    <Col><p id="Ateam1">""</p></Col>
-                    <Col><p id="Bteam1">""</p></Col>
-                </Row>
-                <Row>
-                    <Col><p id="Ateam2">""</p></Col>
-                    <Col><p id="Bteam2">""</p></Col>
-                </Row>
-                <Row>
-                    <Col><p id="Ateam3">""</p></Col>
-                    <Col><p id="Bteam3">""</p></Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <button id="start"  onClick={this.startGame}> start </button> 
-                    </Col>
-                </Row>
-            </Container>
-            <div id="myvideo" className="container shorter">
-                <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
             </div>
-        </header>
-            <p width="100%" height="100%">
-                <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
-            </p>
-                {this.teamtemplate2()}
+            )
+        }else if (this.state.waiting.has(this.state.id)){
+            this.waitForPeople();
+            return (
+                <div className="App">                    
+                    <h1> WAIT.....</h1>
+                    <h2> Wait for <span id="wait"> </span> people</h2>
+                    {this.Timer()}
+                </div>
+            )     
+        }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
+            return (
+                <div className="App">
+                    <h1>Please perform this topic only by body language:</h1> 
+                    {this.Question()}
+                    <button onClick={this.props.timeUp}> Give up?</button>
+                    <h3> {this.props.round} </h3>
+                    <h3> {this.props.question} </h3>
+                </div>                
+            )
+        }else if (this.state.player.id === this.state.id){
+            // be the publisher
+            return(
+                <div>
+                    <h1>player</h1>
+                    {this.Timer()}
+                </div>
+            )
+        }else if (this.state.observer.id === this.state.id){
+            // be the subscriber
+            return(
+                <div>
+                    <h1> observer</h1>
+                    {this.Timer()}
+                    <h3> {this.props.round} </h3>
+                    <h3> {this.props.question} </h3>
+                </div>
+            )
 
-        </div>
+        }else{
+            return (                
+                <div className="App">
+                    <h1>Watch those fools ;)</h1> 
+                    {this.Competing()}
 
-        )
+                </div>
+            )
+        }
     }
 }
 
-export default Game;
+const mapStateProps = state => {
+    return {
+        round: state.round,
+        question: state.question
+    }
+}
+
+const mapDispatchtoProps = dispatch => {
+    return {
+        timeUp: () => dispatch({type: "Next round"}),
+    };
+}
+export default connect(mapStateProps, mapDispatchtoProps)(Game);

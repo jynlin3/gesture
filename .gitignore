@@ -26,6 +26,9 @@ yarn-error.log*
 # configuration file
 config.json
 
+# lauch file
+launch.json
+
 .eslintcache
 
 .vscode/
