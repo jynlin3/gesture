@@ -107,6 +107,7 @@ class Game extends React.Component{
             userName =this.state.name;
         }
         this.changeTeam = this.changeTeam.bind(this);
+        this.startGame = this.startGame.bind(this);
         // this.askServer = this.askServer.bind(this);
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
@@ -122,9 +123,11 @@ class Game extends React.Component{
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
-        this.state.id = 1;
+        this.state.id = 2;
+        this.state.startGame = 0
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
+        this.startGame = this.startGame.bind(this)
     }
     
     addWaiting(id){
@@ -515,6 +518,7 @@ class Game extends React.Component{
                                                     console.log('all people here');
                                                     // console.log(GlobalPeopleID);
                                                     console.log(feeds)
+                                                    
                                                     let tmp = 0
                                                     for(let i=0; i< this.state.GlobalPeopleID.length; i++){
                                                         tmp = 0
@@ -700,7 +704,7 @@ class Game extends React.Component{
         return (
             <div>
                 <Countdown
-                    date={Date.now() + 10000}
+                    date={Date.now() + 5000}
                     renderer={this.renderer}
                 />,
             </div>
@@ -803,38 +807,6 @@ class Game extends React.Component{
         )
     }
 
-    teamtemplate(){
-        return(
-            <Container>
-                <Col>
-                    { teamA.map((value, index) => {
-                        return(                
-                        <Row>
-                            <div id={"videoremote"+(value+1)} className="container">
-                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                            </div>
-                            <h3 id="callername">{this.state.GlobalPeopleID[value].name ? this.state.GlobalPeopleID[value]  : 'participant'+{value}}</h3>
-                        </Row>)
-                    })}
-                </Col>
-                <Col>
-                    { teamB.map((value, index) => {
-                        return(                
-                        <Row>
-                            <div id={"videoremote"+(value+1)} className="container">
-                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                            </div>
-                            <h3 id="callername">{this.state.GlobalPeopleID[value] ? this.state.GlobalPeopleID[value].name : 'participant'+{value}}</h3>
-                        </Row>)
-                    })}
-                    
-                </Col>
-                
-            </Container>
-        )
-    }
-    
-
     waitForPeople(){
         let idx = document.createElement("wait");
         for (let i = 0; i < userIds.length; ++i){
@@ -870,54 +842,67 @@ class Game extends React.Component{
             // </div>
         )
     }
-    render(){
-        if (this.state.GlobalPeopleID.length !== 6){
 
-            return(
-                <div className="App">
-                <header className="App-header">
-                    <Container class="teams">
-                        <Row>
-                            <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
-                        </Row>
+    startGame =  () =>{ 
+        this.state.startGame = 1
+        // this.state.GlobalPeopleID = GlobalPeopleID;
+        console.log(this.state)
+    }
+
+    render(){
+        // if (this.state.startGame === 0){
+
+        //     return(
+        //         <div className="App">
+        //         <header className="App-header">
+        //             <Container class="teams">
+        //                 <Row>
+        //                     <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
+        //                 </Row>
                         
-                        <Row>
+        //                 <Row>
         
-                            <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
-                            <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+        //                     <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
+        //                     <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
         
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam1">""</p></Col>
-                            <Col><p id="Bteam1">""</p></Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam2">""</p></Col>
-                            <Col><p id="Bteam2">""</p></Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam3">""</p></Col>
-                            <Col><p id="Bteam3">""</p></Col>
-                        </Row>
-                    </Container>
-                    <div id="myvideo" className="container shorter">
-                        <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </header>
-                    <p width="100%" height="100%">
-                        <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
-                    </p>
-                        {this.teamtemplate2()}
+        //                 </Row>
+        //                 <Row>
+        //                     <Col><p id="Ateam1">""</p></Col>
+        //                     <Col><p id="Bteam1">""</p></Col>
+        //                 </Row>
+        //                 <Row>
+        //                     <Col><p id="Ateam2">""</p></Col>
+        //                     <Col><p id="Bteam2">""</p></Col>
+        //                 </Row>
+        //                 <Row>
+        //                     <Col><p id="Ateam3">""</p></Col>
+        //                     <Col><p id="Bteam3">""</p></Col>
+        //                 </Row>
+
+        //                 <Row>
+        //                 <Col><button id="start"  onClick={this.startGame}> Start </button> </Col>
+        //                 </Row>
+        //             </Container>
+        //             <div id="myvideo" className="container shorter">
+        //                 <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+        //         </header>
+        //             <p width="100%" height="100%">
+        //                 <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
+        //             </p>
+        //                 {this.teamtemplate2()}
         
-                </div>
-            )
-        }else if (this.props.round === userIds.length / 2 + 1){
+        //         </div>
+        //     )
+        // }else 
+        if (this.props.round === userIds.length / 2 + 1){
             return(
             <div>
                 <label for="answer"> Answer: </label>
                 <input type="text" id="answer" name="answer"></input>
                 <input type="submit" value="Submit"></input>
                 {this.Timer()}
+
             </div>
             )
         }else if (this.state.waiting.has(this.state.id)){
