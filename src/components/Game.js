@@ -53,7 +53,7 @@ let player = {};
 let observer = {};
 let question;
 
-let GlobalPeopleID = []
+// let GlobalPeopleID = []
 let myIndexInRoom=0;
 let userName;
 let teamA = [0,2,4]
@@ -117,7 +117,8 @@ class Game extends React.Component{
             waiting: new Set(),
             player: {},
             observer: {}, 
-            question: question
+            question: question,
+            GlobalPeopleID: []
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
@@ -226,7 +227,7 @@ class Game extends React.Component{
     // }
 
     updatePlayers(){
-        this.state.changePlayers(GlobalPeopleID);
+        this.state.changePlayers(this.state.GlobalPeopleID);
         while(this.state.players.length < 6){
             this.state.players.push({id:null, id:"uknown"})
         }
@@ -304,7 +305,7 @@ class Game extends React.Component{
                                 $('#remote'+remoteFeed.rfindex).removeClass('hide').html(remoteFeed.rfdisplay).show();
                             }
                             console.log('all people here')
-                            console.log(GlobalPeopleID)
+                            // console.log(GlobalPeopleID)
                             console.log(feeds)
                             // this.state.changePlayers();
                             // console.log(this.state);
@@ -390,7 +391,6 @@ class Game extends React.Component{
                 });
         }
 
-
         Janus.init(
             {
                 debug: true,
@@ -440,7 +440,7 @@ class Game extends React.Component{
                                                 myid = msg["id"];
                                                 mypvtid = msg["private_id"];
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
-                                                GlobalPeopleID.unshift({id:myid, name:userName});
+                                                this.state.GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
                                                 // console.log($('#callername0'));
                                                 // console.log(userName);
@@ -460,7 +460,7 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
-                                                        GlobalPeopleID.unshift({id:id, name:display})
+                                                        this.state.GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }                                
                                                     
@@ -487,7 +487,7 @@ class Game extends React.Component{
                                                         let audio = list[f]["audio_codec"];
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
-                                                        GlobalPeopleID.push({id:id, name:display})
+                                                        this.state.GlobalPeopleID.push({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
 
@@ -513,24 +513,24 @@ class Game extends React.Component{
                                                         remoteFeed.detach();
                                                     }
                                                     console.log('all people here');
-                                                    console.log(GlobalPeopleID);
+                                                    // console.log(GlobalPeopleID);
                                                     console.log(feeds)
                                                     let tmp = 0
-                                                    for(let i=0; i< GlobalPeopleID.length; i++){
+                                                    for(let i=0; i< this.state.GlobalPeopleID.length; i++){
                                                         tmp = 0
                                                         for(let f in feeds){
-                                                            if( (f!= null || f != undefined) && f.rfid == GlobalPeopleID[i].id){
+                                                            if( (f!= null || f != undefined) && f.rfid == this.state.GlobalPeopleID[i].id){
                                                                 tmp += 1;
                                                                 break;
                                                             }
                                                         }
-                                                        if(tmp == 0 && GlobalPeopleID[i].id != myid){
-                                                            GlobalPeopleID.splice(i,1);
+                                                        if(tmp == 0 && this.state.GlobalPeopleID[i].id != myid){
+                                                            this.state.GlobalPeopleID.splice(i,1);
                                                         }
                                                         
                                                     }
                                                     console.log('all people here');
-                                                    console.log(GlobalPeopleID);
+                                                    console.log(this.state.GlobalPeopleID);
                                                     console.log(feeds)
 
                                                     // this.state.changePlayers();
@@ -552,7 +552,7 @@ class Game extends React.Component{
                                                 // for(let i= 0; i<6;i++){
                                                 //     console.log("I wanna know the caller")
                                                 //     console.log(document.getElementById('#callername'+i).innerHTML)
-                                                //     document.getElementById('#callername'+i).innerHTML = GlobalPeopleID[i] ? GlobalPeopleID[i].name : "participant"+i;
+                                                //     document.getElementById('#callername'+i).innerHTML = this.state.GlobalPeopleID[i] ? this.state.GlobalPeopleID[i].name : "participant"+i;
                                                 //     document.getElementById('#callername'+i).focus();
                                                 // }
                                                 
@@ -700,7 +700,7 @@ class Game extends React.Component{
         return (
             <div>
                 <Countdown
-                    date={Date.now() + 5000}
+                    date={Date.now() + 10000}
                     renderer={this.renderer}
                 />,
             </div>
@@ -754,6 +754,8 @@ class Game extends React.Component{
     //     let resList = vroomHandle.send({"message": listParticipantReq})
     //     Janus.debug(resList);
     // }
+
+
 
     teamtemplate2(){
         console.log(this.state)
@@ -811,7 +813,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value+1)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id="callername">{GlobalPeopleID[value].name ? GlobalPeopleID[value]  : 'participant'+{value}}</h3>
+                            <h3 id="callername">{this.state.GlobalPeopleID[value].name ? this.state.GlobalPeopleID[value]  : 'participant'+{value}}</h3>
                         </Row>)
                     })}
                 </Col>
@@ -822,7 +824,7 @@ class Game extends React.Component{
                             <div id={"videoremote"+(value+1)} className="container">
                                 {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                             </div>
-                            <h3 id="callername">{GlobalPeopleID[value] ? GlobalPeopleID[value].name : 'participant'+{value}}</h3>
+                            <h3 id="callername">{this.state.GlobalPeopleID[value] ? this.state.GlobalPeopleID[value].name : 'participant'+{value}}</h3>
                         </Row>)
                     })}
                     
@@ -847,8 +849,29 @@ class Game extends React.Component{
         }
     }
 
+    Playing(){
+        return (
+            <Container>
+                <Row>
+                    { arr1.map((value, index) => {
+                        return(      
+                            <Col>         
+                                <div id={"videoremote"+(value)} className="container">
+                                    {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                                </div>
+                                <h3 id={"callername"+value}> no name </h3>
+                            </Col> 
+                        )
+                    })}
+                </Row>
+            </Container>
+            // <div id="myvideo" className="container shorter">
+            //     <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            // </div>
+        )
+    }
     render(){
-        if (GlobalPeopleID.length !== 6){
+        if (this.state.GlobalPeopleID.length !== 6){
 
             return(
                 <div className="App">
@@ -921,6 +944,7 @@ class Game extends React.Component{
             return(
                 <div>
                     <h1>player</h1>
+                    {this.Playing()}
                     {this.Timer()}
                 </div>
             )
