@@ -30,3 +30,6 @@ config.json
 launch.json
 
 .eslintcache
+
+.vscode/
+backend/

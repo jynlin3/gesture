@@ -7,18 +7,12 @@ class Entry extends React.Component {
     constructor(props) {
         super(props);
         // this.props = {...props};
+        this.state = {...props};
         console.log(this.props)
         this.handleJoinRoom = this.handleJoinRoom.bind(this);
         // this.props.changeRoom(this.randomInt(1000000,10000000000));
-        console.log(this.props);
+        console.log(this.state);
     }
-    
-    // componentDidMount(){
-    //     const {room} = this.props.match.params;
-    // }
-
-    // changeName = newName => this.setState({name: newName})
-    
 
     
     handleJoinRoom() {
@@ -28,21 +22,24 @@ class Entry extends React.Component {
     update(e){
         this.props.changeName(e.target.value);
     }
-    createRoom(e){
 
-        return (
-            <div>
-              <Link to="/game" className="btn btn-primary">hello</Link>
-           </div>
-         ); 
+
+    _handleKeyUp =(e) =>{
+        if(e.key==='Enter' || e.keyCode === 13){
+            console.log("Hi")
+            document.getElementById("CreateRoom").click();
+        }
     }
-
+    
+    
     render(){
+        this.state = {...this.props};
+        console.log(this.state)
         return(
             <form>
                 <label for="name"> Name: </label>
-                <input type="text" onChange={this.update.bind(this)} placeholder="Type your Name" />
-                <Link to={`/game/${this.props.room}`} className="btn btn-link">create new room</Link>
+                <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.update.bind(this)}  placeholder="Type your Name" />
+                <Link to={`/game/${this.props.room}`} name={this.state.name} room={this.state.room} id="CreateRoom" className="btn btn-link">create new room</Link>
             </form>
         )
     }
