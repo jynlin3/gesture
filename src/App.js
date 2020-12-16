@@ -4,6 +4,7 @@ import Room from './components/Room'; // remove room in the future
 import Entry from './components/Entry';
 import Home from './components/Home';
 import Game from './components/Game';
+import Word from './components/Word';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 class App extends React.Component {
@@ -42,6 +43,7 @@ class App extends React.Component {
                 <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room}
                                                 changeRoom={this.changeRoom}  changeName={this.changeName}
                                                 players={this.state.players} changePlayers={this.changePlayers}/>} />
+                <Route exact path="/word" exact component={Word} />
               </Switch>
             </React.Fragment>
           </div>
