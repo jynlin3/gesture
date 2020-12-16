@@ -6,11 +6,11 @@ import $ from 'jquery';
 import {Container, Row, Col} from 'react-bootstrap'
 import { findAllByTestId } from '@testing-library/react';
 import Countdown from 'react-countdown';
+import { connect } from 'react-redux';
+
 let server;
-
-
 /**
- * have a set of ids array
+ * have a set of ids arrays
  * randomly divide into two parts
  * 
  * take one as the 
@@ -23,7 +23,7 @@ let server;
  * input has the question
  * output: right or wrong to Jyn
  * 
- */
+*/
 
 
 try{
@@ -46,14 +46,30 @@ let team1 = [];
 let team2 = [];
 let questions = ["Birthday", "JavaScript", "Sucks"];
 let team1Competing;
-let waiting;
-let id = 2;
+let w;
 let scores = [];
 // idx, player id
 let player = {};
 // idx, player id
 let observer = {};
+let question;
 
+
+// before loading
+window.onload = function(){
+
+    let q = document.getElementById("question");
+    if (q !== null && q !== 'undefined'){
+        let idx = Math.floor(Math.random() * questions.length);
+        q.innerHTML = questions[idx];
+        question = questions[idx];
+    }
+    scores.values = document.getElementById("scores");
+    if (scores !== null && scores !== 'undefined'){
+        scores.innerHTML = this.scores;
+    }
+    
+}
 
 class Game extends React.Component{
     constructor(props){
@@ -72,12 +88,36 @@ class Game extends React.Component{
             alert("room ID should be an integer" + {roomID})
         }
 
-        waiting = new Set();
+        w = new Set();
         team1Competing = true;
+        this.state = {
+            waiting: new Set(),
+            player: {},
+            observer: {}, 
+            question: question
+        };
         this.splitTeams(userIds);
         this.scores = [0, 0];
-        // this.AutoRefresh(6000);
-    };
+        this.state.id = 1;
+        this.addWaiting = this.addWaiting.bind(this);
+        this.removeWaiting = this.removeWaiting.bind(this);
+    }
+    
+    addWaiting(id){
+        this.setState((waiting) => ({            
+            waiting: new Set(waiting).add(id)
+        }));
+    }
+
+    removeWaiting(id){
+        this.setState(({waiting}) =>{
+            const newWait = new Set(waiting);
+            newWait.delete(id);
+            return {
+                waiting : newWait
+            };
+        });
+    }
 
     update(e){
         this.props.changeSessionID(e.target.value);
@@ -93,11 +133,13 @@ class Game extends React.Component{
         team2 = userIds.slice(numMembers);
         if (team1Competing){
             for (let i = 1; i < team1.length; ++i){
-                waiting.add(team1[i]);
+                this.state.waiting.add(team1[i]);
+                // this.addWaiting(team1[i]);
             }
         }else{
             for (let i = 1; i < team2.length; ++i){
-                waiting.add(team2[i]);
+                // this.state.waiting.add(team2[i]);
+                this.addWaiting(team2[i]);
             }
         }
     }
@@ -105,50 +147,47 @@ class Game extends React.Component{
     updateRole(){
         // prevent starting round
         let numMembers = userIds.length / 2;
-        if (waiting.size !== numMembers - 1){
-            let newIndex = this.player.index + 1;
+        if (this.state.waiting.size !== numMembers - 1){
+            let newIndex = this.state.player.index + 1;
             let newPlayer = userIds[newIndex];
-            this.player = {
+            this.state.player = {
                 "id": newPlayer,
                 "index": newIndex
             }
-            let newObserId = newIndex + 1;
-            this.observer = {
-                "id": userIds[newObserId],
-                "index": newObserId
+            let newObserIdx = newIndex + 1;
+            this.state.observer = {
+                "id": userIds[newObserIdx],
+                "index": newObserIdx
             } 
-            waiting.delete(userIds[newObserId]);
+            this.removeWaiting(userIds[newObserIdx])
         }else{
             // first round after waiting, update the player and observer
             if (team1Competing){
-                this.player = {
+                this.state.player = {
                     "id": team1[0],
                     "index": 0
                 };
-                this.observer = {
+                this.state.observer = {
                     "id": team1[1],
                     "index": 1
                 };
             }else{
-                this.player = {
+                this.state.player = {
                     "id": team2[0],
                     "index": numMembers
                 };
-                this.observer = {
+                this.state.observer = {
                     "id": team2[1],
                     "index": numMembers
                 };
             }
+            this.removeWaiting(this.state.observer.id);
         }
+
     }
 
     AutoRefresh( t ) {
         setTimeout("location.reload(true);", t);
-    }
-
-    pickQuestion(){
-        questions = ["Birthday", "JavaScript", "GeekForGeeks"];
-
     }
     
     GameServerRoomStart(){
@@ -521,13 +560,12 @@ class Game extends React.Component{
         )
     }
 
-    // Completionist = () => <span>You are good to go!</span>;
     // Renderer callback with condition
     renderer = ({ seconds, completed }) => {
         if (completed) {
             // Render a completed state
             this.updateRole();
-            id++;            
+            this.props.timeUp();
             return <span> You are good to go! </span>;
         } else {
             // Render a countdown
@@ -546,58 +584,91 @@ class Game extends React.Component{
         )
     }
 
+    waitForPeople(){
+        let idx = document.createElement("wait");
+        for (let i = 0; i < userIds.length; ++i){
+            if (userIds[i] === this.state.id){
+                if (Object.keys(this.state.player).length === 0){
+                    idx.innerHTML = i;
+                }else{
+                    idx.innerHTML = this.state.player.index - i;
+                }
+                break;
+            }
+        }
+    }
+
+
     render(){
-        if ((userIds.length / 2) - 1 === waiting.size){
+        if (this.props.round === userIds.length / 2 + 1){
+            return(
+            <div>
+                <label for="answer"> Answer: </label>
+                <input type="text" id="answer" name="answer"></input>
+                <input type="submit" value="Submit"></input>
+                {this.Timer()}
+            </div>
+            )
+        }else if (this.state.waiting.has(this.state.id)){
+            this.waitForPeople();
+            return (
+                <div className="App">                    
+                    <h1> WAIT.....</h1>
+                    <h2> Wait for <span id="wait"> </span> people</h2>
+                    {this.Timer()}
+                </div>
+            )     
+        }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
             return (
                 <div className="App">
                     <h1>Please perform this topic only by body language:</h1> 
                     {this.Question()}
+                    <button onClick={this.props.timeUp}> Give up?</button>
+                    <h3> {this.props.round} </h3>
+                    <h3> {this.props.question} </h3>
                 </div>                
             )
-        }else if (player.id === id){
+        }else if (this.state.player.id === this.state.id){
             // be the publisher
-        }else if (observer.id === id){
-            // be the subscriber
-        }else if (waiting.has(id)){
-            let idx = document.getElementById("wait");
-            for (let i = 0; i < userIds.length; ++i){
-                if (userIds[i] === id){
-                    idx.innerHTML = (this.player.index - i);
-                    break;
-                }
-            }
-            return (
-                <div className="App">
-                    <h1> WAIT.....</h1>
-                    <h2> Wait for <span id="wait"></span> people</h2>
+            return(
+                <div>
+                    <h1>player</h1>
+                    {this.Timer()}
                 </div>
-            )     
+            )
+        }else if (this.state.observer.id === this.state.id){
+            // be the subscriber
+            return(
+                <div>
+                    <h1> observer</h1>
+                    {this.Timer()}
+                    <h3> {this.props.round} </h3>
+                    <h3> {this.props.question} </h3>
+                </div>
+            )
+
         }else{
-            return (
+            return (                
                 <div className="App">
-                    <h1>Guess what the topic is:</h1> 
+                    <h1>Watch those fools ;)</h1> 
                     {this.Competing()}
+
                 </div>
             )
         }
     }
 }
 
-
-
-window.onload = function(){
-
-    let q = document.getElementById("question");
-    if (q !== null && q !== 'undefined'){
-        let idx = Math.floor(Math.random() * questions.length);
-        q.innerHTML = questions[idx];
+const mapStateProps = state => {
+    return {
+        round: state.round,
+        question: state.question
     }
-    scores.values = document.getElementById("scores");
-    if (scores !== null && scores !== 'undefined'){
-        scores.innerHTML = this.scores;
-    }
-    
 }
 
-
-export default Game;
+const mapDispatchtoProps = dispatch => {
+    return {
+        timeUp: () => dispatch({type: "Next round"}),
+    };
+}
+export default connect(mapStateProps, mapDispatchtoProps)(Game);
