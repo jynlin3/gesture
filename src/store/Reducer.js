@@ -7,8 +7,8 @@ const reducer = (state = initialState, action) => {
     const newState = {...state};
 
     if (action.type === 'Next round'){  
-        newState.round = {...state.round} + 1;
-        newState.question = {...state.question};
+        newState.round = newState.round + 1;
+        newState.question = newState.question;
     }
     return newState;
 }
