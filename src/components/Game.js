@@ -136,7 +136,9 @@ class Game extends React.Component{
         this.state.startGame = 0
         this.state.allVideos = [1,1,1,1,1,1]
         this.state.generalVideoSwitch= this.generalVideoSwitch.bind(this)
-
+        // this.enableRemote0 = this.enableRemote0.bind(this)
+        this.teamtemplate2 = this.teamtemplate2.bind(this)
+        this.allCase = this.allCase.bind(this);
         // this.state.video1 = 1
         // this.switchVideo1 = this.switchVideo1.bind(this);
         // this.state.video0 = 1
@@ -226,9 +228,9 @@ class Game extends React.Component{
 
     }
 
-    AutoRefresh( t ) {
-        setTimeout("location.reload(true);", t);
-    }
+    // AutoRefresh( t ) {
+    //     setTimeout("location.reload(true);", t);
+    // }
 
     // componentDidUpdate(){
     //     console.log('When will I come here')
@@ -242,13 +244,13 @@ class Game extends React.Component{
     //     }
     // }
 
-    updatePlayers(){
-        this.state.changePlayers(this.state.GlobalPeopleID);
-        while(this.state.players.length < 6){
-            this.state.players.push({id:null, id:"uknown"})
-        }
+    // updatePlayers(){
+    //     this.state.changePlayers(this.state.GlobalPeopleID);
+    //     while(this.state.players.length < 6){
+    //         this.state.players.push({id:null, id:"uknown"})
+    //     }
         
-    }
+    // }
 
     GameServerRoomStart(){
 
@@ -775,8 +777,22 @@ class Game extends React.Component{
 
 
 
-    teamtemplate2(){
-        console.log(this.state)
+    teamtemplate2 = (e) => {
+        // console.log(this.state)
+        
+        // if(e.id != undefined || e.id != null){
+        //     if(e.event == "Playing"){
+        //         document.getElementById('videoremote' + e.id).muted = true
+        //         document.getElementById('videoremote' + e.id).style.visibility = ""
+        //     }
+        // }
+        for(let i=0;i<5;i++){
+            if(document.getElementById("videoremote"+i)){ 
+                document.getElementById("videoremote"+i).srcObject = mystream;
+            ;} 
+        }
+        
+
         return (
         <Container>
 
@@ -784,9 +800,7 @@ class Game extends React.Component{
                 { arr1.map((value, index) => {
                     return(      
                         <Col>         
-                            <div id={"videoremote"+(value)} className="container">
-                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                            </div>
+                            <div id={"videoremote"+(value)} className="container"> </div>
                             <h3 id={"callername"+value}> no name </h3>
                         </Col> 
                     )
@@ -796,9 +810,7 @@ class Game extends React.Component{
                 { arr2.map((value, index) => {
                     return(      
                         <Col>         
-                            <div id={"videoremote"+(value)} className="container">
-                                {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                            </div>
+                            <div id={"videoremote"+(value)} className="container">  </div>
                             <h3 id={"callername"+value}> no name </h3>
                         </Col> 
                     )
@@ -842,9 +854,7 @@ class Game extends React.Component{
                     { arr1.map((value, index) => {
                         return(      
                             <Col>         
-                                <div id={"videoremote"+(value)} className="container">
-                                    {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                                </div>
+                                <div id={"videoremote"+(value)} className="container"></div>
                                 <h3 id={"callername"+value}> no name </h3>
                             </Col> 
                         )
@@ -864,8 +874,15 @@ class Game extends React.Component{
         // this.state.round = 4;
         this.setState({round: 0})
         // this.render();
+        let a = console.log(document.getElementById('teams'))
+        console.log(a)
 
     }
+    
+    // enableRemote0 = () =>{
+    //     document.getElementById('remotevideo0').muted = true;
+    //     document.getElementById('remotevideo0').style.visibility= "visible";
+    // }
 
     // switchVideo1 = () =>{
     //     if(document.querySelector('video#remotevideo1') == null){
@@ -948,30 +965,114 @@ class Game extends React.Component{
     }
 
 
-    test = (props)=>{
-        console.log(props)
-        // return null;
+    // test = (props)=>{
+    //     console.log(props)
+    //     // return null;
+    //     let round = props.round;
+    //     let userIds = props.userIds;
+    //     console.log(" what is in the test")
+    //     console.log(this.props)
+    //     console.log(this.state)
+    //     // console.log(userIds)
+    //     if(round === userIds.length / 2 + 1){
+    //         return(
+    //             <div>
+    //                 <label for="answer"> Answer: </label>
+    //                 <input type="text" id="answer" name="answer"></input>
+    //                 <input type="submit" value="Submit"></input>
+    //                 {this.Timer()}
+    //             </div>
+    //         )
+    //     }
+    //     return(
+    //         <div>
+    //             <p> Nothing here</p>
+    //         </div>
+    //     );
+    // }
+
+    allCase = (props) =>{
+        let id = props.id;
         let round = props.round;
-        let userIds = props.userIds;
-        console.log(" what is in the test")
-        console.log(this.props)
-        console.log(this.state)
-        // console.log(userIds)
-        if(round === userIds.length / 2 + 1){
-            return(
-                <div>
-                    <label for="answer"> Answer: </label>
-                    <input type="text" id="answer" name="answer"></input>
-                    <input type="submit" value="Submit"></input>
-                    {this.Timer()}
-                </div>
-            )
-        }
-        return(
+        let observerId = props.observerId;
+        let waitingSet = props.waitingSet;
+        let playerId = props.playerId;
+        if(this.state.startGame === 0){
+            return(<p> Hi </p>);
+        }else if(round === userIds.length / 2 + 1){
+            
+            // $('Container.teams').hide();
+
+            const element =                 
             <div>
-                <p> Nothing here</p>
+            <label for="answer"> Answer: </label>
+            <input type="text" id="answer" name="answer"></input>
+            <input type="submit" value="Submit"></input>
+            {this.Timer()}
+            <div id="myvideo" className="container shorter">
+            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
             </div>
-        );
+            </div>;
+
+            return element;
+
+        }else if(waitingSet.has(id)){
+            this.waitForPeople();
+            const element =
+            <div className="App">                    
+            <h1> WAIT.....</h1>
+            <h2> Wait for <span id="wait"> </span> people</h2>
+            {this.Timer()}
+            <div id="myvideo" className="container shorter">
+            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            </div>
+            </div>;
+            return element;
+        }else if((userIds.length / 2) - 1 === waitingSet.size){
+            const element = <div className="App">
+            <h1>Please perform this topic only by body language:</h1> 
+            {this.Question()}
+            <button onClick={this.props.timeUp}> Give up?</button>
+            <div id="myvideo" className="container shorter">
+            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            </div>
+            </div> ;
+
+            return element;
+        }else if(playerId === id){
+            const element = <div>
+            <h1>player</h1>
+            {this.Playing()}
+            {this.Timer()}
+            <div id="myvideo" className="container shorter">
+            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            </div>
+            </div>;
+
+            return element;
+        }else if(observerId === id){
+            const element =  <div>
+            <h1> observer</h1>
+            {this.Timer()}
+            <h3> {this.props.round} </h3>
+            <h3> {this.props.question} </h3>
+            <div id="myvideo" className="container shorter">
+            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            </div>
+            </div>;
+            return element;
+        }else{
+            const element =                 
+            <div className="App">
+            <h1>Watch those fools ;)</h1> 
+            {this.Competing()}
+            <div id="myvideo" className="container shorter">
+            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            </div>
+            </div>;
+
+            return element;
+        }
     }
 
     render(){
@@ -980,12 +1081,13 @@ class Game extends React.Component{
         // }
 
         // let globalThis = this;
-        if(this.state.startGame === 0){
+        // if(this.state.startGame === 0){
         return(
             <div className="App">
             <header className="App-header" id="header">
-                <this.test  userIds={this.state.userIds} round={this.state.round}/>
-                <Container class="teams">
+                {/* <this.test  userIds={this.state.userIds} round={this.state.round}/> */}
+                <this.allCase id={this.state.id} round={this.state.round} observerId={this.state.observer.id} waitingSet={this.state.waiting} playerId={this.state.player.id}/>  
+                <Container class="teams" id='teams'>
                     <Row>
                         <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
                     </Row>
@@ -1031,90 +1133,126 @@ class Game extends React.Component{
     
             </div>
         )
-        }else
-        if (this.props.round === userIds.length / 2 + 1){
-            return (
-                <div>
-                    <label for="answer"> Answer: </label>
-                    <input type="text" id="answer" name="answer"></input>
-                    <input type="submit" value="Submit"></input>
-                    {this.Timer()}
-                    {this.teamtemplate2()}
-                    <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-    
-                </div>
-            )
-        }else if (this.state.waiting.has(this.state.id)){
-            this.waitForPeople();
-            return (
-                <div className="App">                    
-                    <h1> WAIT.....</h1>
-                    <h2> Wait for <span id="wait"> </span> people</h2>
-                    {this.Timer()}
-                    {this.teamtemplate2()}
-                    <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </div>
-            )     
-        }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
-            return (
-                <div className="App">
-                    <h1>Please perform this topic only by body language:</h1> 
-                    {this.Question()}
-                    <button onClick={this.props.timeUp}> Give up?</button>
-                    <h3> {this.props.round} </h3>
-                    <h3> {this.props.question} </h3>
-                    {this.teamtemplate2()}
-                    <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </div>                
-            )
-        }else if (this.state.player.id === this.state.id){
-            // be the publisher
-            return(
-                <div>
-                    <h1>player</h1>
-                    {this.Playing()}
-                    {this.Timer()}
-                    {this.teamtemplate2()}
-                    <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </div>
-            )
-        }else if (this.state.observer.id === this.state.id){
-            // be the subscriber
-            return(
-                <div>
-                    <h1> observer</h1>
-                    {this.Timer()}
-                    <h3> {this.props.round} </h3>
-                    <h3> {this.props.question} </h3>
-                    {this.teamtemplate2()}
-                    <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </div>
-            )
+        // }else
+        // if (this.props.round === userIds.length / 2 + 1){
+        //     // this one is submitting answer
 
-        }else{
-            return (                
-                <div className="App">
-                    <h1>Watch those fools ;)</h1> 
-                    {this.Competing()}
+        //     return (
+        //         <div>
+        //             <label for="answer"> Answer: </label>
+        //             <input type="text" id="answer" name="answer"></input>
+        //             <input type="submit" value="Submit"></input>
+        //             {this.Timer()}
+        //             {/* {this.teamtemplate2()} */}
                     
-                    {this.teamtemplate2()}
-                    <div id="myvideo" className="container shorter">
-                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
 
-                </div>
-            )
-        }
+        //             <div id="myvideo" className="container shorter">
+        //             <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+    
+        //         </div>
+        //     )
+        // }else if (this.state.waiting.has(this.state.id)){
+        //     // this.enableRemote0()
+
+        //     this.waitForPeople();
+        //     return (
+        //         <div className="App">                    
+        //             <h1> WAIT.....</h1>
+        //             <h2> Wait for <span id="wait"> </span> people</h2>
+        //             {this.Timer()}
+        //             {/* {this.teamtemplate2()} */}
+        //             {/* <globalThis.teamtemplate2 */}
+                    
+
+        //             <div id="myvideo" className="container shorter">
+        //             <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+        //         </div>
+        //     )    
+        // }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
+        //     //  reading article
+        //     return (
+        //         <div className="App">
+        //             <h1>Please perform this topic only by body language:</h1> 
+        //             {this.Question()}
+        //             <button onClick={this.props.timeUp}> Give up?</button>
+        //             {/* <h3> {this.props.round} </h3>
+        //             <h3> {this.props.question} </h3> */}
+        //             {/* {this.teamtemplate2()} */}
+
+        //             <div id="myvideo" className="container shorter">
+        //             <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+        //         </div>                
+        //     )
+        // }else if (this.state.player.id === this.state.id){
+        //     // this one is playing
+        //     //                  A0 A1 A2  B0 B1  B2
+        //     // GlobalPeopleID = [0, 1, 2, 3, 4,  5]
+        //     // self :    1
+        //     // player :  1 
+        //     // render :  1,2
+
+        //     // be the publisher
+        //     return(
+        //         <div>
+        //             <h1>player</h1>
+        //             {this.Playing()}
+        //             {this.Timer()}
+        //             {/* {this.teamtemplate2()} */}
+        //             <this.teamtemplate2 id={this.state.id} event={"Playing"} />
+        //             <div id="myvideo" className="container shorter">
+        //             <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+        //         </div>
+        //     )
+        // }else if (this.state.observer.id === this.state.id){
+        //     // be the subscriber
+        //                 // this one is playing
+        //     //                  A0 A1 A2  B0 B1  B2
+        //     // GlobalPeopleID = [0, 1, 2, 3, 4,  5]
+        //     // self(observer) : 1    
+        //     // player: 0 
+        //     // render :   0, 1 
+        //     return(
+        //         <div>
+        //             <h1> observer</h1>
+        //             {this.Timer()}
+        //             <h3> {this.props.round} </h3>
+        //             <h3> {this.props.question} </h3>
+        //             <this.teamtemplate2 id={this.state.id} event={"Observing"} />
+
+        //             <div id="myvideo" className="container shorter">
+        //             <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+        //         </div>
+        //     )
+
+        // }else{
+        //     // all audience
+        //     //                  A0 A1 A2  B0 B1  B2
+        //     // GlobalPeopleID = [0, 1, 2, 3, 4,  5]
+        //     // self : 2
+        //     // player :  0, 1
+        //     // render :  0, 1
+
+        //     // self:    1
+        //     // render:  
+        //     return (                
+        //         <div className="App">
+        //             <h1>Watch those fools ;)</h1> 
+        //             {this.Competing()}
+        //             {/* {this.teamtemplate2()} */}
+        //             <this.teamtemplate2 id={this.state.id} event={"Watching"} />
+
+        //             <div id="myvideo" className="container shorter">
+        //             <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+        //             </div>
+
+        //         </div>
+        //     )
+        // }
     }
 }
 
