@@ -28,5 +28,10 @@ yarn-error.log*
 config.json
 config_backend.json
 
+# lauch file
+launch.json
+
 .eslintcache
+
+.vscode/
 package-lock.json

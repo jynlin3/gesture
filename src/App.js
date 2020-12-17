@@ -10,12 +10,15 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 class App extends React.Component {
   
   changeName = newName => this.setState({ name: newName });
-  changeRoom = newRoom => this.setState({room: newRoom})
+  changeRoom = newRoom => this.setState( {room: newRoom})
+  changePlayers = newPlayers => this.setState({ players: newPlayers})
 
 
   constructor(props) {
     super(props);
-    this.state ={ name : "debo" , room: this.randomInt(1,8520) };
+    this.state ={ name : "debo" , room: this.randomInt(1,8520), 
+    players:[{id:null,name:'no participant'}, {id:null,name:'no participant'},{id:null,name:'no participant'},
+              {id:null,name:'no participant'}, {id:null,name:'no participant'},{id:null,name:'no participant'}] };
     // this.changeRoom(this.randomInt(1000000,10000000000));
     console.log("roomID in App:" + this.state.room);
   }
@@ -37,7 +40,9 @@ class App extends React.Component {
                 <Route exaxt path="/" exact component={Home} />
                 {/* <Route path="/room" component={Room} /> */}
                 <Route exact path="/entry" render={()=> <Entry name={this.state.name} room={this.state.room} changeName={this.changeName} changeRoom={this.changeRoom} />} />
-                <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room} changeRoom={this.changeRoom}  changeName={this.changeName}/>} />
+                <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room}
+                                                changeRoom={this.changeRoom}  changeName={this.changeName}
+                                                players={this.state.players} changePlayers={this.changePlayers}/>} />
                 <Route exact path="/word" exact component={Word} />
               </Switch>
             </React.Fragment>
