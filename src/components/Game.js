@@ -718,7 +718,7 @@ class Game extends React.Component{
         return (
             <div>
                 <Countdown
-                    date={Date.now() + 5000}
+                    date={Date.now() + 30000}
                     renderer={this.renderer}
                 />,
             </div>
@@ -862,7 +862,7 @@ class Game extends React.Component{
         this.state.GlobalPeopleID = GlobalPeopleID;
         console.log(this.state)
         // this.state.round = 4;
-        this.setState({round:4 })
+        this.setState({round: 0})
         // this.render();
 
     }
@@ -979,7 +979,7 @@ class Game extends React.Component{
         //     document.getElementById('header')
         // }
 
-        let globalThis = this;
+        // let globalThis = this;
         if(this.state.startGame === 0){
         return(
             <div className="App">
@@ -1033,15 +1033,19 @@ class Game extends React.Component{
         )
         }else
         if (this.props.round === userIds.length / 2 + 1){
-            const element = 
-            <div>
-                <label for="answer"> Answer: </label>
-                <input type="text" id="answer" name="answer"></input>
-                <input type="submit" value="Submit"></input>
-                {this.Timer()}
-            </div>;
-            
-            ReactDOM.render(element, document.getElementById('root'))
+            return (
+                <div>
+                    <label for="answer"> Answer: </label>
+                    <input type="text" id="answer" name="answer"></input>
+                    <input type="submit" value="Submit"></input>
+                    {this.Timer()}
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
+    
+                </div>
+            )
         }else if (this.state.waiting.has(this.state.id)){
             this.waitForPeople();
             return (
@@ -1049,6 +1053,10 @@ class Game extends React.Component{
                     <h1> WAIT.....</h1>
                     <h2> Wait for <span id="wait"> </span> people</h2>
                     {this.Timer()}
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>
             )     
         }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
@@ -1059,6 +1067,10 @@ class Game extends React.Component{
                     <button onClick={this.props.timeUp}> Give up?</button>
                     <h3> {this.props.round} </h3>
                     <h3> {this.props.question} </h3>
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>                
             )
         }else if (this.state.player.id === this.state.id){
@@ -1068,6 +1080,10 @@ class Game extends React.Component{
                     <h1>player</h1>
                     {this.Playing()}
                     {this.Timer()}
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>
             )
         }else if (this.state.observer.id === this.state.id){
@@ -1078,6 +1094,10 @@ class Game extends React.Component{
                     {this.Timer()}
                     <h3> {this.props.round} </h3>
                     <h3> {this.props.question} </h3>
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>
             )
 
@@ -1086,6 +1106,11 @@ class Game extends React.Component{
                 <div className="App">
                     <h1>Watch those fools ;)</h1> 
                     {this.Competing()}
+                    
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
 
                 </div>
             )
