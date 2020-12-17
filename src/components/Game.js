@@ -161,7 +161,7 @@ class Game extends React.Component {
       observer: {},
       question: question,
       GlobalPeopleID: [],
-      round: 0,
+      round: 1,
       userIds: [1, 2, 3, 4, 5, 6],
       score: [0, 0],
       isCorrect: false,
@@ -240,10 +240,6 @@ class Game extends React.Component {
     }
   }
 
-  hasWaiter(waiter) {
-    return Object.keys(waiter).length;
-  }
-
   updateRole() {
     console.log("update role");
     let numMembers = userIds.length / 2;
@@ -264,6 +260,7 @@ class Game extends React.Component {
           index: newObserIdx,
         },
         waiting: new Set(),
+        round: this.state.round + 1,
       });
     } else {
       // first round after waiting, update the player and observer
@@ -280,6 +277,7 @@ class Game extends React.Component {
             index: 1,
           },
           waiting: newWait,
+          round: this.state.round + 1,
         });
       } else {
         newWait.delete(team2[1]);
@@ -293,6 +291,7 @@ class Game extends React.Component {
             index: 1,
           },
           waiting: newWait,
+          round: this.state.round + 1,
         });
       }
     }
@@ -1247,6 +1246,7 @@ class Game extends React.Component {
 
   render() {
     const currentId = this.state.id;
+    console.log("round: ", this.state.round);
     console.log("Current id: ", currentId);
     console.log("player: ", this.state.player);
     console.log("observer: ", this.state.observer);
@@ -1457,8 +1457,7 @@ class Game extends React.Component {
     } else if (
       this.state.player.id !== currentId &&
       this.state.observer.id !== currentId &&
-      !this.state.waiting.has(currentId) &&
-      this.state.observer.index < userIds / 2
+      this.state.observer.index < team1.length
     ) {
       return (
         <div className="App">
@@ -1467,6 +1466,13 @@ class Game extends React.Component {
         </div>
       );
       // answering
+    } else if (this.state.observer.index >= team1.length) {
+      return (
+        <div>
+          <h1>Waiting for the last person to answer the question!</h1>
+          {this.answerTimer()}
+        </div>
+      );
     } else {
       return (
         <div>
