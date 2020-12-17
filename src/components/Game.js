@@ -55,7 +55,7 @@ let player = {};
 let observer = {};
 let question;
 
-// let GlobalPeopleID = []
+let GlobalPeopleID = []
 let myIndexInRoom=0;
 let userName;
 let teamA = [0,2,4]
@@ -125,19 +125,25 @@ class Game extends React.Component{
             question: question,
             GlobalPeopleID: [],
             score: [0, 0],
-            isCorrect: false
+            isCorrect: false,
+            round: 1
         };
         this.splitTeams(userIds);
-        this.scores = [0, 0];
         this.state.id = 1;
         this.state.startGame = 0
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
         this.startGame = this.startGame.bind(this)
+        this.state.allVideos = [1,1,1,1,1,1]
+        this.state.generalVideoSwitch= this.generalVideoSwitch.bind(this)
+        this.state.video1 = 1
+        this.switchVideo1 = this.switchVideo1.bind(this);
+        this.state.video0 = 1
+        this.switchVideo0 = this.switchVideo0.bind(this);
     }
     
     pickQuestion(){
-        axios.get("/getRandomWord").then(state =>{
+        axios.get("https://www.seattle8520.xyz/api/getRandomWord").then(state =>{
             console.log(state);
             this.setState({
                 // the generated word is stored in `res.data.item`
@@ -145,6 +151,7 @@ class Game extends React.Component{
             });
         });
     }
+
     addWaiting(id){
         this.setState((waiting) => ({            
             waiting: new Set(waiting).add(id)
@@ -191,7 +198,7 @@ class Game extends React.Component{
         let numMembers = userIds.length / 2;
         this.removeWaiting(this.state.observer.id);
         if (this.state.waiting.size !== numMembers - 1){
-            let newIndex = this.state.player.index + 1;
+            let newIndex = this.state.observer.index + 1;
             let newPlayer = userIds[newIndex];
             this.state.player = {
                 "id": newPlayer,
@@ -228,22 +235,6 @@ class Game extends React.Component{
         }
 
     }
-
-    AutoRefresh( t ) {
-        setTimeout("location.reload(true);", t);
-    }
-
-    // componentDidUpdate(){
-    //     console.log('When will I come here')
-    //     // this.state.changePlayers(GlobalPeopleID)
-    //     // console.log(this.state.players)
-    // }
-    
-    // setOrderderPeopleName(){
-    //     for(let i = 0;i < 6; i++){
-    //         this.state.orderedPeopleName[i] = GlobalPeopleID[i] ? GlobalPeopleID[i] : {id: null, name:"no participant"}
-    //     }
-    // }
 
     updatePlayers(){
         this.state.changePlayers(this.state.GlobalPeopleID);
@@ -326,6 +317,7 @@ class Game extends React.Component{
                             console.log('all people here')
                             // console.log(GlobalPeopleID)
                             console.log(feeds)
+                            // console.log(this.state)
                             // this.state.changePlayers();
                             // console.log(this.state);
                         }
@@ -459,7 +451,7 @@ class Game extends React.Component{
                                                 myid = msg["id"];
                                                 mypvtid = msg["private_id"];
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
-                                                this.state.GlobalPeopleID.unshift({id:myid, name:userName});
+                                                GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
                                                 // console.log($('#callername0'));
                                                 // console.log(userName);
@@ -479,7 +471,7 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
-                                                        this.state.GlobalPeopleID.unshift({id:id, name:display})
+                                                        GlobalPeopleID.unshift({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }                                
                                                     
@@ -506,7 +498,7 @@ class Game extends React.Component{
                                                         let audio = list[f]["audio_codec"];
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
-                                                        this.state.GlobalPeopleID.push({id:id, name:display})
+                                                        GlobalPeopleID.push({id:id, name:display})
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
 
@@ -536,21 +528,21 @@ class Game extends React.Component{
                                                     console.log(feeds)
                                                     
                                                     let tmp = 0
-                                                    for(let i=0; i< this.state.GlobalPeopleID.length; i++){
+                                                    for(let i=0; i< GlobalPeopleID.length; i++){
                                                         tmp = 0
                                                         for(let f in feeds){
-                                                            if( (f!= null || f != undefined) && f.rfid == this.state.GlobalPeopleID[i].id){
+                                                            if( (f!= null || f != undefined) && f.rfid == GlobalPeopleID[i].id){
                                                                 tmp += 1;
                                                                 break;
                                                             }
                                                         }
-                                                        if(tmp == 0 && this.state.GlobalPeopleID[i].id != myid){
-                                                            this.state.GlobalPeopleID.splice(i,1);
+                                                        if(tmp == 0 && GlobalPeopleID[i].id != myid){
+                                                            GlobalPeopleID.splice(i,1);
                                                         }
                                                         
                                                     }
                                                     console.log('all people here');
-                                                    console.log(this.state.GlobalPeopleID);
+                                                    console.log(GlobalPeopleID);
                                                     console.log(feeds)
 
                                                     // this.state.changePlayers();
@@ -708,7 +700,7 @@ class Game extends React.Component{
         if (completed) {
             // Render a completed state
             this.updateRole();
-            this.props.timeUp();
+            // this.props.timeUp();
             return <span> You are good to go! </span>;
         } else {
             // Render a countdown
@@ -767,13 +759,6 @@ class Game extends React.Component{
             }
         }
     }
-
-
-    // askServer(){
-    //     let listParticipantReq = {"request" : "listparticipants", "room" : myroom}
-    //     let resList = vroomHandle.send({"message": listParticipantReq})
-    //     Janus.debug(resList);
-    // }
 
     teamtemplate2(){
         console.log(this.state)
@@ -858,13 +843,16 @@ class Game extends React.Component{
     }
 
     startGame =  () =>{ 
-        this.state.startGame = 1
+        // this.state.startGame = 1
         // this.state.GlobalPeopleID = GlobalPeopleID;
-        console.log(this.state)
+        this.setState({
+            startGame: 1,
+            GlobalPeopleID: GlobalPeopleID
+        })
     }
 
     storeAnswer(word, correct){
-        axios.put(`/updateCorrectRate?word=${word}&correct=${correct}`).then(state=>{
+        axios.put(`https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`).then(state=>{
             this.setState({
                 update_result: state.data.message
             });
@@ -884,6 +872,85 @@ class Game extends React.Component{
             // Render a countdown
             return <span>{seconds} seconds</span>
         }
+    }
+    switchVideo1 = () =>{
+        if(document.querySelector('video#remotevideo1') == null){
+            alert("No such video1 item yet")
+            return;
+        }
+        if(this.state.video1 == 1){
+            document.querySelector('video#remotevideo1').muted= true;
+            document.querySelector('video#remotevideo1').style.visibility= "hidden";
+            this.state.video1 = 0
+        }else{
+            document.querySelector('video#remotevideo1').muted= false;
+            document.querySelector('video#remotevideo1').style.visibility= "visible";
+            this.state.video1 = 1
+        }
+    }
+
+    switchVideo0 = () =>{
+        if(document.querySelector('video#remotevideo0') == null){
+            alert("No such video0 item yet")
+            return;
+        }
+        if(this.state.video0 == 1){
+            document.querySelector('video#remotevideo0').muted= true;
+            document.querySelector('video#remotevideo0').style.visibility= "hidden";
+            this.state.video0 = 0
+        }else{
+            document.querySelector('video#remotevideo0').muted= true;
+            document.querySelector('video#remotevideo0').style.visibility= "visible";
+            this.state.video0 = 1
+        }
+    }
+
+    generalVideoSwitch = (e) =>{
+        let id;
+        if (!Number.isInteger(e)){
+            id = e.target.id
+        }else{
+            id = e;
+            alert("I got you");
+            return;
+        }
+        console.log(e)
+        if(document.querySelector('video#remotevideo'+id) == null){
+            alert("No such video "+id + " item yet")
+            return;
+        }
+        if(id == 0){
+            if(this.state.allVideos[id] == 1){
+                document.querySelector('video#remotevideo'+id).muted= true;
+                document.querySelector('video#remotevideo'+id).style.visibility= "hidden";
+                document.querySelector('video#remotevideo'+id).style.width= "5%";
+                document.querySelector('video#remotevideo'+id).style.height= "5%"
+
+                this.state.allVideos[id] = 0
+            }else{
+                document.querySelector('video#remotevideo'+id).muted= true;
+                document.querySelector('video#remotevideo'+id).style.visibility= "visible";
+                document.querySelector('video#remotevideo'+id).style.width= "100%";
+                document.querySelector('video#remotevideo'+id).style.height= "100%"
+                this.state.allVideos[id] = 1
+            }
+            return;
+        }
+
+        if(this.state.allVideos[id] == 1){
+            document.querySelector('video#remotevideo'+id).muted= true;
+            document.querySelector('video#remotevideo'+id).style.visibility= "hidden";
+            document.querySelector('video#remotevideo'+id).style.width= "5%";
+            document.querySelector('video#remotevideo'+id).style.height= "5%"
+            this.state.allVideos[id] = 0
+        }else{
+            document.querySelector('video#remotevideo'+id).muted= false;
+            document.querySelector('video#remotevideo'+id).style.visibility= "visible";
+            document.querySelector('video#remotevideo'+id).style.width= "100%";
+            document.querySelector('video#remotevideo'+id).style.height= "100%"
+            this.state.allVideos[id] = 1
+        }
+
     }
 
     answerTimer(){
@@ -919,8 +986,60 @@ class Game extends React.Component{
     }
 
     render(){
+
         const currentId = this.state.id;
-        if (this.state.waiting.has(currentId)){
+        // game setting
+        if (this.state.startGame === 0){
+            return(
+                <div className="App">
+                    <header className="App-header">
+                        <Container class="teams">
+                            <Row>
+                                <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
+                            </Row>
+                            <Row>
+                                <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
+                                <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+                            </Row>
+                            <Row>
+                                <Col><p id="Ateam1">""</p></Col>
+                                <Col><p id="Bteam1">""</p></Col>
+                            </Row>
+                            <Row>
+                                <Col><p id="Ateam2">""</p></Col>
+                                <Col><p id="Bteam2">""</p></Col>
+                            </Row>
+                            <Row>
+                                <Col><p id="Ateam3">""</p></Col>
+                                <Col><p id="Bteam3">""</p></Col>
+                            </Row>
+
+                            <Row>
+                                <Col><button id="start"  onClick={this.startGame}> Start </button> </Col>
+                            </Row>
+                            <Row>
+                                <Col><button id="0" onClick={this.generalVideoSwitch}> switch video 0</button></Col>
+                                <Col><button id="1" onClick={this.generalVideoSwitch}> switch video 1</button></Col>
+                                <Col><button id="2" onClick={this.generalVideoSwitch}> switch video 2</button></Col>
+                                <Col><button id="3" onClick={this.generalVideoSwitch}> switch video 3</button></Col>
+                                <Col><button id="4" onClick={this.generalVideoSwitch}> switch video 4</button></Col>
+                                <Col><button id="5" onClick={this.generalVideoSwitch}> switch video 5</button></Col>
+                            </Row>
+                        </Container>
+                        <div id="myvideo" className="container shorter">
+                            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                        </div>
+                    </header>
+                    <div>
+                        <p width="100%" height="100%">
+                            <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
+                            {this.teamtemplate2()}
+                        </p>
+                    </div>        
+                </div>
+            )
+        // waiting
+        }else if (this.state.waiting.has(currentId)){
             this.waitForPeople();
             return (
                 <div className="App">                    
@@ -928,15 +1047,16 @@ class Game extends React.Component{
                     <h2> Wait for <span id="wait"> </span> people</h2>
                     {this.Timer()}
                 </div>
-            )     
+            ) 
+        // starting round
         }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
             return (
                 <div className="App">
                     <h1>Please perform this topic only by body language:</h1> 
                     {this.Question()}
-                    <button onClick={this.props.timeUp}> Give up?</button>
                 </div>                
             )
+        // playing
         }else if (this.state.player.id === currentId){
             // be the publisher
             return(
@@ -946,6 +1066,7 @@ class Game extends React.Component{
                     {this.Timer()}
                 </div>
             )
+        // observing
         }else if (this.state.observer.id === currentId){
             // be the subscriber
             return(
@@ -957,13 +1078,15 @@ class Game extends React.Component{
                 </div>
             )
 
-        } else if(this.state.player.id !== currentId && this.state.observer.id !== currentId && !this.state.waiting.has(currentId) && this.state.observer.index < userIds.length / 2) {
+        // audience
+        }else if(this.state.player.id !== currentId && this.state.observer.id !== currentId && !this.state.waiting.has(currentId) && this.state.observer.index < userIds / 2) {
             return (                
                 <div className="App">
                     <h1>Guess what?</h1> 
                     {this.Competing()}
                 </div>
             )
+        // answering 
         }else {
             return(
                 <div>
