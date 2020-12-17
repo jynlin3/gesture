@@ -34,5 +34,4 @@ launch.json
 .eslintcache
 
 .vscode/
-backend/
 package-lock.json
