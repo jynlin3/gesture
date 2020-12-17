@@ -1244,8 +1244,26 @@ class Game extends React.Component {
     event.preventDefault();
   }
 
+  lookForidx(id) {
+    let idx;
+    for (let i = 0; i < team1.length; ++i) {
+      if (team1[i] === id) {
+        idx = i;
+        break;
+      }
+    }
+
+    for (let i = 0; i < team2.length; ++i) {
+      if (team2[i] === id) {
+        idx = i;
+        break;
+      }
+    }
+    return idx;
+  }
   render() {
     const currentId = this.state.id;
+    const idx = this.lookForidx(currentId);
     console.log("round: ", this.state.round);
     console.log("Current id: ", currentId);
     console.log("player: ", this.state.player);
@@ -1466,7 +1484,10 @@ class Game extends React.Component {
         </div>
       );
       // answering
-    } else if (this.state.observer.index >= team1.length) {
+    } else if (
+      this.state.observer.index >= team1.length &&
+      idx < team1.length
+    ) {
       return (
         <div>
           <h1>Waiting for the last person to answer the question!</h1>
