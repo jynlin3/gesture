@@ -7,6 +7,8 @@ import {Container, Row, Col} from 'react-bootstrap'
 import { findAllByTestId } from '@testing-library/react';
 import Countdown from 'react-countdown';
 import { connect } from 'react-redux';
+import { Word } from './Word';
+import axios from "axios";
 
 let server;
 /**
@@ -105,13 +107,15 @@ class Game extends React.Component{
             this.state.changeName(userName);
         }else{
             userName =this.state.name;
-        }
+        }        
         this.changeTeam = this.changeTeam.bind(this);
         this.startGame = this.startGame.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
         // this.askServer = this.askServer.bind(this);
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
-
+        this.pickQuestion();
         w = new Set();
         team1Competing = true;
         this.state = {
@@ -119,17 +123,28 @@ class Game extends React.Component{
             player: {},
             observer: {}, 
             question: question,
-            GlobalPeopleID: []
+            GlobalPeopleID: [],
+            score: [0, 0],
+            isCorrect: false
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
-        this.state.id = 2;
+        this.state.id = 1;
         this.state.startGame = 0
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
         this.startGame = this.startGame.bind(this)
     }
     
+    pickQuestion(){
+        axios.get("/getRandomWord").then(state =>{
+            console.log(state);
+            this.setState({
+                // the generated word is stored in `res.data.item`
+                question: state.data.item
+            });
+        });
+    }
     addWaiting(id){
         this.setState((waiting) => ({            
             waiting: new Set(waiting).add(id)
@@ -174,6 +189,7 @@ class Game extends React.Component{
     updateRole(){
         // prevent starting round
         let numMembers = userIds.length / 2;
+        this.removeWaiting(this.state.observer.id);
         if (this.state.waiting.size !== numMembers - 1){
             let newIndex = this.state.player.index + 1;
             let newPlayer = userIds[newIndex];
@@ -186,7 +202,7 @@ class Game extends React.Component{
                 "id": userIds[newObserIdx],
                 "index": newObserIdx
             } 
-            this.removeWaiting(userIds[newObserIdx])
+            // this.removeWaiting(userIds[newObserIdx])
         }else{
             // first round after waiting, update the player and observer
             if (team1Competing){
@@ -208,7 +224,7 @@ class Game extends React.Component{
                     "index": numMembers
                 };
             }
-            this.removeWaiting(this.state.observer.id);
+            // this.removeWaiting(this.state.observer.id);
         }
 
     }
@@ -653,7 +669,7 @@ class Game extends React.Component{
     Question(){
         return (
             <div className="App">
-                <h2 id="question"></h2>
+                {JSON.stringify(this.state.question)}
                 {this.Timer()}
             </div>
         )
@@ -759,8 +775,6 @@ class Game extends React.Component{
     //     Janus.debug(resList);
     // }
 
-
-
     teamtemplate2(){
         console.log(this.state)
         return (
@@ -849,63 +863,64 @@ class Game extends React.Component{
         console.log(this.state)
     }
 
-    render(){
-        // if (this.state.startGame === 0){
+    storeAnswer(word, correct){
+        axios.put(`/updateCorrectRate?word=${word}&correct=${correct}`).then(state=>{
+            this.setState({
+                update_result: state.data.message
+            });
+        });
+    }
 
-        //     return(
-        //         <div className="App">
-        //         <header className="App-header">
-        //             <Container class="teams">
-        //                 <Row>
-        //                     <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
-        //                 </Row>
-                        
-        //                 <Row>
+    handleChange(event) {
+        this.setState({value: event.target.value});
+    }
         
-        //                     <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
-        //                     <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
-        
-        //                 </Row>
-        //                 <Row>
-        //                     <Col><p id="Ateam1">""</p></Col>
-        //                     <Col><p id="Bteam1">""</p></Col>
-        //                 </Row>
-        //                 <Row>
-        //                     <Col><p id="Ateam2">""</p></Col>
-        //                     <Col><p id="Bteam2">""</p></Col>
-        //                 </Row>
-        //                 <Row>
-        //                     <Col><p id="Ateam3">""</p></Col>
-        //                     <Col><p id="Bteam3">""</p></Col>
-        //                 </Row>
+    answerRenderer = ({ seconds, completed }) => {
+        if (completed) {
+            // Render a completed state
+            this.storeAnswer(this.state.value, this.state.value === this.state.question);
+            return <span> Time's up! We will store your last answer! </span>
+        } else {
+            // Render a countdown
+            return <span>{seconds} seconds</span>
+        }
+    }
 
-        //                 <Row>
-        //                 <Col><button id="start"  onClick={this.startGame}> Start </button> </Col>
-        //                 </Row>
-        //             </Container>
-        //             <div id="myvideo" className="container shorter">
-        //                 <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-        //             </div>
-        //         </header>
-        //             <p width="100%" height="100%">
-        //                 <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
-        //             </p>
-        //                 {this.teamtemplate2()}
-        
-        //         </div>
-        //     )
-        // }else 
-        if (this.props.round === userIds.length / 2 + 1){
-            return(
+    answerTimer(){
+        return (
             <div>
-                <label for="answer"> Answer: </label>
-                <input type="text" id="answer" name="answer"></input>
-                <input type="submit" value="Submit"></input>
-                {this.Timer()}
-
+                <Countdown
+                    date={Date.now() + 30000}
+                    renderer={this.answerRenderer}
+                />,
             </div>
-            )
-        }else if (this.state.waiting.has(this.state.id)){
+        );
+    }
+
+    handleSubmit(event) {
+        if (this.state.question === this.state.value){
+            // alert('OMG! Genius! You got it right');
+            // let oldScore;
+            // if (team1Competing){
+            //     oldScore = this.state.score[0];
+            // }else{
+            //     oldScore = this.state.score[1];
+            // }
+            // this.setState({
+            //     score: oldScore + 1,
+            //     isCorrect: true,
+            // })
+            this.storeAnswer(this.state.value, 1);
+            return <span> You got it right! Great job!</span>
+        }else{
+            alert('Wrong answer! Try again within the countdown');
+        }
+        event.preventDefault();
+    }
+
+    render(){
+        const currentId = this.state.id;
+        if (this.state.waiting.has(currentId)){
             this.waitForPeople();
             return (
                 <div className="App">                    
@@ -920,11 +935,9 @@ class Game extends React.Component{
                     <h1>Please perform this topic only by body language:</h1> 
                     {this.Question()}
                     <button onClick={this.props.timeUp}> Give up?</button>
-                    <h3> {this.props.round} </h3>
-                    <h3> {this.props.question} </h3>
                 </div>                
             )
-        }else if (this.state.player.id === this.state.id){
+        }else if (this.state.player.id === currentId){
             // be the publisher
             return(
                 <div>
@@ -933,7 +946,7 @@ class Game extends React.Component{
                     {this.Timer()}
                 </div>
             )
-        }else if (this.state.observer.id === this.state.id){
+        }else if (this.state.observer.id === currentId){
             // be the subscriber
             return(
                 <div>
@@ -944,13 +957,26 @@ class Game extends React.Component{
                 </div>
             )
 
-        }else{
+        } else if(this.state.player.id !== currentId && this.state.observer.id !== currentId && !this.state.waiting.has(currentId) && this.state.observer.index < userIds.length / 2) {
             return (                
                 <div className="App">
-                    <h1>Watch those fools ;)</h1> 
+                    <h1>Guess what?</h1> 
                     {this.Competing()}
-
                 </div>
+            )
+        }else {
+            return(
+                <div>
+                    <form onSubmit={this.handleSubmit}>
+                        <label>
+                            Answer:
+                            <input type="text" value={this.state.value} onChange={this.handleChange} />
+                        </label>
+                        <input type="submit" value="Submit" />
+                    </form>
+                    {this.answerTimer()}
+                </div>
+
             )
         }
     }
