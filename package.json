@@ -24,7 +24,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "backend": "npm run server --prefix backend", 
+    "backend": "npm run server --prefix backend",
     "dev": "concurrently \"npm run backend\" \"npm run start\"",
     "backend-install": "cd backend && npm install"
   },
