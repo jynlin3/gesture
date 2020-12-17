@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .idea
+/backend/node_modules
 
 # testing
 /coverage
@@ -25,6 +26,7 @@ yarn-error.log*
 
 # configuration file
 config.json
+config_backend.json
 
 # lauch file
 launch.json
@@ -32,4 +34,4 @@ launch.json
 .eslintcache
 
 .vscode/
-backend/
+package-lock.json

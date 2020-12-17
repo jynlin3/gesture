@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import ReactDOM from 'react-dom'
 import Janus from './Janus';
 import {withRouter} from 'react-router-dom';
 import offline from "../images/offline.jpg";
@@ -147,6 +148,7 @@ class Game extends React.Component{
         // bind functions
         this.handleJoinClick = this.handleJoinClick.bind(this);
         this.startGame = this.startGame.bind(this);
+        
         // this.askServer = this.askServer.bind(this);
         // console.log("My name is :" + this.props.name)
         // console.log(this.state)
@@ -160,18 +162,31 @@ class Game extends React.Component{
             player: {},
             observer: {}, 
             question: question,
-            players: props.players
-        };  
+            players: props.players,
+            GlobalPeopleID: [],
+            round : 0,
+            userIds : [1,2,3,4,5,6]
+        };
         this.splitTeams(userIds);
         this.scores = [0, 0];
-        this.state.id = 1;
-        this.state.startGame = 0
+        this.state.id = 2;
+
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
         this.startGame = this.startGame.bind(this)
 
         // form team usage
         players.set(userName, {})
+
+        this.state.startGame = 0
+        this.state.allVideos = [1,1,1,1,1,1]
+        this.state.generalVideoSwitch= this.generalVideoSwitch.bind(this)
+
+        // this.state.video1 = 1
+        // this.switchVideo1 = this.switchVideo1.bind(this);
+        // this.state.video0 = 1
+        // this.switchVideo0 = this.switchVideo0.bind(this);
+
     }
     
     addWaiting(id){
@@ -274,7 +289,7 @@ class Game extends React.Component{
     // }
 
     updatePlayers(){
-        this.state.changePlayers(GlobalPeopleID);
+        this.state.changePlayers(this.state.GlobalPeopleID);
         while(this.state.players.length < 6){
             this.state.players.push({id:null, id:"uknown"})
         }
@@ -352,8 +367,9 @@ class Game extends React.Component{
                                 $('#remote'+remoteFeed.rfindex).removeClass('hide').html(remoteFeed.rfdisplay).show();
                             }
                             console.log('all people here')
-                            console.log(GlobalPeopleID)
+                            // console.log(GlobalPeopleID)
                             console.log(feeds)
+                            // console.log(this.state)
                             // this.state.changePlayers();
                             // console.log(this.state);
                         }
@@ -452,7 +468,6 @@ class Game extends React.Component{
                     }
                 });
         }
-
 
         Janus.init(
             {
@@ -589,7 +604,7 @@ class Game extends React.Component{
                                                         remoteFeed.detach();
                                                     }
                                                     console.log('all people here');
-                                                    console.log(GlobalPeopleID);
+                                                    // console.log(GlobalPeopleID);
                                                     console.log(feeds)
                                                     
                                                     let tmp = 0
@@ -629,7 +644,7 @@ class Game extends React.Component{
                                                 // for(let i= 0; i<6;i++){
                                                 //     console.log("I wanna know the caller")
                                                 //     console.log(document.getElementById('#callername'+i).innerHTML)
-                                                //     document.getElementById('#callername'+i).innerHTML = GlobalPeopleID[i] ? GlobalPeopleID[i].name : "participant"+i;
+                                                //     document.getElementById('#callername'+i).innerHTML = this.state.GlobalPeopleID[i] ? this.state.GlobalPeopleID[i].name : "participant"+i;
                                                 //     document.getElementById('#callername'+i).focus();
                                                 // }
                                                 
@@ -789,7 +804,7 @@ class Game extends React.Component{
         return (
             <div>
                 <Countdown
-                    date={Date.now() + 5000}
+                    date={Date.now() + 30000}
                     renderer={this.renderer}
                 />,
             </div>
@@ -823,79 +838,15 @@ class Game extends React.Component{
             success: function() { console.log("[Jyn] sendData success") }
         });
     }
-    // renderer = ({ seconds, completed }) => {
-    //     if (completed) {
-    //         // Render a completed state
-    //         // this.startGame();           
-    //         return <span> You are good to go! </span>;
-    //     } else {
-    //         // Render a countdown
-    //         return <span>{seconds} seconds</span>;
-    //     }
-    // }
 
-    // Timer(){
-    //     return (
-    //         <div>
-    //             <Countdown
-    //                 date={Date.now() + 5000}
-    //                 renderer={this.renderer}
-    //             />,
-    //         </div>
-    //     )
-    // }
-    // test(){
-    //     console.log('hi')
-    // }
-    // helper = () =>{
-    //     const Row =  document.createElement("Row")
-    //     const Col = document.createElement("Col")
-    //     const h1 = document.createElement('h4')
-    //     h1.setAttribute("id","timer")
-    //     const newContent = document.createTextNode("Hi there and greetings!");
-    //     Row.appendChild(Col);
-    //     Col.appendChild(h1);
-    //     h1.appendChild(newContent)
-    //     return Row;        
-        
-    // }
-
-    // anotherHelper = () =>{
-    //     const div = document.createElement('div')
-    //     const h1 = document.createElement('h4')
-    //     h1.setAttribute("id","timer")
-    //     const newContent = document.createTextNode("Hi there and greetings!");
-    //     div.appendChild(h1)
-    //     h1.appendChild(newContent)
-    //     return div;   
-    // }
-    // startGame = (e) =>{
-    //     console.log(e);
-    //     let a = document.getElementById("container");
-    //     console.log(a);
-    //     let tmp = this.anotherHelper();
-    //     // if(!document.getElementById(`timer`)){
-
-    //     // }
-    //     if(!document.getElementById('timer')){
-    //         document.getElementById("container").appendChild(tmp);
-    //     }
-    //     let i = 30;
-    //     while(i > 0){
-    //         setTimeout(this.test, 1000000)
-    //         i = i - 1;
-    //         console.log(document.getElementById('timer'))
-    //         document.getElementById('timer').innerHTML = i+'secondes'
-    //     }
-
-
-    // }
 
     // askServer(){
     //     let listParticipantReq = {"request" : "listparticipants", "room" : myroom}
     //     let resList = vroomHandle.send({"message": listParticipantReq})
     //     Janus.debug(resList);
     // }
+
+
 
     teamtemplate2(){
         console.log(this.state)
@@ -957,68 +908,216 @@ class Game extends React.Component{
         }
     }
 
+    Playing(){
+        return (
+            <Container>
+                <Row>
+                    { arr1.map((value, index) => {
+                        return(      
+                            <Col>         
+                                <div id={"videoremote"+(value)} className="container">
+                                    {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
+                                </div>
+                                <h3 id={"callername"+value}> no name </h3>
+                            </Col> 
+                        )
+                    })}
+                </Row>
+            </Container>
+            // <div id="myvideo" className="container shorter">
+            //     <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+            // </div>
+        )
+    }
+
     startGame =  () =>{ 
         this.state.startGame = 1
+        this.state.GlobalPeopleID = GlobalPeopleID;
         console.log(this.state)
+        // this.state.round = 4;
+        this.setState({round: 0})
+        // this.render();
+
+    }
+
+    // switchVideo1 = () =>{
+    //     if(document.querySelector('video#remotevideo1') == null){
+    //         alert("No such video1 item yet")
+    //         return;
+    //     }
+    //     if(this.state.video1 == 1){
+    //         document.querySelector('video#remotevideo1').muted= true;
+    //         document.querySelector('video#remotevideo1').style.visibility= "hidden";
+    //         this.state.video1 = 0
+    //     }else{
+    //         document.querySelector('video#remotevideo1').muted= false;
+    //         document.querySelector('video#remotevideo1').style.visibility= "visible";
+    //         this.state.video1 = 1
+    //     }
+    // }
+
+    switchVideo0 = () =>{
+        if(document.querySelector('video#remotevideo0') == null){
+            alert("No such video0 item yet")
+            return;
+        }
+        if(this.state.video0 == 1){
+            document.querySelector('video#remotevideo0').muted= true;
+            document.querySelector('video#remotevideo0').style.visibility= "hidden";
+            this.state.video0 = 0
+        }else{
+            document.querySelector('video#remotevideo0').muted= true;
+            document.querySelector('video#remotevideo0').style.visibility= "visible";
+            this.state.video0 = 1
+        }
+    }
+
+    generalVideoSwitch = (e) =>{
+        let id;
+        if (!Number.isInteger(e)){
+            id = e.target.id
+        }else{
+            id = e;
+            alert("I got you");
+            return;
+        }
+        console.log(e)
+        if(document.querySelector('video#remotevideo'+id) == null){
+            alert("No such video "+id + " item yet")
+            return;
+        }
+        if(id == 0){
+            if(this.state.allVideos[id] == 1){
+                document.querySelector('video#remotevideo'+id).muted= true;
+                document.querySelector('video#remotevideo'+id).style.visibility= "hidden";
+                document.querySelector('video#remotevideo'+id).style.width= "5%";
+                document.querySelector('video#remotevideo'+id).style.height= "5%"
+
+                this.state.allVideos[id] = 0
+            }else{
+                document.querySelector('video#remotevideo'+id).muted= true;
+                document.querySelector('video#remotevideo'+id).style.visibility= "visible";
+                document.querySelector('video#remotevideo'+id).style.width= "100%";
+                document.querySelector('video#remotevideo'+id).style.height= "100%"
+                this.state.allVideos[id] = 1
+            }
+            return;
+        }
+
+        if(this.state.allVideos[id] == 1){
+            document.querySelector('video#remotevideo'+id).muted= true;
+            document.querySelector('video#remotevideo'+id).style.visibility= "hidden";
+            document.querySelector('video#remotevideo'+id).style.width= "5%";
+            document.querySelector('video#remotevideo'+id).style.height= "5%"
+            this.state.allVideos[id] = 0
+        }else{
+            document.querySelector('video#remotevideo'+id).muted= false;
+            document.querySelector('video#remotevideo'+id).style.visibility= "visible";
+            document.querySelector('video#remotevideo'+id).style.width= "100%";
+            document.querySelector('video#remotevideo'+id).style.height= "100%"
+            this.state.allVideos[id] = 1
+        }
+
     }
 
 
-    render(){
-        console.log("all the people in blobal people ID")
-        console.log(GlobalPeopleID)
-        if (GlobalPeopleID.length !== 6){
-
+    test = (props)=>{
+        console.log(props)
+        // return null;
+        let round = props.round;
+        let userIds = props.userIds;
+        console.log(" what is in the test")
+        console.log(this.props)
+        console.log(this.state)
+        // console.log(userIds)
+        if(round === userIds.length / 2 + 1){
             return(
-                <div className="App">
-                <header className="App-header">
-                    <Container class="teams">
-                        <Row>
-                            <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
-                        </Row>
-                        
-                        <Row>
-        
-                            <Col><button id="A"  onClick={this.handleJoinClick}> Join </button> </Col>
-                            <Col><button id="B"  onClick={this.handleJoinClick}> Join </button> </Col>
-        
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam1"></p></Col>
-                            <Col><p id="Bteam1"></p></Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam2"></p></Col>
-                            <Col><p id="Bteam2"></p></Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam3"></p></Col>
-                            <Col><p id="Bteam3"></p></Col>
-                        </Row>
-
-                        <Row>
-                        <Col><button id="start"  onClick={this.startGame}> Start </button> </Col>
-                        </Row>
-                    </Container>
-                    <div id="myvideo" className="container shorter">
-                        <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </header>
-                    <p width="100%" height="100%">
-                        <code>guessture</code> video room, Name = {userName} , room = {myroom}
-                    </p>
-                        {this.teamtemplate2()}
-        
+                <div>
+                    <label for="answer"> Answer: </label>
+                    <input type="text" id="answer" name="answer"></input>
+                    <input type="submit" value="Submit"></input>
+                    {this.Timer()}
                 </div>
             )
-        }else if (this.props.round === userIds.length / 2 + 1){
-            return(
+        }
+        return(
             <div>
-                <label for="answer"> Answer: </label>
-                <input type="text" id="answer" name="answer"></input>
-                <input type="submit" value="Submit"></input>
-                {this.Timer()}
-
+                <p> Nothing here</p>
             </div>
+        );
+    }
+
+    render(){
+        // if (this.props.round === userIds.length / 2 + 1){
+        //     document.getElementById('header')
+        // }
+
+        // let globalThis = this;
+        if(this.state.startGame === 0){
+        return(
+            <div className="App">
+            <header className="App-header" id="header">
+                <this.test  userIds={this.state.userIds} round={this.state.round}/>
+                <Container class="teams">
+                    <Row>
+                        <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
+                    </Row>
+                    <Row>
+                        <Col><button id="A"  onClick={this.handleJoinClick}> Join </button> </Col>
+                        <Col><button id="B"  onClick={this.handleJoinClick}> Join </button> </Col>
+                    </Row>
+                    <Row>
+                        <Col><p id="Ateam1"></p></Col>
+                        <Col><p id="Bteam1"></p></Col>
+                    </Row>
+                    <Row>
+                        <Col><p id="Ateam2"></p></Col>
+                        <Col><p id="Bteam2"></p></Col>
+                    </Row>
+                    <Row>
+                        <Col><p id="Ateam3"></p></Col>
+                        <Col><p id="Bteam3"></p></Col>
+                    </Row>
+
+                    <Row>
+                        <Col><button id="start"  onClick={this.startGame}> set thisStateStart = 1 </button> </Col>
+                    </Row>
+                    <Row>
+                    {/* <Col><button id="0" onClick={this.switchVideo0}> turn Off video 0  </button></Col>
+                    <Col><button id="1" onClick={this.switchVideo1}> turn Off video 1  </button></Col> */}
+                    <Col><button id="0" onClick={this.generalVideoSwitch}> switch video 0</button></Col>
+                    <Col><button id="1" onClick={this.generalVideoSwitch}> switch video 1</button></Col>
+                    <Col><button id="2" onClick={this.generalVideoSwitch}> switch video 2</button></Col>
+                    <Col><button id="3" onClick={this.generalVideoSwitch}> switch video 3</button></Col>
+                    <Col><button id="4" onClick={this.generalVideoSwitch}> switch video 4</button></Col>
+                    <Col><button id="5" onClick={this.generalVideoSwitch}> switch video 5</button></Col>
+                    </Row>
+                </Container>
+                <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                </div>
+            </header>
+                <p width="100%" height="100%">
+                    <code>guessture</code> video room, Name = {userName} , room = {myroom}
+                </p>
+                    {this.teamtemplate2()}
+    
+            </div>
+        )
+        }else
+        if (this.props.round === userIds.length / 2 + 1){
+            return (
+                <div>
+                    <label for="answer"> Answer: </label>
+                    <input type="text" id="answer" name="answer"></input>
+                    <input type="submit" value="Submit"></input>
+                    {this.Timer()}
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
+    
+                </div>
             )
         }else if (this.state.waiting.has(this.state.id)){
             this.waitForPeople();
@@ -1027,6 +1126,10 @@ class Game extends React.Component{
                     <h1> WAIT.....</h1>
                     <h2> Wait for <span id="wait"> </span> people</h2>
                     {this.Timer()}
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>
             )     
         }else if ((userIds.length / 2) - 1 === this.state.waiting.size){
@@ -1037,6 +1140,10 @@ class Game extends React.Component{
                     <button onClick={this.props.timeUp}> Give up?</button>
                     <h3> {this.props.round} </h3>
                     <h3> {this.props.question} </h3>
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>                
             )
         }else if (this.state.player.id === this.state.id){
@@ -1044,7 +1151,12 @@ class Game extends React.Component{
             return(
                 <div>
                     <h1>player</h1>
+                    {this.Playing()}
                     {this.Timer()}
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>
             )
         }else if (this.state.observer.id === this.state.id){
@@ -1055,6 +1167,10 @@ class Game extends React.Component{
                     {this.Timer()}
                     <h3> {this.props.round} </h3>
                     <h3> {this.props.question} </h3>
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
                 </div>
             )
 
@@ -1063,6 +1179,11 @@ class Game extends React.Component{
                 <div className="App">
                     <h1>Watch those fools ;)</h1> 
                     {this.Competing()}
+                    
+                    {this.teamtemplate2()}
+                    <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
 
                 </div>
             )
