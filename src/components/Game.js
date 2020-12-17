@@ -66,6 +66,9 @@ let arrayB = [null,null,null]
 let res = null;
 let listReq = null;
 
+// form team usage, date structure would be {username => {id: id, team: team}}
+let players = new Map(); 
+
 // before loading
 window.onload = function(){
 
@@ -78,6 +81,37 @@ window.onload = function(){
     scores.values = document.getElementById("scores");
     if (scores !== null && scores !== 'undefined'){
         scores.innerHTML = this.scores;
+    }
+    
+}
+
+function updateTeamStatus() {
+    // clear the team status
+    for (let i = 1; i < 4; i++){
+        document.getElementById('Ateam'+i).innerHTML = "";
+        document.getElementById('Bteam'+i).innerHTML = "";
+    } 
+
+    // create a variable to count # players in team A
+    // create a variable to count # players in team B
+    let playerCntA = 0;
+    let playerCntB = 0;
+
+    // itreate over the players
+    for (const [key, value] of players.entries()){
+        // console.log(key, value);
+        // let team = value.team;
+        if (value.team === 'A')
+        {
+            playerCntA += 1;
+            document.getElementById('Ateam'+playerCntA).innerHTML = key;
+        }
+        else if (value.team === 'B')
+        {
+            playerCntB += 1;
+            document.getElementById('Bteam'+playerCntB).innerHTML = key;
+
+        }
     }
     
 }
@@ -111,7 +145,7 @@ class Game extends React.Component{
         }
         
         // bind functions
-        this.changeTeam = this.changeTeam.bind(this);
+        this.handleJoinClick = this.handleJoinClick.bind(this);
         this.startGame = this.startGame.bind(this);
         // this.askServer = this.askServer.bind(this);
         // console.log("My name is :" + this.props.name)
@@ -135,6 +169,9 @@ class Game extends React.Component{
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
         this.startGame = this.startGame.bind(this)
+
+        // form team usage
+        players.set(userName, {})
     }
     
     addWaiting(id){
@@ -396,9 +433,15 @@ class Game extends React.Component{
                         console.log("[Jyn] The DataChannel is available", data);
                     },
                     ondata: function(data) {
-                        console.log('[Jyn] Attach ondata:');
-                        console.log(arguments);
                         Janus.debug("We got data from the DataChannel! ", data);
+                        console.log('[Jyn] Attach ondata:', data);
+                        var json = JSON.parse(data);
+                        if (json["textroom"] === "jointeam")
+                        {
+                            console.log(players);
+                            players.get(json["username"]).team = json["team"];
+                            updateTeamStatus();
+                        }
                     },
                     oncleanup: function() {
                         Janus.log(" ::: Got a cleanup notification (remote feed " + id + ") :::");
@@ -448,9 +491,6 @@ class Game extends React.Component{
                                         Janus.log("Janus says our WebRTC PeerConnection is " + (on ? "up" : "down") + " now");
                                     },
                                     onmessage: function(msg,jsep){
-                                        console.log('[Jyn] Attach onmessage:');
-                                        console.log(arguments);
-
                                         Janus.debug(" ::: Got a message (publisher) :::");
                                         Janus.debug(msg);
                                         let event = msg["videoroom"];
@@ -465,6 +505,10 @@ class Game extends React.Component{
                                                 console.log("Successfully joined room " + msg["room"] + " with ID " + myid);
                                                 GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
+
+                                                // form team usage
+                                                players.get(userName).id = myid
+
                                                 // console.log($('#callername0'));
                                                 // console.log(userName);
                                                 // $('#callername1').innerHTML = {userName}
@@ -484,10 +528,14 @@ class Game extends React.Component{
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         console.log('somebody in the same room : ' + {id} )
                                                         GlobalPeopleID.unshift({id:id, name:display})
+
+                                                        // form team usage
+                                                        players.set(display, {id: id});
+
                                                         newRemoteFeed(id, display, audio, video);
-                                                    }                                
-                                                    
+                                                    }                                    
                                                 }
+                                                console.log('[Jyn] get already joined event, players ', players);
                                             } else if (event === "destroyed") {
                                                 // The room has been destroyed
                                                 Janus.warn("The room has been destroyed!");
@@ -511,8 +559,13 @@ class Game extends React.Component{
                                                         let video = list[f]["video_codec"];
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         GlobalPeopleID.push({id:id, name:display})
+
+                                                        // form team usage
+                                                        players.set(display, {id: id});
+
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
+                                                    console.log('[Jyn] get new joined event, players ', players);
 
                                                     // this.updatePlayers();
                                                     // this.state.changePlayers();
@@ -644,9 +697,15 @@ class Game extends React.Component{
                                         console.log("[Jyn] The DataChannel is available", data);
                                     },
                                     ondata: function(data) {
-                                        console.log('[Jyn] Attach ondata:');
-                                        console.log(arguments);
                                         Janus.debug("We got data from the DataChannel! ", data);
+                                        console.log('[Jyn] Attach ondata:', data);
+                                        var json = JSON.parse(data);
+                                        if (json["textroom"] === "jointeam")
+                                        {
+                                            console.log(players);
+                                            players.get(json["username"]).team = json["team"];
+                                            updateTeamStatus();
+                                        }                
                                     },
                                     oncleanup: function(){
                                         Janus.log(" ::: Got a cleanup notification: we are unpublished now :::");
@@ -737,59 +796,22 @@ class Game extends React.Component{
         );
     }
 
-    changeTeam = (e) => {
-        // console.log('hi')
-        // e.preventDefault();
+    handleJoinClick = (e) => {
         let teamId = e.target.id;
-        this.sendData(`${userName} in Team ${teamId}`);
-        let inTeam = 0;
-        let tmp = "";
-        for(let i = 1; i < 4;i++){
-            console.log(teamId+'team'+i)
-            console.log(document.getElementById(teamId+'team'+i)) 
-            console.log('""')       
-            if(document.getElementById(teamId+'team'+i) == null){
-                break;
-            }
-            tmp = document.getElementById(teamId+'team'+i).innerHTML
-            console.log(tmp);
-            if(tmp === '""' || tmp == null){
-                document.getElementById(teamId+'team'+i).innerHTML = userName;
-                inTeam = inTeam +  1;
-                break;
-            }
-        }
-        console.log('inTeam : ' + inTeam)
-        if(inTeam == 0){
-            console.error("This Team is full")
-        }else{
-            if(teamId == "A"){
-                teamId = "B";
-            }else{
-                teamId = "A";
-            }
-            for(let i = 1; i < 4;i++){
-                tmp = document.getElementById(teamId+'team'+i).innerHTML
-                console.log(tmp)
-                if(tmp == userName){
-                    document.getElementById(teamId+'team'+i).innerHTML = '""';
-                    break;
-                }
-            }
-        }
+        players.get(userName).team = teamId;
+        updateTeamStatus();
+
+        // send to remotes
+        var message = {
+            textroom: "jointeam",
+            room: myroom,
+            username: userName,
+            team: teamId
+        };
+        this.sendData(message);
     }
 
-    sendData = (data) => {
-        // var data = $('#datasend').val();
-        if(data === "") {
-            alert('Insert a message to send on the DataChannel');
-            return;
-        }
-        var message = {
-            textroom: "message",
-            room: myroom,
-            text: data,
-        };
+    sendData = (message) => {
         // Note: messages are always acknowledged by default. This means that you'll
         // always receive a confirmation back that the message has been received by the
         // server and forwarded to the recipients. If you do not want this to happen,
@@ -956,21 +978,21 @@ class Game extends React.Component{
                         
                         <Row>
         
-                            <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
-                            <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+                            <Col><button id="A"  onClick={this.handleJoinClick}> Join </button> </Col>
+                            <Col><button id="B"  onClick={this.handleJoinClick}> Join </button> </Col>
         
                         </Row>
                         <Row>
-                            <Col><p id="Ateam1">""</p></Col>
-                            <Col><p id="Bteam1">""</p></Col>
+                            <Col><p id="Ateam1"></p></Col>
+                            <Col><p id="Bteam1"></p></Col>
                         </Row>
                         <Row>
-                            <Col><p id="Ateam2">""</p></Col>
-                            <Col><p id="Bteam2">""</p></Col>
+                            <Col><p id="Ateam2"></p></Col>
+                            <Col><p id="Bteam2"></p></Col>
                         </Row>
                         <Row>
-                            <Col><p id="Ateam3">""</p></Col>
-                            <Col><p id="Bteam3">""</p></Col>
+                            <Col><p id="Ateam3"></p></Col>
+                            <Col><p id="Bteam3"></p></Col>
                         </Row>
 
                         <Row>
