@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import ReactDOM from 'react-dom'
 import Janus from './Janus';
 import {withRouter} from 'react-router-dom';
 import offline from "../images/offline.jpg";
@@ -120,23 +121,26 @@ class Game extends React.Component{
             player: {},
             observer: {}, 
             question: question,
-            GlobalPeopleID: []
+            GlobalPeopleID: [],
+            round : 0,
+            userIds : [1,2,3,4,5,6]
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
         this.state.id = 2;
-        this.state.startGame = 0
+
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
         this.startGame = this.startGame.bind(this)
 
+        this.state.startGame = 0
         this.state.allVideos = [1,1,1,1,1,1]
         this.state.generalVideoSwitch= this.generalVideoSwitch.bind(this)
 
-        this.state.video1 = 1
-        this.switchVideo1 = this.switchVideo1.bind(this);
-        this.state.video0 = 1
-        this.switchVideo0 = this.switchVideo0.bind(this);
+        // this.state.video1 = 1
+        // this.switchVideo1 = this.switchVideo1.bind(this);
+        // this.state.video0 = 1
+        // this.switchVideo0 = this.switchVideo0.bind(this);
     }
     
     addWaiting(id){
@@ -857,24 +861,27 @@ class Game extends React.Component{
         this.state.startGame = 1
         this.state.GlobalPeopleID = GlobalPeopleID;
         console.log(this.state)
+        // this.state.round = 4;
+        this.setState({round:4 })
+        // this.render();
 
     }
 
-    switchVideo1 = () =>{
-        if(document.querySelector('video#remotevideo1') == null){
-            alert("No such video1 item yet")
-            return;
-        }
-        if(this.state.video1 == 1){
-            document.querySelector('video#remotevideo1').muted= true;
-            document.querySelector('video#remotevideo1').style.visibility= "hidden";
-            this.state.video1 = 0
-        }else{
-            document.querySelector('video#remotevideo1').muted= false;
-            document.querySelector('video#remotevideo1').style.visibility= "visible";
-            this.state.video1 = 1
-        }
-    }
+    // switchVideo1 = () =>{
+    //     if(document.querySelector('video#remotevideo1') == null){
+    //         alert("No such video1 item yet")
+    //         return;
+    //     }
+    //     if(this.state.video1 == 1){
+    //         document.querySelector('video#remotevideo1').muted= true;
+    //         document.querySelector('video#remotevideo1').style.visibility= "hidden";
+    //         this.state.video1 = 0
+    //     }else{
+    //         document.querySelector('video#remotevideo1').muted= false;
+    //         document.querySelector('video#remotevideo1').style.visibility= "visible";
+    //         this.state.video1 = 1
+    //     }
+    // }
 
     switchVideo0 = () =>{
         if(document.querySelector('video#remotevideo0') == null){
@@ -941,71 +948,100 @@ class Game extends React.Component{
     }
 
 
-    
-
-    render(){
-        if (this.state.startGame === 0){
-
+    test = (props)=>{
+        console.log(props)
+        // return null;
+        let round = props.round;
+        let userIds = props.userIds;
+        console.log(" what is in the test")
+        console.log(this.props)
+        console.log(this.state)
+        // console.log(userIds)
+        if(round === userIds.length / 2 + 1){
             return(
-                <div className="App">
-                <header className="App-header">
-                    <Container class="teams">
-                        <Row>
-                            <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
-                        </Row>
-                        <Row>
-                            <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
-                            <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam1">""</p></Col>
-                            <Col><p id="Bteam1">""</p></Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam2">""</p></Col>
-                            <Col><p id="Bteam2">""</p></Col>
-                        </Row>
-                        <Row>
-                            <Col><p id="Ateam3">""</p></Col>
-                            <Col><p id="Bteam3">""</p></Col>
-                        </Row>
-
-                        <Row>
-                            <Col><button id="start"  onClick={this.startGame}> Start </button> </Col>
-                        </Row>
-                        <Row>
-                        {/* <Col><button id="0" onClick={this.switchVideo0}> turn Off video 0  </button></Col>
-                        <Col><button id="1" onClick={this.switchVideo1}> turn Off video 1  </button></Col> */}
-                        <Col><button id="0" onClick={this.generalVideoSwitch}> switch video 0</button></Col>
-                        <Col><button id="1" onClick={this.generalVideoSwitch}> switch video 1</button></Col>
-                        <Col><button id="2" onClick={this.generalVideoSwitch}> switch video 2</button></Col>
-                        <Col><button id="3" onClick={this.generalVideoSwitch}> switch video 3</button></Col>
-                        <Col><button id="4" onClick={this.generalVideoSwitch}> switch video 4</button></Col>
-                        <Col><button id="5" onClick={this.generalVideoSwitch}> switch video 5</button></Col>
-                        </Row>
-                    </Container>
-                    <div id="myvideo" className="container shorter">
-                        <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-                    </div>
-                </header>
-                    <p width="100%" height="100%">
-                        <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
-                    </p>
-                        {this.teamtemplate2()}
-        
+                <div>
+                    <label for="answer"> Answer: </label>
+                    <input type="text" id="answer" name="answer"></input>
+                    <input type="submit" value="Submit"></input>
+                    {this.Timer()}
                 </div>
             )
-        }else 
+        }
+        return(
+            <div>
+                <p> Nothing here</p>
+            </div>
+        );
+    }
+
+    render(){
+        // if (this.props.round === userIds.length / 2 + 1){
+        //     document.getElementById('header')
+        // }
+
+        let globalThis = this;
+        if(this.state.startGame === 0){
+        return(
+            <div className="App">
+            <header className="App-header" id="header">
+                <this.test  userIds={this.state.userIds} round={this.state.round}/>
+                <Container class="teams">
+                    <Row>
+                        <Col>  <h1> Team A</h1> </Col> <Col>  <h1> Team B</h1></Col>
+                    </Row>
+                    <Row>
+                        <Col><button id="A"  onClick={this.changeTeam}> Join </button> </Col>
+                        <Col><button id="B"  onClick={this.changeTeam}> Join </button> </Col>
+                    </Row>
+                    <Row>
+                        <Col><p id="Ateam1">""</p></Col>
+                        <Col><p id="Bteam1">""</p></Col>
+                    </Row>
+                    <Row>
+                        <Col><p id="Ateam2">""</p></Col>
+                        <Col><p id="Bteam2">""</p></Col>
+                    </Row>
+                    <Row>
+                        <Col><p id="Ateam3">""</p></Col>
+                        <Col><p id="Bteam3">""</p></Col>
+                    </Row>
+
+                    <Row>
+                        <Col><button id="start"  onClick={this.startGame}> set thisStateStart = 1 </button> </Col>
+                    </Row>
+                    <Row>
+                    {/* <Col><button id="0" onClick={this.switchVideo0}> turn Off video 0  </button></Col>
+                    <Col><button id="1" onClick={this.switchVideo1}> turn Off video 1  </button></Col> */}
+                    <Col><button id="0" onClick={this.generalVideoSwitch}> switch video 0</button></Col>
+                    <Col><button id="1" onClick={this.generalVideoSwitch}> switch video 1</button></Col>
+                    <Col><button id="2" onClick={this.generalVideoSwitch}> switch video 2</button></Col>
+                    <Col><button id="3" onClick={this.generalVideoSwitch}> switch video 3</button></Col>
+                    <Col><button id="4" onClick={this.generalVideoSwitch}> switch video 4</button></Col>
+                    <Col><button id="5" onClick={this.generalVideoSwitch}> switch video 5</button></Col>
+                    </Row>
+                </Container>
+                <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                </div>
+            </header>
+                <p width="100%" height="100%">
+                    <code>guessture</code> video room, Name = {this.state.name} , room = {this.state.room}
+                </p>
+                    {this.teamtemplate2()}
+    
+            </div>
+        )
+        }else
         if (this.props.round === userIds.length / 2 + 1){
-            return(
+            const element = 
             <div>
                 <label for="answer"> Answer: </label>
                 <input type="text" id="answer" name="answer"></input>
                 <input type="submit" value="Submit"></input>
                 {this.Timer()}
-
-            </div>
-            )
+            </div>;
+            
+            ReactDOM.render(element, document.getElementById('root'))
         }else if (this.state.waiting.has(this.state.id)){
             this.waitForPeople();
             return (
