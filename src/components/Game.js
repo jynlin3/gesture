@@ -67,7 +67,7 @@ let arrayB = [null,null,null]
 let res = null;
 let listReq = null;
 
-// form team usage, date structure would be {username => {id: id, team: team}}
+// only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map(); 
 
 // before loading
@@ -175,7 +175,7 @@ class Game extends React.Component{
         this.removeWaiting = this.removeWaiting.bind(this);
         this.startGame = this.startGame.bind(this)
 
-        // form team usage
+        // only form team usage
         players.set(userName, {})
 
         this.state.startGame = 0
@@ -454,7 +454,6 @@ class Game extends React.Component{
                         var json = JSON.parse(data);
                         if (json["textroom"] === "jointeam")
                         {
-                            console.log(players);
                             players.get(json["username"]).team = json["team"];
                             updateTeamStatus();
                         }
@@ -521,7 +520,7 @@ class Game extends React.Component{
                                                 GlobalPeopleID.unshift({id:myid, name:userName});
                                                 publishOwnFeed(true);
 
-                                                // form team usage
+                                                // only form team usage
                                                 players.get(userName).id = myid
 
                                                 // console.log($('#callername0'));
@@ -544,7 +543,7 @@ class Game extends React.Component{
                                                         console.log('somebody in the same room : ' + {id} )
                                                         GlobalPeopleID.unshift({id:id, name:display})
 
-                                                        // form team usage
+                                                        // only form team usage
                                                         players.set(display, {id: id});
 
                                                         newRemoteFeed(id, display, audio, video);
@@ -575,7 +574,7 @@ class Game extends React.Component{
                                                         console.log("  >> [" + id + "] " + display + " (audio: " + audio + ", video: " + video + ")");
                                                         GlobalPeopleID.push({id:id, name:display})
 
-                                                        // form team usage
+                                                        // only form team usage
                                                         players.set(display, {id: id});
 
                                                         newRemoteFeed(id, display, audio, video);
@@ -717,7 +716,6 @@ class Game extends React.Component{
                                         var json = JSON.parse(data);
                                         if (json["textroom"] === "jointeam")
                                         {
-                                            console.log(players);
                                             players.get(json["username"]).team = json["team"];
                                             updateTeamStatus();
                                         }                
