@@ -761,7 +761,7 @@ class Game extends React.Component{
         return (
             <div>
                 <Countdown
-                    date={Date.now() + 30000}
+                    date={Date.now() + 5000}
                     renderer={this.renderer}
                 />,
             </div>
@@ -1026,8 +1026,9 @@ class Game extends React.Component{
                     document.querySelector('video#remotevideo'+i).style.height= "5%"
                 }
             }
-            document.querySelector('video#remotevideo'+id).muted= true;
-            const element = <div>
+            if(document.querySelector('video#remotevideo'+id)){
+                document.querySelector('video#remotevideo'+id).muted= true;
+            }            const element = <div>
             <h1>player</h1>
             {this.Playing()}
             {this.Timer()}
@@ -1058,8 +1059,9 @@ class Game extends React.Component{
                     document.querySelector('video#remotevideo'+i).style.height= "5%"
                 }
             }
-            document.querySelector('video#remotevideo'+id).muted= true;
-            const element =  <div>
+            if(document.querySelector('video#remotevideo'+id)){
+                document.querySelector('video#remotevideo'+id).muted= true;
+            }            const element =  <div>
             <h1> observer</h1>
             {this.Timer()}
             <h3> {this.props.round} </h3>
@@ -1088,8 +1090,9 @@ class Game extends React.Component{
                     document.querySelector('video#remotevideo'+i).style.height= "5%"
                 }
             }
-            
-            document.querySelector('video#remotevideo'+id).muted= true;
+            if(document.querySelector('video#remotevideo'+id)){
+                document.querySelector('video#remotevideo'+id).muted= true;
+            }
             const element =                 
             <div className="App">
             <h1>Watch those fools ;)</h1> 
