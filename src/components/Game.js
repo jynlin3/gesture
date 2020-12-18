@@ -69,19 +69,19 @@ let players = new Map();
 
 
 
-// before loading
-window.onload = function () {
-  let q = document.getElementById("question");
-  if (q !== null && q !== "undefined") {
-    let idx = Math.floor(Math.random() * questions.length);
-    q.innerHTML = questions[idx];
-    question = questions[idx];
-  }
-  scores.values = document.getElementById("scores");
-  if (scores !== null && scores !== "undefined") {
-    scores.innerHTML = this.scores;
-  }
-};
+// // before loading
+// window.onload = function () {
+//   let q = document.getElementById("question");
+//   if (q !== null && q !== "undefined") {
+//     let idx = Math.floor(Math.random() * questions.length);
+//     q.innerHTML = questions[idx];
+//     question = questions[idx];
+//   }
+//   scores.values = document.getElementById("scores");
+//   if (scores !== null && scores !== "undefined") {
+//     scores.innerHTML = this.scores;
+//   }
+// };
 
 function updateTeamStatus() {
   // clear the team status
@@ -166,7 +166,8 @@ class Game extends React.Component {
       // timer usage only,
       completions: 0,
       // game logic
-      step: -1
+      step: -1,
+      answer: null
     };
     // this.splitTeams(userIds);
     this.scores = [0, 0];
@@ -246,7 +247,7 @@ class Game extends React.Component {
   // }
 
   updateRole() {
-    console.log("update role");
+    console.log("[Game] update role");
     let newStep = this.state.step + 1
     this.setState({
       step: newStep > 7 ? -1 : newStep
@@ -1091,6 +1092,7 @@ class Game extends React.Component {
   }
 
   startGame = () => {
+    // TODO: auto generate playbooks
     var playbooks = [
       ["READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE"],
       ["WAIT", "OBSERVE", "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE"],
@@ -1234,16 +1236,17 @@ class Game extends React.Component {
   // }
 
   handleSubmit(event) {
-    let word = this.state.value;
-    let correct = this.state.question === word;
+    let word = this.state.question;
+    let correct = this.state.question === this.state.answer;
     axios
       .put(
         `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`
       )
       .then((state) => {
-        this.setState({
-          update_result: state.data.message,
-        });
+        console.log(state);
+        // this.setState({
+        //   update_result: state.data.message,
+        // });
       });
     if (correct) {
       let newScore = team1Competing
@@ -1257,11 +1260,11 @@ class Game extends React.Component {
       alert("BOOM!!! Wrong answer");
     }
     // this.switchTeam();
-    event.preventDefault();
+    // event.preventDefault();
   }
 
   handleChange(event) {
-    this.setState({ value: event.target.value });
+    this.setState({ answer: event.target.value });
   }
 
   // lookForidx(id) {
@@ -1302,13 +1305,19 @@ class Game extends React.Component {
     )
   }
 
+  _handleKeyUp =(e) =>{
+      if(e.key==='Enter' || e.keyCode === 13){
+          document.getElementById("submit").click();
+      }
+  }
+
   render() {
+    console.log("[Game] render");
     const currentId = this.state.id;
     // const idx = this.lookForidx(currentId);
     // const flag = this.yourTeamCompeting();
 
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
-    console.log()
 
     // game setting
     if (this.state.step == -1) {
@@ -1525,7 +1534,7 @@ class Game extends React.Component {
     } else {
       return (
         <div>
-          <form onSubmit={this.handleSubmit}>
+          {/* <form onSubmit={this.handleSubmit}>
             <label>
               Answer:
               <input
@@ -1535,8 +1544,13 @@ class Game extends React.Component {
               />
             </label>
             <input type="submit" value="Submit" />
-          </form>
-          {this.answerTimer()}
+          </form> */}
+                <label for="answer"> Answer: </label>
+                <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
+                <button id="submit" onClick={this.handleSubmit}>
+                    Submit
+                </button>
+          {this.Timer()}
         </div>
       );
     }
