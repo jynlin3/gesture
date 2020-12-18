@@ -172,7 +172,7 @@ class Game extends React.Component {
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 6;
+    this.state.id = 4;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -1224,7 +1224,7 @@ class Game extends React.Component {
       totalGameRound: this.state.totalGameRound + 1,
       round: 0,
     });
-    console.log('after switch:', this.state);
+    this.pickQuestion();
     if (this.state.totalGameRound === 6) {
       // render to another page
     }
