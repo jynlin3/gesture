@@ -1484,7 +1484,7 @@ class Game extends React.Component {
     //     }
       } else if (currentStatus == "WAIT") {
         // supress all
-        // this.suppresAllVideo();
+        this.suppresAllVideo();
         // this.waitForPeople();
         return (
           <div className="App">
@@ -1502,7 +1502,7 @@ class Game extends React.Component {
          // get topic round
       } else if (currentStatus == "READ_TOPIC") {
         // supress all
-        // this.suppresAllVideo();
+        this.suppresAllVideo();
         return (
           <div className="App">
             {this.Timer()}
@@ -1577,7 +1577,7 @@ class Game extends React.Component {
         // answering 
       } else {
           // supress all video
-        //   this.suppresAllVideo()
+          this.suppresAllVideo()
         return (
           <div>
             {/* <form onSubmit={this.handleSubmit}>
