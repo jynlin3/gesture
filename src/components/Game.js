@@ -169,7 +169,7 @@ class Game extends React.Component{
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
-        this.state.id = 2;
+        this.state.id = 4;
 
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
@@ -842,7 +842,7 @@ class Game extends React.Component{
     waitForPeople(){
         let idx = document.createElement("wait");
         for (let i = 0; i < userIds.length; ++i){
-            if (userIds[i] === this.state.id){
+            if (userIds[i] === this.mapping(this.state.id)){
                 if (Object.keys(this.state.player).length === 0){
                     idx.innerHTML = i;
                 }else{
@@ -880,8 +880,8 @@ class Game extends React.Component{
         // this.state.round = 4;
         this.setState({round: 0})
         // this.render();
-        let a = console.log(document.getElementById('teams'))
-        console.log(a)
+        // let a = console.log(document.getElementById('teams'))
+        // console.log(a)
 
     }
     
@@ -950,9 +950,14 @@ class Game extends React.Component{
 
     }
 
+    mapping = (stateID) =>{
+        // Video tags are 0-indexing while stateId are 1-indexing
+        return stateID-1
+
+    }
 
     allCase = (props) =>{
-        let id = props.id;
+        let id = this.mapping(props.id);
         let round = props.round;
         let observerId = props.observerId;
         let waitingSet = props.waitingSet;
