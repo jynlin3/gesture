@@ -173,7 +173,7 @@ class Game extends React.Component {
       completions: 0,
       // game logic
       step: -1,
-      answer: null
+      // answer: null
     };
     // this.splitTeams(userIds);
     this.scores = [0, 0];
@@ -1243,7 +1243,7 @@ class Game extends React.Component {
 
   handleSubmit(event) {
     let word = question;
-    let correct = question === this.state.answer;
+    let correct = question === document.getElementById("answer").value;
     axios
       .put(
         `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`
@@ -1293,7 +1293,7 @@ class Game extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({ answer: event.target.value });
+    // this.setState({ answer: event.target.value });
   }
 
   // lookForidx(id) {
@@ -1557,7 +1557,7 @@ class Game extends React.Component {
             </form>
             {this.answerTimer()} */}
             <label for="answer"> Answer: </label>
-            <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
+            <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
             <button id="submit" onClick={this.handleSubmit}>
                 Submit
             </button>
