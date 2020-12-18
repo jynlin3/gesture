@@ -68,6 +68,7 @@ let arrayA = [null, null, null];
 let arrayB = [null, null, null];
 let res = null;
 let listReq = null;
+let frequency = 3000;
 
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map();
@@ -164,13 +165,11 @@ class Game extends React.Component {
       round: 1,
       userIds: [1, 2, 3, 4, 5, 6],
       score: [0, 0],
-      isCorrect: false,
-      waiter1: {},
-      waiter2: {},
+      totalGameRound: 1,
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 3;
+    this.state.id = 1;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -215,12 +214,16 @@ class Game extends React.Component {
     });
   }
 
-  // update(e){
-  //     this.props.changeSessionID(e.target.value);
-  // }
-
   componentDidMount() {
     this.GameServerRoomStart();
+    this.interval = setInterval(
+      () => this.setState({ time: Date.now() }),
+      frequency + 1000
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   splitTeams(userIds) {
@@ -234,8 +237,8 @@ class Game extends React.Component {
       }
     } else {
       for (let i = 1; i < team2.length; ++i) {
-        // this.state.waiting.add(team2[i]);
-        this.addWaiting(team2[i]);
+        this.state.waiting.add(team2[i]);
+        // this.addWaiting(team2[i]);
       }
     }
   }
@@ -932,28 +935,10 @@ class Game extends React.Component {
         <Container>
           <Row>
             <Col>
-              <div id="myvideo" className="container">
-                <video
-                  id="localvideo"
-                  className="rounded centered"
-                  width="100%"
-                  height="100%"
-                  autoPlay
-                  playsInline
-                  muted="muted"
-                ></video>
-              </div>
+              <h3> Player video </h3>
             </Col>
             <Col>
-              <div id="videoremote1" className="container">
-                <img
-                  src={offline}
-                  id="img1"
-                  className="card-media-image"
-                  style={{ width: "300px", height: "250px" }}
-                ></img>
-              </div>
-              <h3 id="callername">{"Participant 1"}</h3>
+              <h3> Observer video </h3>
             </Col>
           </Row>
         </Container>
@@ -967,17 +952,17 @@ class Game extends React.Component {
       // Render a completed state
       this.updateRole();
       // this.props.timeUp();
-      return <span> You are good to go! </span>;
+      return <span> You are good to go! </span>
     } else {
       // Render a countdown
-      return <span>{seconds} seconds</span>;
+      return <span>{seconds} seconds</span>
     }
   };
 
   Timer() {
     return (
       <div>
-        <Countdown date={Date.now() + 5000} renderer={this.renderer} />,
+        <Countdown date={Date.now() + frequency} renderer={this.renderer} />,
       </div>
     );
   }
@@ -1103,35 +1088,18 @@ class Game extends React.Component {
     // this.render();
   };
 
-  storeAnswer(word, correct) {
-    axios
-      .put(
-        `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`
-      )
-      .then((state) => {
-        this.setState({
-          update_result: state.data.message,
-        });
-      });
-  }
-
-  handleChange(event) {
-    this.setState({ value: event.target.value });
-  }
-
   answerRenderer = ({ seconds, completed }) => {
     if (completed) {
       // Render a completed state
-      this.storeAnswer(
-        this.state.value,
-        this.state.value === this.state.question
-      );
-      return <span> Time's up! We will store your last answer! </span>;
+    //   alert(`Time's up! We will store your last answer!`);
+      this.switchTeam();
+      return <span>Time's up</span>
     } else {
       // Render a countdown
       return <span>{seconds} seconds</span>;
     }
   };
+
   switchVideo1 = () => {
     if (document.querySelector("video#remotevideo1") == null) {
       alert("No such video1 item yet");
@@ -1218,30 +1186,62 @@ class Game extends React.Component {
   answerTimer() {
     return (
       <div>
-        <Countdown date={Date.now() + 30000} renderer={this.answerRenderer} />,
+        <Countdown date={Date.now() + 3000} renderer={this.answerRenderer} />,
       </div>
     );
   }
 
-  handleSubmit(event) {
-    if (this.state.question === this.state.value) {
-      // alert('OMG! Genius! You got it right');
-      // let oldScore;
-      // if (team1Competing){
-      //     oldScore = this.state.score[0];
-      // }else{
-      //     oldScore = this.state.score[1];
-      // }
-      // this.setState({
-      //     score: oldScore + 1,
-      //     isCorrect: true,
-      // })
-      this.storeAnswer(this.state.value, 1);
-      return <span> You got it right! Great job!</span>;
-    } else {
-      alert("Wrong answer! Try again within the countdown");
+  deleteObj(obj){
+      for (var member in obj){
+          delete obj[member];
+      }
+  }
+
+  switchTeam() {
+    team1Competing = !team1Competing;
+    this.splitTeams(userIds);
+    this.deleteObj(this.state.player);
+    this.deleteObj(this.state.observer);
+    this.setState({
+      player: {},
+      observer: {},
+      totalGameRound: this.state.totalGameRound + 1,
+      round: 1,
+    });
+    if (this.state.totalGameRound === 6) {
+      // render to another page
     }
+  }
+
+  handleSubmit(event) {
+    let word = this.state.value;
+    let correct = this.state.question === word;
+    axios
+      .put(
+        `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`
+      )
+      .then((state) => {
+        this.setState({
+          update_result: state.data.message,
+        });
+      });
+    if (correct) {
+      let newScore = team1Competing
+        ? this.state.score[0] + 1
+        : this.state.score[1] + 1;
+      this.setState({
+        score: newScore,
+      });
+      alert("Good job! You save your team");
+    } else {
+      alert("BOOM!!! Wrong answer");
+    }
+    this.switchTeam();
     event.preventDefault();
+  }
+
+  handleChange(event) {
+    this.setState({ value: event.target.value });
   }
 
   lookForidx(id) {
@@ -1261,10 +1261,26 @@ class Game extends React.Component {
     }
     return idx;
   }
+
+  yourTeamCompeting() {
+    let currentId = this.state.id;
+    for (let i = 0; i < team1.length; ++i) {
+      // in team1
+      if (team1[i] === currentId) {
+        return team1Competing;
+      }
+    }
+    // id in team2
+    return !team1Competing;
+  }
+
   render() {
     const currentId = this.state.id;
     const idx = this.lookForidx(currentId);
+    const flag = this.yourTeamCompeting();
     console.log("round: ", this.state.round);
+    console.log("flag: ", flag);
+    console.log("idx: ", idx);
     console.log("Current id: ", currentId);
     console.log("player: ", this.state.player);
     console.log("observer: ", this.state.observer);
@@ -1393,6 +1409,22 @@ class Game extends React.Component {
         </div>
       );
       // waiting
+    } else if (!flag) {
+      if (this.state.round === 1) {
+        return (
+          <div>
+            <h1>Wait other team's first player is reading the question!!</h1>
+            {this.Timer()}
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            <div>{this.Competing()}</div>
+            {this.Timer()}
+          </div>
+        );
+      }
     } else if (this.state.waiting.has(currentId)) {
       this.waitForPeople();
       return (
@@ -1486,7 +1518,7 @@ class Game extends React.Component {
       // answering
     } else if (
       this.state.observer.index >= team1.length &&
-      idx < team1.length
+      idx < team1.length - 1
     ) {
       return (
         <div>
