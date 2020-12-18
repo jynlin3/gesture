@@ -63,7 +63,7 @@ let arr2 = [2, 3];
 let arr3 = [4, 5];
 let res = null;
 let listReq = null;
-let frequency = 5000;
+let frequency = 5000 * 6;
 let scoreA = 0;
 let scoreB = 0;
 
@@ -1415,14 +1415,15 @@ class Game extends React.Component {
 
   playerObserverVideo = (step, id) =>{
     id = this.mapping(id)
-    // let orderArr = this.localToGlobal(id)
+    let orderArr = this.localToGlobal(id);
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
     let playerID = this.getPlayId(step);
     let observerID = this.getObserveId(step);
-    for(let k=0;k<GlobalPeopleID.length; k++){
-        // i = orderArr[k]
+
+    for(let i=0;i<GlobalPeopleID.length; i++){
+        let k = orderArr[i];
         if(!document.querySelector('video#remotevideo'+k)){ continue;}
         if(k == playerID || k == observerID){
             document.querySelector('video#remotevideo'+k).muted= false;
