@@ -1392,25 +1392,44 @@ class Game extends React.Component {
   playerObserverVideo = (id) =>{
     id = this.mapping(id)
     let orderArr = this.localToGlobal(id)
+    console.log('debugging observer and player start')
+    console.log('Order Arr')
+    console.log(orderArr)
+    console.log('my global index in the room (0-indexing) : ' + id)
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
     let i;
+    let next_id = this.playbook[this.state.step] == "PLAY" ? id+1 : id-1
+    if(this.playbook[this.state.step] == "PLAY"){
+        console.log(i + ' is playing, ' + next_id + ' is observing' )
+    }else if(this.playbook[this.state.step] == "OBSERVE"){
+        console.log(i + ' is obsering, ' + next_id + ' is playing' )
+    }else{
+        console.log('In playerObserver, Logic is wrong, I think')
+    }
     for(let k=0;k<GlobalPeopleID.length; k++){
         i = orderArr[k]
-        if(!document.querySelector('video#remotevideo'+i)){ continue;}
-        if(this.playbook[this.state.step] == "PLAY" || this.playbook[this.state.step] == "OBSERVE" ){
+        if(!document.querySelector('video#remotevideo'+i)){
+            console.log('No so remote video ' + i)
+            continue;
+        }
+        // if(this.playbook[this.state.step] == "PLAY" || this.playbook[this.state.step] == "OBSERVE" ){
+        if(i == id || i==next_id){
+            console.log('observer and player : '+ i);
             document.querySelector('video#remotevideo'+i).muted= false;
             document.querySelector('video#remotevideo'+i).style.visibility= "visible";
             document.querySelector('video#remotevideo'+i).style.width= "100%";
             document.querySelector('video#remotevideo'+i).style.height= "100%"
         }else{
+            console.log('should be muted (not player or not observer): ' + i)
             document.querySelector('video#remotevideo'+i).muted= true;
             document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
             document.querySelector('video#remotevideo'+i).style.width= "5%";
             document.querySelector('video#remotevideo'+i).style.height= "5%"
         }
     }
+    console.log('debugging observer and player end')
     if(document.querySelector('video#remotevideo'+id)){
         document.querySelector('video#remotevideo'+id).muted= true;
     }
@@ -1453,7 +1472,7 @@ class Game extends React.Component {
     //     }
       } else if (currentStatus == "WAIT") {
         // supress all
-        this.suppresAllVideo();
+        // this.suppresAllVideo();
         // this.waitForPeople();
         return (
           <div className="App">
@@ -1471,7 +1490,7 @@ class Game extends React.Component {
          // get topic round
       } else if (currentStatus == "READ_TOPIC") {
         // supress all
-        this.suppresAllVideo();
+        // this.suppresAllVideo();
         return (
           <div className="App">
             {this.Timer()}
@@ -1487,6 +1506,7 @@ class Game extends React.Component {
       } else if (currentStatus == "PLAY") {
         // be the publisher
         // look i and i+1
+        console.log(this.id + ' is playing')
         this.playerObserverVideo(currentId)
         // be the publisher
         return (
@@ -1502,6 +1522,7 @@ class Game extends React.Component {
       // observing
     } else if (currentStatus === "OBSERVE") {
         //look i-1  and i
+        console.log( this.id-1 + 'is observing')
         this.playerObserverVideo(currentId)
         // be the subscriber
         return (
@@ -1520,6 +1541,7 @@ class Game extends React.Component {
         // audience
       } else if (currentStatus === "AUDIENCE") {
         // video : playerid and observer id
+        console.log("I'm an audience, how do I get the player and oberver index? ")
         this.playerObserverVideo(currentId)
         var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
@@ -1541,7 +1563,7 @@ class Game extends React.Component {
         // answering 
       } else {
           // supress all video
-          this.suppresAllVideo()
+        //   this.suppresAllVideo()
         return (
           <div>
             {/* <form onSubmit={this.handleSubmit}>
