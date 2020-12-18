@@ -51,6 +51,7 @@ let questions = ["Birthday", "JavaScript", "Sucks"];
 // let w;
 // question from datachannel
 let question = "";
+let theirQuestion = "";
 
 let GlobalPeopleID = [];
 let myIndexInRoom = 0;
@@ -555,8 +556,11 @@ class Game extends React.Component {
           if (json["textroom"] === "jointeam") {
             players.get(json["username"]).team = json["team"];
             updateTeamStatus();
-          } else if (json["textroom"] === "question" && json["team"] == players.get(userName).team){
-            question = json["question"];
+          } else if (json["textroom"] === "question"){
+            if (json["team"] == players.get(userName).team)
+              question = json["question"];
+            else
+              theirQuestion = json["question"];
           } else if (json["textroom"] === "startgame"){
             remoteStart = true;
             document.getElementById("start").click();
@@ -911,8 +915,11 @@ class Game extends React.Component {
                 if (json["textroom"] === "jointeam") {
                   players.get(json["username"]).team = json["team"];
                   updateTeamStatus();
-                } else if (json["textroom"] === "question" && json["team"] === players.get(userName).team){
-                  question = json["question"];
+                } else if (json["textroom"] === "question"){
+                  if (json["team"] == players.get(userName).team)
+                    question = json["question"];
+                  else
+                    theirQuestion = json["question"];
                 } else if (json["textroom"] === "startgame"){
                   remoteStart = true;
                   document.getElementById("start").click();
@@ -1117,12 +1124,12 @@ class Game extends React.Component {
 
     // TODO: auto generate playbooks
     var playbooks = [
-      ["READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-      ["WAIT", "OBSERVE", "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-      ["WAIT", "WAIT", "OBSERVE", "ANSWER", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-      ["AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE"],
-      ["AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE"],
-      ["AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE"]
+      ["READ_TOPIC",  "PLAY",     "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+      ["WAIT",        "OBSERVE",  "PLAY",     "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+      ["WAIT",        "WAIT",     "OBSERVE",  "ANSWER",   "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+      ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY",     "AUDIENCE", "AUDIENCE"],
+      ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "OBSERVE",  "PLAY",     "AUDIENCE"],
+      ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "WAIT",     "OBSERVE",  "ANSWER"]
     ];
 
     // generate playbook
@@ -1514,9 +1521,10 @@ class Game extends React.Component {
       } else if (currentStatus === "AUDIENCE") {
         // video : playerid and observer id
         this.playerObserverVideo(currentId)
+        var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
           <div className="App">
-            <h1>Guess what?</h1>
+            <h1>Guess what? {showTopic ? "Their Topic: "+theirQuestion: ""}</h1>
             {this.Competing()}
           </div>
         );
