@@ -1376,6 +1376,30 @@ class Game extends React.Component {
 
   }
 
+  // TODO: refine code for general use cases
+  getPlayId = (step) =>{
+    if (step < 3)
+      return step;
+    else if (step < 7)
+      return step - 1;
+    else
+      return step - 2; 
+  }
+
+  // TODO: refine code for general use cases
+  getObserveId = (step) =>{
+    switch(step){
+      case 1:
+      case 2:
+        return step - 1;
+      case 5:
+      case 6:
+        return step - 2;
+      default:
+        return null
+    }
+  }
+
   suppresAllVideo = () =>{
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
@@ -1389,26 +1413,29 @@ class Game extends React.Component {
     }
   }
 
-  playerObserverVideo = (id) =>{
+  playerObserverVideo = (step, id) =>{
     id = this.mapping(id)
-    let orderArr = this.localToGlobal(id)
-    if(document.getElementById('header')){
-        document.getElementById('header').style.display = 'none'
-    }
-    let i;
+    // let orderArr = this.localToGlobal(id)
+    // if(document.getElementById('header')){
+    //     document.getElementById('header').style.display = 'none'
+    // }
+    let playerID = this.getPlayId(step);
+    let observerID = this.getObserveId(step);
     for(let k=0;k<GlobalPeopleID.length; k++){
-        i = orderArr[k]
-        if(!document.querySelector('video#remotevideo'+i)){ continue;}
-        if(this.playbook[this.state.step] == "PLAY" || this.playbook[this.state.step] == "OBSERVE" ){
-            document.querySelector('video#remotevideo'+i).muted= false;
-            document.querySelector('video#remotevideo'+i).style.visibility= "visible";
-            document.querySelector('video#remotevideo'+i).style.width= "100%";
-            document.querySelector('video#remotevideo'+i).style.height= "100%"
+        // i = orderArr[k]
+        if(!document.querySelector('video#remotevideo'+k)){ continue;}
+        if(k == playerID || k == observerID){
+            document.querySelector('video#remotevideo'+k).muted= false;
+            document.querySelector('video#remotevideo'+k).style.visibility= "visible";
+            document.querySelector('video#remotevideo'+k).style.width= "100%";
+            document.querySelector('video#remotevideo'+k).style.height= "100%"
+            document.getElementById('callername'+k).innerHTML = k
         }else{
-            document.querySelector('video#remotevideo'+i).muted= true;
-            document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
-            document.querySelector('video#remotevideo'+i).style.width= "5%";
-            document.querySelector('video#remotevideo'+i).style.height= "5%"
+            document.querySelector('video#remotevideo'+k).muted= true;
+            document.querySelector('video#remotevideo'+k).style.visibility= "hidden";
+            document.querySelector('video#remotevideo'+k).style.width= "5%";
+            document.querySelector('video#remotevideo'+k).style.height= "5%"
+            document.getElementById('callername'+k).innerHTML = k
         }
     }
     if(document.querySelector('video#remotevideo'+id)){
@@ -1487,7 +1514,7 @@ class Game extends React.Component {
       } else if (currentStatus == "PLAY") {
         // be the publisher
         // look i and i+1
-        this.playerObserverVideo(currentId)
+        this.playerObserverVideo(this.state.step, this.id)
         // be the publisher
         return (
           <div className="App">
@@ -1502,7 +1529,7 @@ class Game extends React.Component {
       // observing
     } else if (currentStatus === "OBSERVE") {
         //look i-1  and i
-        this.playerObserverVideo(currentId)
+        this.playerObserverVideo(this.state.step, this.id);
         // be the subscriber
         return (
           <div className="App">
@@ -1520,7 +1547,7 @@ class Game extends React.Component {
         // audience
       } else if (currentStatus === "AUDIENCE") {
         // video : playerid and observer id
-        this.playerObserverVideo(currentId)
+        this.playerObserverVideo(this.state.step, this.id);
         var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
           <div className="App">
