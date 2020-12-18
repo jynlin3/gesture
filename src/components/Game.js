@@ -10,6 +10,7 @@ import Countdown from "react-countdown";
 import { connect } from "react-redux";
 import { Word } from "./Word";
 import axios from "axios";
+import {Link} from "react-router-dom";
 
 let server;
 /**
@@ -49,7 +50,6 @@ let team2 = [];
 let questions = ["Birthday", "JavaScript", "Sucks"];
 let team1Competing;
 let w;
-let scores = [];
 // idx, player id
 let player = {};
 // idx, player id
@@ -72,20 +72,6 @@ let frequency = 5000;
 
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map();
-
-// before loading
-window.onload = function () {
-  let q = document.getElementById("question");
-  if (q !== null && q !== "undefined") {
-    let idx = Math.floor(Math.random() * questions.length);
-    q.innerHTML = questions[idx];
-    question = questions[idx];
-  }
-  scores.values = document.getElementById("scores");
-  if (scores !== null && scores !== "undefined") {
-    scores.innerHTML = this.scores;
-  }
-};
 
 function updateTeamStatus() {
   // clear the team status
@@ -164,15 +150,14 @@ class Game extends React.Component {
       GlobalPeopleID: [],
       round: 1,
       userIds: [1, 2, 3, 4, 5, 6],
-      score: [0, 0],
+      scores: [0, 0],
       totalGameRound: 1,
       isCorrect: false,
       // timer usage only,
       completions: 0
     };
     this.splitTeams(userIds);
-    this.scores = [0, 0];
-    this.state.id = 6;
+    this.state.id = 5;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -343,6 +328,7 @@ class Game extends React.Component {
         },
       });
     }
+
     function newRemoteFeed(id, display, audio, video) {
       // A new feed has been published, create a new plugin handle and attach to it as a subscriber
       let remoteFeed = null;
@@ -941,9 +927,6 @@ class Game extends React.Component {
       // Render a completed state
       this.updateRole();
       // this.props.timeUp();
-    //   if (this.state.round === 3){
-    //       this.switchTeam();
-    //   }
       return <span> You are good to go! </span>
     } else {
       // Render a countdown
@@ -1062,9 +1045,6 @@ class Game extends React.Component {
     // this.render();
   };
 
-
-
-
   generalVideoSwitch = (e) => {
     let id;
     if (!Number.isInteger(e)) {
@@ -1157,8 +1137,11 @@ class Game extends React.Component {
       round: 0,
     });
     this.pickQuestion();
-    if (this.state.totalGameRound === 6) {
+    if (this.state.totalGameRound === 2) {
       // render to another page
+      return(
+          <Link to={`/ending`} scores={this.state.scores} room={this.state.room} > Game over</Link>
+      )
     }
   }
 
@@ -1175,11 +1158,13 @@ class Game extends React.Component {
         });
       });
     if (correct) {
-      let newScore = team1Competing
-        ? this.state.score[0] + 1
-        : this.state.score[1] + 1;
+    //   let newScore = team1Competing
+    //     ? this.score.scores[0] + 1
+    //     : this.state.scores[1] + 1;
+      let newScores = team1Competing ? this.state.scores[0] + 1 : this.state.scores[1] + 1;
+      this.props.changeScores(newScores)
       this.setState({
-        score: newScore,
+        scores: newScores,
       });
       alert("Good job! You save your team");
     } else {
