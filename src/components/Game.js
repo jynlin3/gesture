@@ -172,7 +172,7 @@ class Game extends React.Component {
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 4;
+    this.state.id = 6;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -1199,7 +1199,7 @@ class Game extends React.Component {
   answerTimer() {
     return (
       <div>
-        <Countdown date={Date.now() + 5000} renderer={this.answerRenderer} />,
+        <Countdown key={this.state.completions} date={Date.now() + frequency} renderer={this.answerRenderer} onComplete={this.onComplete} />,
       </div>
     );
   }
@@ -1253,7 +1253,6 @@ class Game extends React.Component {
     } else {
       alert("BOOM!!! Wrong answer");
     }
-    this.switchTeam();
     event.preventDefault();
   }
 
@@ -1299,12 +1298,17 @@ class Game extends React.Component {
     )
   }
 
+  timeToSwitchTeam(){
+      return ((this.state.completions - 3) % 4 === 0 && this.state.completions !== 0);
+  }
+
   render() {
     const currentId = this.state.id;
     const idx = this.lookForidx(currentId);
-    const youTeamCompeting = this.yourTeamCompeting();
+    const yourTeamCompeting = this.yourTeamCompeting();
+    const switchTeam = this.timeToSwitchTeam();
     console.log("round: ", this.state.round);
-    console.log("flag: ", youTeamCompeting);
+    console.log("flag: ", yourTeamCompeting);
     console.log("idx: ", idx);
     console.log("Current id: ", currentId);
     console.log("player: ", this.state.player);
@@ -1434,7 +1438,16 @@ class Game extends React.Component {
         </div>
       );
       // waiting
-    } else if (!youTeamCompeting) {
+    } else if(!yourTeamCompeting && switchTeam){
+        return (
+            <div>
+                <h1>
+                    Other team's last player is struggling.
+                </h1>
+                {this.answerTimer()}
+            </div>
+        )
+    }else if (!yourTeamCompeting) {
       if (this.state.round === 0) {
         return (
           <div>
@@ -1542,7 +1555,7 @@ class Game extends React.Component {
       );
       // answering
     } else if (
-      idx < team1.length - 1 && youTeamCompeting
+      idx < team1.length - 1 && yourTeamCompeting
     ) {
       return (
         <div>
