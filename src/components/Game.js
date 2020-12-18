@@ -1,13 +1,15 @@
-import React, {useState} from 'react';
-import ReactDOM from 'react-dom'
-import Janus from './Janus';
-import {withRouter} from 'react-router-dom';
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+import Janus from "./Janus";
+import { withRouter } from "react-router-dom";
 import offline from "../images/offline.jpg";
-import $ from 'jquery';
-import {Container, Row, Col} from 'react-bootstrap'
-import { findAllByTestId } from '@testing-library/react';
-import Countdown from 'react-countdown';
-import { connect } from 'react-redux';
+import $ from "jquery";
+import { Container, Row, Col } from "react-bootstrap";
+import { findAllByTestId } from "@testing-library/react";
+import Countdown from "react-countdown";
+import { connect } from "react-redux";
+import { Word } from "./Word";
+import axios from "axios";
 
 let server;
 /**
@@ -65,7 +67,7 @@ let arr3 = [4,5]
 let arrayA = [null,null,null]
 let arrayB = [null,null,null]
 let res = null;
-let listReq = null;
+// let listReq = null;
 
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map(); 
@@ -78,7 +80,6 @@ let startGame = 0;
 
 // before loading
 window.onload = function(){
-
     let q = document.getElementById("question");
     if (q !== null && q !== 'undefined'){
         let idx = Math.floor(Math.random() * questions.length);
@@ -89,7 +90,6 @@ window.onload = function(){
     if (scores !== null && scores !== 'undefined'){
         scores.innerHTML = this.scores;
     }
-    
 }
 
 function updateTeamStatus() {
@@ -167,10 +167,9 @@ class Game extends React.Component{
         // bind functions
         this.handleJoinClick = this.handleJoinClick.bind(this);
         this.startGame = this.startGame.bind(this);
-        
-        // this.askServer = this.askServer.bind(this);
-        // console.log("My name is :" + this.props.name)
-        // console.log(this.state)
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.pickQuestion();
 
         w = new Set();
         team1Competing = true;
@@ -184,7 +183,11 @@ class Game extends React.Component{
             players: props.players,
             GlobalPeopleID: [],
             round : 0,
-            userIds : [1,2,3,4,5,6]
+            userIds : [1,2,3,4,5,6],
+            score: [0, 0],
+            isCorrect: false,
+            waiter1: {},
+            waiter2: {},
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
@@ -202,16 +205,19 @@ class Game extends React.Component{
         this.state.startGame = 0
         this.state.allVideos = [1,1,1,1,1,1]
         this.state.generalVideoSwitch= this.generalVideoSwitch.bind(this)
-        // this.enableRemote0 = this.enableRemote0.bind(this)
         this.teamtemplate2 = this.teamtemplate2.bind(this)
         this.allCase = this.allCase.bind(this);
-        // this.state.video1 = 1
-        // this.switchVideo1 = this.switchVideo1.bind(this);
-        // this.state.video0 = 1
-        // this.switchVideo0 = this.switchVideo0.bind(this);
-
     }
-    
+
+    pickQuestion() {
+        axios.get("https://www.seattle8520.xyz/api/getRandomWord").then((state) => {
+          console.log(state);
+          this.setState({
+            // the generated word is stored in `res.data.item`
+            question: state.data.item,
+          });
+        });
+      }
     addWaiting(id){
         this.setState((waiting) => ({            
             waiting: new Set(waiting).add(id)
@@ -253,48 +259,43 @@ class Game extends React.Component{
         }
     }
 
-    updateRole(){
-        // prevent starting round
+    updateRole() {
+        console.log("update role");
         let numMembers = userIds.length / 2;
-        if (this.state.waiting.size !== numMembers - 1){
-            let newIndex = this.state.player.index + 1;
-            let newPlayer = userIds[newIndex];
-            this.state.player = {
-                "id": newPlayer,
-                "index": newIndex
-            }
-            let newObserIdx = newIndex + 1;
-            this.state.observer = {
-                "id": userIds[newObserIdx],
-                "index": newObserIdx
-            } 
-            this.removeWaiting(userIds[newObserIdx])
-        }else{
+        // prevent starting round
+        const newWait = new Set(this.state.waiting);
+        if (this.state.waiting.size !== numMembers - 1) {
+        let newIndex = this.state.observer.index;
+        let newPlayer = userIds[newIndex];
+        let newObserIdx = newIndex + 1;
+        //   console.log();
+        this.setState({player: { id: newPlayer, index: newIndex,},
+                        observer: { id: userIds[newObserIdx], index: newObserIdx,},
+                        waiting: new Set(), round: this.state.round + 1,});
+        } else {
             // first round after waiting, update the player and observer
-            if (team1Competing){
-                this.state.player = {
-                    "id": team1[0],
-                    "index": 0
-                };
-                this.state.observer = {
-                    "id": team1[1],
-                    "index": 1
-                };
-            }else{
-                this.state.player = {
-                    "id": team2[0],
-                    "index": numMembers
-                };
-                this.state.observer = {
-                    "id": team2[1],
-                    "index": numMembers
-                };
+            if (team1Competing) {
+                console.log("first round");
+                newWait.delete(team1[1]);
+                this.setState({ player: { id: team1[0], index: 0, },
+                                observer: { id: team1[1], index: 1, },
+                                waiting: newWait, round: this.state.round + 1, });
+            } else {
+                newWait.delete(team2[1]);
+                this.setState({ player: { id: team1[0], index: 0, },
+                                observer: { id: team1[1], index: 1, },
+                                waiting: newWait,
+                                round: this.state.round + 1, });
             }
-            this.removeWaiting(this.state.observer.id);
         }
-
     }
 
+    updatePlayers() {
+        this.state.changePlayers(this.state.GlobalPeopleID);
+        while (this.state.players.length < 6) {
+          this.state.players.push({ id: null, id: "uknown" });
+        }
+      }
 
     GameServerRoomStart(){
 
@@ -559,10 +560,10 @@ class Game extends React.Component{
                                             } else if (event === "event") {
                                                 // Any new feed to attach to new joined members
                                                 
-                                                if(!vroomHandle){
-                                                    listReq = {"request" : "listparticipants", "room" :myroom}
-                                                    res = vroomHandle.send({"message":listReq})
-                                                }
+                                                // if(!vroomHandle){
+                                                //     listReq = {"request" : "listparticipants", "room" :myroom}
+                                                //     res = vroomHandle.send({"message":listReq})
+                                                // }
 
 
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
@@ -745,10 +746,10 @@ class Game extends React.Component{
     Question(){
         return (
             <div className="App">
-                <h2 id="question"></h2>
-                {this.Timer()}
+              {JSON.stringify(this.state.question)}
+              {this.Timer()}
             </div>
-        )
+          );
     }
 
     Competing(){
@@ -784,7 +785,7 @@ class Game extends React.Component{
         if (completed) {
             // Render a completed state
             this.updateRole();
-            this.props.timeUp();
+            // this.props.timeUp();
             return <span> You are good to go! </span>;
         } else {
             // Render a countdown
@@ -795,10 +796,7 @@ class Game extends React.Component{
     Timer(){
         return (
             <div>
-                <Countdown
-                    date={Date.now() + 5000}
-                    renderer={this.renderer}
-                />,
+                <Countdown date={Date.now() + 5000} renderer={this.renderer} />,
             </div>
         );
     }
@@ -926,34 +924,65 @@ class Game extends React.Component{
         )
     }
 
-    startGame =  () =>{ 
-        this.state.startGame = 1
-        this.state.GlobalPeopleID = GlobalPeopleID;
-        console.log(this.state)
-        // this.state.round = 4;
-        this.setState({round: 0})
-        // this.render();
-        // let a = console.log(document.getElementById('teams'))
-        // console.log(a)
+    // startGame =  () =>{ 
+    //     this.state.startGame = 1
+    //     this.state.GlobalPeopleID = GlobalPeopleID;
+    //     console.log(this.state)
+    //     // this.state.round = 4;
+    //     this.setState({round: 0})
+    //     // this.render();
+    //     // let a = console.log(document.getElementById('teams'))
+    //     // console.log(a)
 
-    }
+    // }
+
+    startGame = () => {
+        this.setState({
+            round: 0,
+            startGame: 1,
+            GlobalPeopleID: GlobalPeopleID,
+        });
+        // this.render();
+    };
     
 
-    switchVideo0 = () =>{
-        if(document.querySelector('video#remotevideo0') == null){
-            alert("No such video0 item yet")
-            return;
-        }
-        if(this.state.video0 == 1){
-            document.querySelector('video#remotevideo0').muted= true;
-            document.querySelector('video#remotevideo0').style.visibility= "hidden";
-            this.state.video0 = 0
-        }else{
-            document.querySelector('video#remotevideo0').muted= true;
-            document.querySelector('video#remotevideo0').style.visibility= "visible";
-            this.state.video0 = 1
-        }
+    storeAnswer(word, correct) {
+        axios.put( `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`)
+            .then((state) => { 
+                this.setState({ update_result: state.data.message, });
+            }
+        );
     }
+    
+    handleChange(event) {
+        this.setState({ value: event.target.value });
+    }
+
+    answerRenderer = ({ seconds, completed }) => {
+        if (completed) {
+            // Render a completed state
+            this.storeAnswer( this.state.value, this.state.value === this.state.question );
+        return <span> Time's up! We will store your last answer! </span>;
+    } else {
+        // Render a countdown
+        return <span>{seconds} seconds</span>;
+    }
+    };
+    // switchVideo0 = () =>{
+    //     if(document.querySelector('video#remotevideo0') == null){
+    //         alert("No such video0 item yet")
+    //         return;
+    //     }
+    //     if(this.state.video0 == 1){
+    //         document.querySelector('video#remotevideo0').muted= true;
+    //         document.querySelector('video#remotevideo0').style.visibility= "hidden";
+    //         this.state.video0 = 0
+    //     }else{
+    //         document.querySelector('video#remotevideo0').muted= true;
+    //         document.querySelector('video#remotevideo0').style.visibility= "visible";
+    //         this.state.video0 = 1
+    //     }
+    // }
 
     generalVideoSwitch = (e) =>{
         let id;
@@ -1002,169 +1031,226 @@ class Game extends React.Component{
         }
 
     }
+    answerTimer() {
+        return (
+          <div>
+            <Countdown date={Date.now() + 30000} renderer={this.answerRenderer} />,
+          </div>
+        );
+    }
+
+    handleSubmit(event) {
+        if (this.state.question === this.state.value) {
+            // alert('OMG! Genius! You got it right');
+            // let oldScore;
+            // if (team1Competing){
+            //     oldScore = this.state.score[0];
+            // }else{
+            //     oldScore = this.state.score[1];
+            // }
+            // this.setState({
+            //     score: oldScore + 1,
+            //     isCorrect: true,
+            // })
+            this.storeAnswer(this.state.value, 1);
+            return <span> You got it right! Great job!</span>;
+        } else {
+          alert("Wrong answer! Try again within the countdown");
+        }
+        event.preventDefault();
+    }
+
+    lookForidx(id) {
+        let idx;
+        for (let i = 0; i < team1.length; ++i) {
+            if (team1[i] === id) {
+                idx = i;
+                break;
+            }
+        }
+        for (let i = 0; i < team2.length; ++i) {
+            if (team2[i] === id) {
+                idx = i;
+                break;
+            }
+        }
+        return idx;
+    }
 
     mapping = (stateID) =>{
         // Video tags are 0-indexing while stateId are 1-indexing
-        return stateID-1
+        return stateID-1;
 
     }
 
+
+
+
     allCase = (props) =>{
-        let id = this.mapping(props.id);
-        let round = props.round;
+        let currentId = this.mapping(props.currentId);
+        let idx = props.idx;
         let observerId = props.observerId;
         let waitingSet = props.waitingSet;
         let playerId = props.playerId;
         if(this.state.startGame === 0){
             return(<p> Hi </p>);
-        }else if(round === userIds.length / 2 + 1){
+        }else if(waitingSet.has(currentId)){
             if(document.getElementById('header')){
                 document.getElementById('header').style.display = 'none'
-            }
-            const element =                 
-            <div>
-            <label for="answer"> Answer: </label>
-            <input type="text" id="answer" name="answer"></input>
-            <input type="submit" value="Submit"></input>
-            {this.Timer()}
-            <div id="myvideo" className="container shorter">
-            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-            </div>
-            </div>;
-
-            return element;
-
-        }else if(waitingSet.has(id)){
-            if(document.getElementById('header')){
-                document.getElementById('header').style.display = 'none'
-            }
-            this.waitForPeople();
-            const element =
-            <div className="App">                    
-            <h1> WAIT.....</h1>
-            <h2> Wait for <span id="wait"> </span> people</h2>
-            {this.Timer()}
-            <div id="myvideo" className="container shorter">
-            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-            </div>
-            </div>;
-            return element;
-        }else if((userIds.length / 2) - 1 === waitingSet.size){
-            if(document.getElementById('header')){
-                document.getElementById('header').style.display = 'none'
-            }
-            const element = <div className="App">
-            <h1>Please perform this topic only by body language:</h1> 
-            {this.Question()}
-            <button onClick={this.props.timeUp}> Give up?</button>
-            <div id="myvideo" className="container shorter">
-            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-            </div>
-            </div> ;
-
-            return element;
-        }else if(playerId === id){
-            if(document.getElementById('header')){
-                document.getElementById('header').style.display = 'none'
-            }
-            let s = new Set();
-            s.add(id)
-            s.add(id+1)
-            for(let i=0;i<6; i++){
-                if(!document.querySelector('video#remotevideo'+i)){ continue;}
-                if(s.has(i)){
-                    document.querySelector('video#remotevideo'+i).muted= false;
-                    document.querySelector('video#remotevideo'+i).style.visibility= "visible";
-                    document.querySelector('video#remotevideo'+i).style.width= "100%";
-                    document.querySelector('video#remotevideo'+i).style.height= "100%"
-                }else{
-                    document.querySelector('video#remotevideo'+i).muted= true;
-                    document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
-                    document.querySelector('video#remotevideo'+i).style.width= "5%";
-                    document.querySelector('video#remotevideo'+i).style.height= "5%"
-                }
-            }
-            if(document.querySelector('video#remotevideo'+id)){
-                document.querySelector('video#remotevideo'+id).muted= true;
-            }            const element = <div>
-            <h1>player</h1>
-            {this.Playing()}
-            {this.Timer()}
-            <div id="myvideo" className="container shorter">
-            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-            </div>
-            </div>;
-
-            return element;
-        }else if(observerId === id){
-            if(document.getElementById('header')){
-                document.getElementById('header').style.display = 'none'
-            }
-            let s = new Set();
-            s.add(id)
-            s.add(id-1)
-            for(let i=0;i<6; i++){
-                if(!document.querySelector('video#remotevideo'+i)){ continue;}
-                if(s.has(i)){
-                    document.querySelector('video#remotevideo'+i).muted= false;
-                    document.querySelector('video#remotevideo'+i).style.visibility= "visible";
-                    document.querySelector('video#remotevideo'+i).style.width= "100%";
-                    document.querySelector('video#remotevideo'+i).style.height= "100%"
-                }else{
-                    document.querySelector('video#remotevideo'+i).muted= true;
-                    document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
-                    document.querySelector('video#remotevideo'+i).style.width= "5%";
-                    document.querySelector('video#remotevideo'+i).style.height= "5%"
-                }
-            }
-            if(document.querySelector('video#remotevideo'+id)){
-                document.querySelector('video#remotevideo'+id).muted= true;
-            }            const element =  <div>
-            <h1> observer</h1>
-            {this.Timer()}
-            <h3> {this.props.round} </h3>
-            <h3> {this.props.question} </h3>
-            <div id="myvideo" className="container shorter">
-            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-            </div>
-            </div>;
-            return element;
-        }else{
-            // audience
-            if(document.getElementById('header')){
-                document.getElementById('header').style.display = 'none'
-            }
-            for(let i=0;i<6; i++){
-                if(!document.querySelector('video#remotevideo'+i)){ continue;}
-                if(i!==id && (Math.floor(i/3) == Math.floor(id/3))){
-                    document.querySelector('video#remotevideo'+i).muted= false;
-                    document.querySelector('video#remotevideo'+i).style.visibility= "visible";
-                    document.querySelector('video#remotevideo'+i).style.width= "100%";
-                    document.querySelector('video#remotevideo'+i).style.height= "100%"
-                }else{
-                    document.querySelector('video#remotevideo'+i).muted= true;
-                    document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
-                    document.querySelector('video#remotevideo'+i).style.width= "5%";
-                    document.querySelector('video#remotevideo'+i).style.height= "5%"
-                }
-            }
-            if(document.querySelector('video#remotevideo'+id)){
-                document.querySelector('video#remotevideo'+id).muted= true;
             }
             const element =                 
             <div className="App">
-            <h1>Watch those fools ;)</h1> 
-            {this.Competing()}
-            <div id="myvideo" className="container shorter">
-            <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                <h1> WAIT.....</h1>
+                    <h2>{" "}Wait for <span id="wait"> </span> people</h2>
+                {this.Timer()}
+                {/* {this.teamtemplate2()} */}
+                <div id="myvideo" className="container shorter">
+                <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                </div>
             </div>
-            </div>;
 
+            return element;
+        // starting round
+        } else if (userIds.length / 2 - 1 === waitingSet.size) {
+            const element =
+                <div className="App">
+                    <h1>Please perform this topic only by body language:</h1>
+                    {this.Question()}
+                </div>
+            return element;
+        // playing
+        } else if (playerId === currentId) {
+            if(document.getElementById('header')){
+                document.getElementById('header').style.display = 'none'
+            }
+            let s = new Set();
+            s.add(currentId)
+            s.add(currentId+1)
+            for(let i=0;i<6; i++){
+                if(!document.querySelector('video#remotevideo'+i)){ continue;}
+                if(s.has(i)){
+                    document.querySelector('video#remotevideo'+i).muted= false;
+                    document.querySelector('video#remotevideo'+i).style.visibility= "visible";
+                    document.querySelector('video#remotevideo'+i).style.width= "100%";
+                    document.querySelector('video#remotevideo'+i).style.height= "100%"
+                }else{
+                    document.querySelector('video#remotevideo'+i).muted= true;
+                    document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+                    document.querySelector('video#remotevideo'+i).style.width= "5%";
+                    document.querySelector('video#remotevideo'+i).style.height= "5%"
+                }
+            }
+            if(document.querySelector('video#remotevideo'+currentId)){
+                document.querySelector('video#remotevideo'+currentId).muted= true;
+            }
+            // be the publisher
+            const element = 
+                <div>
+                    <h1>player</h1>
+                    {this.Playing()}
+                    {this.Timer()}
+                    {/* {this.teamtemplate2()} */}
+                    <div id="myvideo" className="container shorter">
+                        <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                    </div>
+                </div>
+        return  element;
+
+        // observing
+        }else if(observerId === currentId){
+            if(document.getElementById('header')){
+                document.getElementById('header').style.display = 'none'
+            }
+            let s = new Set();
+            s.add(currentId)
+            s.add(currentId-1)
+            for(let i=0;i<6; i++){
+                if(!document.querySelector('video#remotevideo'+i)){ continue;}
+                if(s.has(i)){
+                    document.querySelector('video#remotevideo'+i).muted= false;
+                    document.querySelector('video#remotevideo'+i).style.visibility= "visible";
+                    document.querySelector('video#remotevideo'+i).style.width= "100%";
+                    document.querySelector('video#remotevideo'+i).style.height= "100%"
+                }else{
+                    document.querySelector('video#remotevideo'+i).muted= true;
+                    document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+                    document.querySelector('video#remotevideo'+i).style.width= "5%";
+                    document.querySelector('video#remotevideo'+i).style.height= "5%"
+                }
+            }
+            if(document.querySelector('video#remotevideo'+currentId)){
+                document.querySelector('video#remotevideo'+currentId).muted= true;
+            }            
+            const element =  
+            <div>
+                <h1> observer</h1>
+                {this.Timer()}
+                <h3> {this.props.round} </h3>
+                <h3> {this.props.question} </h3>
+                <div id="myvideo" className="container shorter">
+                    <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
+                </div>
+            </div>;
+            return element;
+        // audience
+        }else if(playerId != currentId && observerId != currentId && this.state.observer.index < team1.length){
+            if(document.getElementById('header')){
+                document.getElementById('header').style.display = 'none'
+            }
+            for(let i=0;i<6; i++){
+                if(!document.querySelector('video#remotevideo'+i)){ continue;}
+                if(i!==currentId && (Math.floor(i/3) == Math.floor(currentId/3))){
+                    document.querySelector('video#remotevideo'+i).muted= false;
+                    document.querySelector('video#remotevideo'+i).style.visibility= "visible";
+                    document.querySelector('video#remotevideo'+i).style.width= "100%";
+                    document.querySelector('video#remotevideo'+i).style.height= "100%"
+                }else{
+                    document.querySelector('video#remotevideo'+i).muted= true;
+                    document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+                    document.querySelector('video#remotevideo'+i).style.width= "5%";
+                    document.querySelector('video#remotevideo'+i).style.height= "5%"
+                }
+            }
+            if(document.querySelector('video#remotevideo'+currentId)){
+                document.querySelector('video#remotevideo'+currentId).muted= true;
+            }
+            const element =                 
+                <div className="App">
+                    <h1>Guess what?</h1>
+                    {this.Competing()}
+                </div>
+            return element;
+        // answering
+        }else if(this.state.observer.index >= team1.length && idx < team1.length){
+            const element =         
+                <div>
+                    <h1>Waiting for the last person to answer the question!</h1>
+                    {this.answerTimer()}
+                </div>
+            return element;
+        }else{
+            const element =
+                <div>
+                    <form onSubmit={this.handleSubmit}>
+                        <label> Answer:
+                            <input type="text" value={this.state.value} onChange={this.handleChange}/>
+                        </label>
+                        <input type="submit" value="Submit" />
+                    </form>
+                    {this.answerTimer()}
+                </div>
             return element;
         }
     }
 
     render(){
+        const currentId = this.state.id;
+        const idx = this.lookForidx(currentId);
+        console.log("round: ", this.state.round);
+        console.log("Current id: ", currentId);
+        console.log("player: ", this.state.player);
+        console.log("observer: ", this.state.observer);
+        console.log("waiting: ", this.state.waiting);
         return(
             <div className="App">
             <header className="App-header" id="header">
@@ -1215,23 +1301,24 @@ class Game extends React.Component{
                     {/* <this.updateNameTag nameList={this.state.nameList}/> */}
                     {/* {this.updateNameTag(this.state.nameList)} */}
                     {/* <updateReadyStatus /> */}
-                    <this.allCase id={this.state.id} round={this.state.round} observerId={this.state.observer.id} waitingSet={this.state.waiting} playerId={this.state.player.id}/>
+                    <this.allCase currentId={this.state.id} idx={this.lookForidx(this.state.id)} observerId={this.state.observer.id} waitingSet={this.state.waiting} playerId={this.state.player.id}/>
     
             </div>
         )
     }
 }
 
-const mapStateProps = state => {
-    return {
-        round: state.round,
-        question: state.question
-    }
-}
+// const mapStateProps = state => {
+//     return {
+//         round: state.round,
+//         question: state.question
+//     }
+// }
 
-const mapDispatchtoProps = dispatch => {
-    return {
-        timeUp: () => dispatch({type: "Next round"}),
-    };
-}
-export default connect(mapStateProps, mapDispatchtoProps)(Game);
+// const mapDispatchtoProps = dispatch => {
+//     return {
+//         timeUp: () => dispatch({type: "Next round"}),
+//     };
+// }
+// export default connect(mapStateProps, mapDispatchtoProps)(Game);
+export default Game;
