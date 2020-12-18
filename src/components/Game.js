@@ -257,54 +257,54 @@ class Game extends React.Component {
         return;
     }
     if (this.state.waiting.size !== numMembers - 1) {
-      let newIndex = this.state.observer.index;
-      let newPlayer = userIds[newIndex];
-      let newObserIdx = newIndex + 1;
-      //   console.log();
-      this.setState({
-        player: {
-          id: newPlayer,
-          index: newIndex,
-        },
-        observer: {
-          id: userIds[newObserIdx],
-          index: newObserIdx,
-        },
-        waiting: new Set(),
-        round: this.state.round + 1,
-      });
+        let newIndex = this.state.observer.index;
+        let newPlayer = team1Competing ? team1[newIndex] :  team2[newIndex];
+        let newObserIdx = newIndex + 1;
+        let newObser = team1Competing ? team1[newObserIdx] : team2[newObserIdx];
+        this.setState({
+            player: {
+                id: newPlayer,
+                index: newIndex,
+            },
+            observer: {
+                id: newObser,
+                index: newObserIdx,
+            },
+            waiting: new Set(),
+            round: this.state.round + 1,
+        });
     } else {
-      // first round after waiting, update the player and observer
-      if (team1Competing) {
-        console.log("first round");
-        newWait.delete(team1[1]);
-        this.setState({
-          player: {
-            id: team1[0],
-            index: 0,
-          },
-          observer: {
-            id: team1[1],
-            index: 1,
-          },
-          waiting: newWait,
-          round: this.state.round + 1,
-        });
-      } else {
-        newWait.delete(team2[1]);
-        this.setState({
-          player: {
-            id: team1[0],
-            index: 0,
-          },
-          observer: {
-            id: team1[1],
-            index: 1,
-          },
-          waiting: newWait,
-          round: this.state.round + 1,
-        });
-      }
+        // first round after waiting, update the player and observer
+        if (team1Competing) {
+            console.log("first round");
+            newWait.delete(team1[1]);
+            this.setState({
+                player: {
+                    id: team1[0],
+                    index: 0,
+                },
+                observer: {
+                    id: team1[1],
+                    index: 1,
+                },
+                waiting: newWait,
+                round: this.state.round + 1,
+            });
+        } else {
+            newWait.delete(team2[1]);
+            this.setState({
+                player: {
+                    id: team2[0],
+                    index: 0,
+                },
+                observer: {
+                    id: team2[1],
+                    index: 1,
+                },
+                waiting: newWait,
+                round: this.state.round + 1,
+            });
+        }
     }
   }
 
@@ -960,6 +960,9 @@ class Game extends React.Component {
       // Render a completed state
       this.updateRole();
       // this.props.timeUp();
+    //   if (this.state.round === 3){
+    //       this.switchTeam();
+    //   }
       return <span> You are good to go! </span>
     } else {
       // Render a countdown
@@ -1096,16 +1099,7 @@ class Game extends React.Component {
     // this.render();
   };
 
-  answerRenderer = ({ seconds, completed }) => {
-    if (completed) {
-      // Render a completed state
-      this.switchTeam();
-      return <span>Time's up</span>
-    } else {
-      // Render a countdown
-      return <span>{seconds} seconds</span>;
-    }
-  };
+
 
   switchVideo1 = () => {
     if (document.querySelector("video#remotevideo1") == null) {
@@ -1190,10 +1184,22 @@ class Game extends React.Component {
     }
   };
 
+  answerRenderer = ({ seconds, completed }) => {
+    if (completed) {
+      // Render a completed state
+      console.log('answer render');
+      this.switchTeam();
+      return <span>Time's up</span>
+    } else {
+      // Render a countdown
+      return <span>{seconds} seconds</span>;
+    }
+  };
+
   answerTimer() {
     return (
       <div>
-        <Countdown date={Date.now() + 3000} renderer={this.answerRenderer} />,
+        <Countdown date={Date.now() + 5000} renderer={this.answerRenderer} />,
       </div>
     );
   }
@@ -1205,16 +1211,17 @@ class Game extends React.Component {
   }
 
   switchTeam() {
+    console.log('switch team');
     team1Competing = !team1Competing;
     this.splitTeams(userIds);
-    this.deleteObj(this.state.player);
-    this.deleteObj(this.state.observer);
+    const newObj = Object.create(null);
     this.setState({
-      player: {},
-      observer: {},
+      player: newObj,
+      observer: newObj,
       totalGameRound: this.state.totalGameRound + 1,
-      round: 1,
+      round: 0,
     });
+    console.log('after switch:', this.state);
     if (this.state.totalGameRound === 6) {
       // render to another page
     }
@@ -1292,9 +1299,9 @@ class Game extends React.Component {
   render() {
     const currentId = this.state.id;
     const idx = this.lookForidx(currentId);
-    const flag = this.yourTeamCompeting();
+    const youTeamCompeting = this.yourTeamCompeting();
     console.log("round: ", this.state.round);
-    console.log("flag: ", flag);
+    console.log("flag: ", youTeamCompeting);
     console.log("idx: ", idx);
     console.log("Current id: ", currentId);
     console.log("player: ", this.state.player);
@@ -1424,8 +1431,8 @@ class Game extends React.Component {
         </div>
       );
       // waiting
-    } else if (!flag) {
-      if (this.state.round === 1) {
+    } else if (!youTeamCompeting) {
+      if (this.state.round === 0) {
         return (
           <div>
             <h1>Wait other team's first player is reading the question!!</h1>
@@ -1532,7 +1539,7 @@ class Game extends React.Component {
       );
       // answering
     } else if (
-      idx < team1.length - 1
+      idx < team1.length - 1 && youTeamCompeting
     ) {
       return (
         <div>
