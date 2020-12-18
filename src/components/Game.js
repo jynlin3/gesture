@@ -63,7 +63,7 @@ let arr2 = [2, 3];
 let arr3 = [4, 5];
 let res = null;
 let listReq = null;
-let frequency = 5000;
+let frequency = 5000 * 6;
 let scoreA = 0;
 let scoreB = 0;
 
@@ -173,7 +173,7 @@ class Game extends React.Component {
       completions: 0,
       // game logic
       step: -1,
-      answer: null
+      // answer: null
     };
     // this.splitTeams(userIds);
     this.scores = [0, 0];
@@ -1243,7 +1243,7 @@ class Game extends React.Component {
 
   handleSubmit(event) {
     let word = question;
-    let correct = question === this.state.answer;
+    let correct = question === document.getElementById("answer").value;
     axios
       .put(
         `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`
@@ -1293,7 +1293,7 @@ class Game extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({ answer: event.target.value });
+    // this.setState({ answer: event.target.value });
   }
 
   // lookForidx(id) {
@@ -1376,6 +1376,30 @@ class Game extends React.Component {
 
   }
 
+  // TODO: refine code for general use cases
+  getPlayId = (step) =>{
+    if (step < 3)
+      return step;
+    else if (step < 7)
+      return step - 1;
+    else
+      return step - 2; 
+  }
+
+  // TODO: refine code for general use cases
+  getObserveId = (step) =>{
+    switch(step){
+      case 1:
+      case 2:
+        return step - 1;
+      case 5:
+      case 6:
+        return step - 2;
+      default:
+        return null
+    }
+  }
+
   suppresAllVideo = () =>{
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
@@ -1389,44 +1413,32 @@ class Game extends React.Component {
     }
   }
 
-  playerObserverVideo = (id) =>{
+  playerObserverVideo = (step, id) =>{
     id = this.mapping(id)
-    let orderArr = this.localToGlobal(id)
-    console.log('debugging observer and player start')
-    console.log('Order Arr')
-    console.log(orderArr)
-    console.log('my global index in the room (0-indexing) : ' + id)
+
+    let orderArr = this.localToGlobal(id);
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
-    let i;
-    let next_id = this.playbook[this.state.step] == "PLAY" ? id+1 : id-1
-    if(this.playbook[this.state.step] == "PLAY"){
-        console.log(i + ' is playing, ' + next_id + ' is observing' )
-    }else if(this.playbook[this.state.step] == "OBSERVE"){
-        console.log(i + ' is obsering, ' + next_id + ' is playing' )
-    }else{
-        console.log('In playerObserver, Logic is wrong, I think')
-    }
-    for(let k=0;k<GlobalPeopleID.length; k++){
-        i = orderArr[k]
-        if(!document.querySelector('video#remotevideo'+i)){
-            console.log('No so remote video ' + i)
-            continue;
-        }
-        // if(this.playbook[this.state.step] == "PLAY" || this.playbook[this.state.step] == "OBSERVE" ){
-        if(i == id || i==next_id){
-            console.log('observer and player : '+ i);
-            document.querySelector('video#remotevideo'+i).muted= false;
-            document.querySelector('video#remotevideo'+i).style.visibility= "visible";
-            document.querySelector('video#remotevideo'+i).style.width= "100%";
-            document.querySelector('video#remotevideo'+i).style.height= "100%"
+    let playerID = this.getPlayId(step);
+    let observerID = this.getObserveId(step);
+
+    for(let i=0;i<GlobalPeopleID.length; i++){
+        let k = orderArr[i];
+        if(!document.querySelector('video#remotevideo'+k)){ continue;}
+        if(k == orderArr[playerID] ||  k == orderArr[observerID]){
+            document.querySelector('video#remotevideo'+k).muted= false;
+            document.querySelector('video#remotevideo'+k).style.visibility= "visible";
+            document.querySelector('video#remotevideo'+k).style.width= "100%";
+            document.querySelector('video#remotevideo'+k).style.height= "100%"
+            document.getElementById('callername'+k).innerHTML = k
         }else{
-            console.log('should be muted (not player or not observer): ' + i)
-            document.querySelector('video#remotevideo'+i).muted= true;
-            document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
-            document.querySelector('video#remotevideo'+i).style.width= "5%";
-            document.querySelector('video#remotevideo'+i).style.height= "5%"
+            document.querySelector('video#remotevideo'+k).muted= true;
+            document.querySelector('video#remotevideo'+k).style.visibility= "hidden";
+            document.querySelector('video#remotevideo'+k).style.width= "5%";
+            document.querySelector('video#remotevideo'+k).style.height= "5%"
+            document.getElementById('callername'+k).innerHTML = k
+
         }
     }
     console.log('debugging observer and player end')
@@ -1506,8 +1518,9 @@ class Game extends React.Component {
       } else if (currentStatus == "PLAY") {
         // be the publisher
         // look i and i+1
-        console.log(this.id + ' is playing')
-        this.playerObserverVideo(currentId)
+
+        this.playerObserverVideo(this.state.step, this.id)
+
         // be the publisher
         return (
           <div className="App">
@@ -1522,8 +1535,9 @@ class Game extends React.Component {
       // observing
     } else if (currentStatus === "OBSERVE") {
         //look i-1  and i
-        console.log( this.id-1 + 'is observing')
-        this.playerObserverVideo(currentId)
+
+        this.playerObserverVideo(this.state.step, this.id);
+
         // be the subscriber
         return (
           <div className="App">
@@ -1541,8 +1555,8 @@ class Game extends React.Component {
         // audience
       } else if (currentStatus === "AUDIENCE") {
         // video : playerid and observer id
-        console.log("I'm an audience, how do I get the player and oberver index? ")
-        this.playerObserverVideo(currentId)
+
+        this.playerObserverVideo(this.state.step, this.id);
         var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
           <div className="App">
@@ -1579,7 +1593,7 @@ class Game extends React.Component {
             </form>
             {this.answerTimer()} */}
             <label for="answer"> Answer: </label>
-            <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
+            <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
             <button id="submit" onClick={this.handleSubmit}>
                 Submit
             </button>
