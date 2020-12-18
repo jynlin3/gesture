@@ -1416,9 +1416,9 @@ class Game extends React.Component {
   playerObserverVideo = (step, id) =>{
     id = this.mapping(id)
     // let orderArr = this.localToGlobal(id)
-    // if(document.getElementById('header')){
-    //     document.getElementById('header').style.display = 'none'
-    // }
+    if(document.getElementById('header')){
+        document.getElementById('header').style.display = 'none'
+    }
     let playerID = this.getPlayId(step);
     let observerID = this.getObserveId(step);
     for(let k=0;k<GlobalPeopleID.length; k++){
