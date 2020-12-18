@@ -68,7 +68,7 @@ let arrayA = [null, null, null];
 let arrayB = [null, null, null];
 let res = null;
 let listReq = null;
-let frequency = 3000;
+let frequency = 5000;
 
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map();
@@ -166,10 +166,13 @@ class Game extends React.Component {
       userIds: [1, 2, 3, 4, 5, 6],
       score: [0, 0],
       totalGameRound: 1,
+      isCorrect: false,
+      // timer usage only,
+      completions: 0
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 1;
+    this.state.id = 4;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -216,14 +219,14 @@ class Game extends React.Component {
 
   componentDidMount() {
     this.GameServerRoomStart();
-    this.interval = setInterval(
-      () => this.setState({ time: Date.now() }),
-      frequency + 1000
-    );
+    // this.interval = setInterval(
+    //   () => this.setState({ time: Date.now() }),
+    //   frequency + 500
+    // );
   }
 
   componentWillUnmount() {
-    clearInterval(this.interval);
+    // clearInterval(this.interval);
   }
 
   splitTeams(userIds) {
@@ -962,7 +965,7 @@ class Game extends React.Component {
   Timer() {
     return (
       <div>
-        <Countdown date={Date.now() + frequency} renderer={this.renderer} />,
+        <Countdown key={this.state.completions} date={Date.now() + 5000} renderer={this.renderer} onComplete={this.onComplete}/>,
       </div>
     );
   }
@@ -1271,7 +1274,15 @@ class Game extends React.Component {
       }
     }
     // id in team2
-    return !team1Competing;
+    return !team1Competing; 
+  }
+  
+  onComplete = () => {
+    this.setState({
+      completions: this.state.completions + 1
+    },
+    () => console.log('completions', this.state.completions)
+    )
   }
 
   render() {
