@@ -172,7 +172,7 @@ class Game extends React.Component {
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 3;
+    this.state.id = 4;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -1212,6 +1212,9 @@ class Game extends React.Component {
 
   switchTeam() {
     console.log('switch team');
+    if (this.state.waiting.size === 2){
+        return;
+    }
     team1Competing = !team1Competing;
     this.splitTeams(userIds);
     const newObj = Object.create(null);
