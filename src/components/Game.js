@@ -50,7 +50,7 @@ let questions = ["Birthday", "JavaScript", "Sucks"];
 let team1Competing;
 // let w;
 let scores = [];
-let question;
+let question = "";
 
 let GlobalPeopleID = [];
 let myIndexInRoom = 0;
@@ -67,7 +67,8 @@ let frequency = 5000;
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map();
 
-
+// only start game usage
+let remoteStart = false; 
 
 // // before loading
 // window.onload = function () {
@@ -147,7 +148,7 @@ class Game extends React.Component {
     // this.askServer = this.askServer.bind(this);
     // console.log("My name is :" + this.props.name)
     // console.log(this.state)
-    this.pickQuestion();
+    // this.pickQuestion();
     // w = new Set();
     team1Competing = true;
 
@@ -171,11 +172,9 @@ class Game extends React.Component {
     };
     // this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 3;
+    this.id = 1;
 
-    console.log("[Jyn] id = ", this.state.id);
-
-    this.startGame = this.startGame.bind(this);
+    // this.startGame = this.startGame.bind(this);
 
     // only form team usage
     players.set(userName, {});
@@ -192,12 +191,22 @@ class Game extends React.Component {
   }
 
   pickQuestion() {
-    axios.get("https://www.seattle8520.xyz/api/getRandomWord").then((state) => {
-      console.log(state);
+    axios.get("https://www.seattle8520.xyz/api/getRandomWord").then((res) => {
+      console.log(res);
+      question = res.data.item;
       this.setState({
         // the generated word is stored in `res.data.item`
-        question: state.data.item,
+        question: question,
       });
+      
+      // send to remotes
+      var message = {
+        textroom: "question",
+        room: myroom,
+        question: question,
+        team: players.get(userName).team,
+      };
+      this.sendData(message);
     });
   }
 
@@ -538,6 +547,11 @@ class Game extends React.Component {
           if (json["textroom"] === "jointeam") {
             players.get(json["username"]).team = json["team"];
             updateTeamStatus();
+          } else if (json["textroom"] === "question" && json["team"] == players.get(userName).team){
+            question = json["question"];
+          } else if (json["textroom"] === "startgame"){
+            remoteStart = true;
+            document.getElementById("start").click();
           }
         },
         oncleanup: function () {
@@ -899,6 +913,11 @@ class Game extends React.Component {
                 if (json["textroom"] === "jointeam") {
                   players.get(json["username"]).team = json["team"];
                   updateTeamStatus();
+                } else if (json["textroom"] === "question"){
+                  question = json["question"];
+                } else if (json["textroom"] === "startgame"){
+                  remoteStart = true;
+                  document.getElementById("start").click();
                 }
               },
               oncleanup: function () {
@@ -1092,6 +1111,19 @@ class Game extends React.Component {
   }
 
   startGame = () => {
+    if(!remoteStart){
+    // notify remote players
+    var message = {
+      textroom: "startgame",
+      room: myroom,
+    };
+    this.sendData(message);
+  }
+
+    // use adding order as id
+    this.id = myIndexInRoom + 1;
+    console.log("[Jyn] id = ", this.id);
+
     // TODO: auto generate playbooks
     var playbooks = [
       ["READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE"],
@@ -1101,13 +1133,20 @@ class Game extends React.Component {
       ["AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE"],
       ["AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY", "AUDIENCE", "AUDIENCE"]
     ];
-    this.playbook = playbooks[this.state.id - 1];
+
+    // generate playbook
+    this.playbook = playbooks[this.id - 1];
+    if(this.playbook.includes("READ_TOPIC"))
+      this.pickQuestion();
+
+    // update state
     this.setState({
       // round: 0,
       startGame: 1,
       GlobalPeopleID: GlobalPeopleID,
       step: 0
     });
+
     // this.render();
   };
 
@@ -1236,7 +1275,7 @@ class Game extends React.Component {
   // }
 
   handleSubmit(event) {
-    let word = this.state.question;
+    let word = question;
     let correct = this.state.question === this.state.answer;
     axios
       .put(
@@ -1313,7 +1352,7 @@ class Game extends React.Component {
 
   render() {
     console.log("[Game] render");
-    const currentId = this.state.id;
+    const currentId = this.id;
     // const idx = this.lookForidx(currentId);
     // const flag = this.yourTeamCompeting();
 
@@ -1448,7 +1487,7 @@ class Game extends React.Component {
           <h1> WAIT.....</h1>
           <h2>
             {" "}
-      Wait for <span id="wait"> {this.state.id <= 3 ? this.state.id - this.state.step - 1 : this.state.id - this.state.step + 1}</span> people
+      Wait for <span id="wait"> {this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
           </h2>
           {this.Timer()}
           {this.teamtemplate2()}
@@ -1503,7 +1542,7 @@ class Game extends React.Component {
           <h1> observer</h1>
           {this.Timer()}
           {/* <h3> {this.props.round} </h3> */}
-          <h3> {this.props.question} </h3>
+          {/* <h3> {this.props.question} </h3> */}
           {this.teamtemplate2()}
           <div id="myvideo" className="container shorter">
             <video
