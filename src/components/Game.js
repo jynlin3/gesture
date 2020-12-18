@@ -63,7 +63,7 @@ let arr2 = [2, 3];
 let arr3 = [4, 5];
 let res = null;
 let listReq = null;
-let frequency = 5000;
+let frequency = 5000 * 6;
 let scoreA = 0;
 let scoreB = 0;
 
