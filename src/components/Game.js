@@ -63,6 +63,8 @@ let arr3 = [4, 5];
 let res = null;
 let listReq = null;
 let frequency = 5000;
+let scoreA = 0;
+let scoreB = 0;
 
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map();
@@ -558,6 +560,12 @@ class Game extends React.Component {
           } else if (json["textroom"] === "startgame"){
             remoteStart = true;
             document.getElementById("start").click();
+          } else if (json["textroom"] === "answercorret"){
+            if ('scoreA' in json){
+              scoreA += 1;
+            } else if ('scoreB' in json){
+              scoreB += 1;
+            }
           }
         },
         oncleanup: function () {
@@ -908,6 +916,12 @@ class Game extends React.Component {
                 } else if (json["textroom"] === "startgame"){
                   remoteStart = true;
                   document.getElementById("start").click();
+                } else if (json["textroom"] === "answercorret"){
+                  if ('scoreA' in json){
+                    scoreA += 1;
+                  } else if ('scoreB' in json){
+                    scoreB += 1;
+                  }
                 }
               },
               oncleanup: function () {
@@ -935,23 +949,23 @@ class Game extends React.Component {
   }
 
   // conditional rendering`
-  Question() {
-    return (
-      <div className="App">
-        {JSON.stringify(this.state.question)}
-        {this.Timer()}
-      </div>
-    );
-  }
+  // Question() {
+  //   return (
+  //     <div className="App">
+        
+  //       {JSON.stringify(this.state.question)}
+  //       {this.Timer()}
+        
+  //     </div>
+  //   );
+  // }
 
   Competing() {
     return (
       <div className="App">
         {this.Timer()};
-        <header className="App-header">
-          <p>
-            Current Score: <span id="scoreA">0</span> : <span id="scoreB">0</span>
-          </p>
+        <header className="jumbotron">
+          <p>Current Score: {scoreA}: {scoreB}</p>
         </header>
         <Container>
           <Row>
@@ -1078,9 +1092,9 @@ class Game extends React.Component {
   //   }
   // }
 
-  Playing() {
-    return <h1> </h1>;
-  }
+  // Playing() {
+  //   return <h1> </h1>;
+  // }
 
   startGame = () => {
     if(!remoteStart){
@@ -1234,20 +1248,34 @@ class Game extends React.Component {
         // });
       });
     if (correct) {
-      let newScore = players.get(userName).team == 'A'
-        ? this.state.score[0] + 1
-        : this.state.score[1] + 1;
-      this.setState({
-        score: newScore,
-      });
-      // TODO: update scores
-      // if (players.get(userName).team == 'A'){
-      //   var element = document.getElementById("scoreA").innerHTML;
-      //   element = parseInt(element) + 1;
-      // } else {
-      //   var element = document.getElementById("scoreB").innerHTML;
-      //   element = parseInt(element) + 1;
-      // }
+      // let newScore = players.get(userName).team == 'A'
+      //   ? this.state.score[0] + 1
+      //   : this.state.score[1] + 1;
+      // this.setState({
+      //   score: newScore,
+      // });
+      if (players.get(userName).team == 'A'){
+        scoreA += 1;
+
+        // send to remotes
+        var message = {
+          textroom: "answercorret",
+          room: myroom,
+          scoreA: scoreA,
+        };
+        this.sendData(message);
+
+      } else {
+        scoreB += 1;
+
+        // send to remotes
+        var message = {
+          textroom: "answercorret",
+          room: myroom,
+          scoreB: scoreB,
+        };
+        this.sendData(message);        
+      }
 
       alert("Good job! You save your team");
     } else {
@@ -1422,12 +1450,15 @@ class Game extends React.Component {
         // this.waitForPeople();
         return (
           <div className="App">
+            {this.Timer()}
+            <header className="jumbotron">
+              <p>Current Score: {scoreA}: {scoreB}</p>
+            </header>
             <h1> WAIT.....</h1>
             <h2>
               {" "}
               Wait for <span id="wait">{this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
             </h2>
-            {this.Timer()}
           </div>
         );
          // get topic round
@@ -1436,8 +1467,13 @@ class Game extends React.Component {
         this.suppresAllVideo();
         return (
           <div className="App">
+            {this.Timer()}
+            <header className="jumbotron">
+              <p>Current Score: {scoreA}: {scoreB}</p>
+            </header>
             <h1>Please perform this topic only by body language:</h1>
-            {this.Question()}
+            {/* {this.Question()} */}
+            {JSON.stringify(this.state.question)}
           </div>
         );
         // playing
@@ -1447,10 +1483,13 @@ class Game extends React.Component {
         this.playerObserverVideo(currentId)
         // be the publisher
         return (
-          <div>
-            <h1>player</h1>
-            {this.Playing()}
+          <div className="App">
             {this.Timer()}
+            <header className="jumbotron">
+              <p>Current Score: {scoreA}: {scoreB}</p>
+            </header>
+            <h1>player</h1>
+            {/* {this.Playing()} */}            
           </div>
         );
       // observing
@@ -1459,9 +1498,13 @@ class Game extends React.Component {
         this.playerObserverVideo(currentId)
         // be the subscriber
         return (
-          <div>
-            <h1> observer</h1>
+          <div className="App">
             {this.Timer()}
+            <header className="jumbotron">
+              <p>Current Score: {scoreA}: {scoreB}</p>
+            </header>
+            <h1> observer</h1>
+            {/* {this.Timer()} */}
             {/* <h3> {this.props.round} </h3>
             <h3> {this.props.question} </h3> */}
           </div>
