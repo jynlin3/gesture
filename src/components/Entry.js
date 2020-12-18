@@ -36,11 +36,24 @@ class Entry extends React.Component {
         this.state = {...this.props};
         console.log(this.state)
         return(
-            <form>
-                <label for="name"> Name: </label>
-                <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.update.bind(this)}  placeholder="Type your Name" />
-                <Link to={`/game/${this.props.room}`} name={this.state.name} room={this.state.room} id="CreateRoom" className="btn btn-link">create new room</Link>
-            </form>
+            <div className="App">
+                <header className="App-header p2">
+                    Ready to connect with your friend? Enter your name to join the room!
+                </header>
+                <form>
+                    <ul>
+                        <li>
+                            <label for="name" className="p2"> Name: </label>
+                        </li>
+                        <li>
+                            <input className="stylized input" type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.update.bind(this)}  placeholder="Type your Name" />
+                        </li>
+                        <li>
+                            <Link to={`/game/${this.props.room}`} name={this.state.name} room={this.state.room} id="CreateRoom" className="btn btn-link p2">create new room</Link>
+                        </li>
+                    </ul>
+                </form>
+            </div>
         )
     }
 

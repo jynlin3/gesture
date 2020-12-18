@@ -1,4 +1,5 @@
-import logo from "../images/logo.svg";
+import logo from "../images/logo.png";
+import school_logo from "../images/school_logo.png";
 import React from 'react';
 
 class Home extends React.Component {
@@ -19,11 +20,11 @@ class Home extends React.Component {
 						<div className="App">
 								<header className="App-header">
 										<img src={logo} className="App-logo" alt="logo" />
-										<p>
-												Welcome to <code>gesture</code> video room (powered by Janus).
+										<p className="p2">
+												Welcome to Online Guessture Game video room (powered by Janus).
 										</p>
-										<button onClick={this.handleJoinRoom}> Join Room </button>
 								</header>
+								<button onClick={this.handleJoinRoom} className="button button3 btn btn-link"> Join Room </button>
 						</div>
 				)
 		}
