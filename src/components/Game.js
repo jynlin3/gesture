@@ -172,7 +172,7 @@ class Game extends React.Component {
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 4;
+    this.state.id = 3;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -1217,6 +1217,81 @@ class Game extends React.Component {
     )
   }
 
+  mapping = (stateId) =>{
+    // need to mapping 1-index player state id to video 0-indexing
+    return stateId-1;
+  }
+
+  localToGlobal = (id) =>{
+    // since everyone in his own room would require an index to be 0 locally,
+    // I need to compare with globalPeppleId to identify my index globally
+    // e.g. If I am the third one into this room,
+    // then my video rendering would be 2 1 0 4 5 6 in this order, 
+    // so locally, I will be the video 0, and the first guy in the room would be in my video 2
+    // but those people that come later than me will be in the right order locally
+    // args: 
+    //       id : local id, already convert to 0-indexing
+    let globalOrder = -1
+    let orderArr = []
+    for(let i = 0; i< GlobalPeopleID.length;i++){
+        if(GlobalPeopleID[i] && GlobalPeopleID[i].id == myid){
+            globalOrder = i;
+            break
+        }
+    }  
+    if(globalOrder == -1){
+        alert(" I'm not in my room ")
+        return;
+    }
+    for(let i = globalOrder; i > -1;i--){
+        orderArr.push(i)
+    }
+    for(let i = globalOrder+1; i< GlobalPeopleID.length;i ++){
+        orderArr.push(i)
+    }
+    return orderArr;
+
+  }
+
+  suppresAllVideo = () =>{
+    if(document.getElementById('header')){
+        document.getElementById('header').style.display = 'none'
+    }
+    for(let i=0;i<GlobalPeopleID.length; i++){
+        if(!document.querySelector('video#remotevideo'+i)) {continue;}
+        document.querySelector('video#remotevideo'+i).muted= true;
+        document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+        document.querySelector('video#remotevideo'+i).style.width= "5%";
+        document.querySelector('video#remotevideo'+i).style.height= "5%"
+    }
+  }
+
+  playerObserverVideo = (id) =>{
+    id = this.mapping(id)
+    let orderArr = this.localToGlobal(id)
+    if(document.getElementById('header')){
+        document.getElementById('header').style.display = 'none'
+    }
+    let i;
+    for(let k=0;k<GlobalPeopleID.length; k++){
+        i = orderArr[k]
+        if(!document.querySelector('video#remotevideo'+i)){ continue;}
+        if(i == this.state.player.id || i == this.state.observer.id){
+            document.querySelector('video#remotevideo'+i).muted= false;
+            document.querySelector('video#remotevideo'+i).style.visibility= "visible";
+            document.querySelector('video#remotevideo'+i).style.width= "100%";
+            document.querySelector('video#remotevideo'+i).style.height= "100%"
+        }else{
+            document.querySelector('video#remotevideo'+i).muted= true;
+            document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+            document.querySelector('video#remotevideo'+i).style.width= "5%";
+            document.querySelector('video#remotevideo'+i).style.height= "5%"
+        }
+    }
+    if(document.querySelector('video#remotevideo'+id)){
+        document.querySelector('video#remotevideo'+id).muted= true;
+    }
+  }
 
 
   allcase = () =>{
@@ -1235,6 +1310,7 @@ class Game extends React.Component {
     // waiting
     } else if (!flag) {
         // supress all
+        this.suppresAllVideo();
         if (this.state.round === 1) {
           return (
             <div>
@@ -1252,6 +1328,7 @@ class Game extends React.Component {
         }
       } else if (this.state.waiting.has(currentId)) {
         // supress all
+        this.suppresAllVideo();
         this.waitForPeople();
         return (
           <div className="App">
@@ -1266,6 +1343,7 @@ class Game extends React.Component {
         // starting round
       } else if (userIds.length / 2 - 1 === this.state.waiting.size) {
         // supress all
+        this.suppresAllVideo();
         return (
           <div className="App">
             <h1>Please perform this topic only by body language:</h1>
@@ -1275,7 +1353,7 @@ class Game extends React.Component {
         // playing
       } else if (this.state.player.id === currentId) {
         // look i and i+1
-
+        this.playerObserverVideo(currentId)
         // be the publisher
         return (
           <div>
@@ -1287,7 +1365,7 @@ class Game extends React.Component {
         // observing
       } else if (this.state.observer.id === currentId) {
         //look i-1  and i
-        
+        this.playerObserverVideo(currentId)
         // be the subscriber
         return (
           <div>
@@ -1305,7 +1383,7 @@ class Game extends React.Component {
         this.state.observer.index < team1.length
       ) {
         // video : playerid and observer id
-
+        this.playerObserverVideo(currentId)
         return (
           <div className="App">
             <h1>Guess what?</h1>
@@ -1317,7 +1395,8 @@ class Game extends React.Component {
         this.state.observer.index >= team1.length &&
         idx < team1.length - 1
       ) {
-          // supress all
+          // supress all video
+        this.suppresAllVideo();
         return (
           <div>
             <h1>Waiting for the last person to answer the question!</h1>
@@ -1326,7 +1405,8 @@ class Game extends React.Component {
         );
         // answering 
       } else {
-          // supress all
+          // supress all video
+          this.suppresAllVideo()
         return (
           <div>
             <form onSubmit={this.handleSubmit}>
@@ -1361,7 +1441,7 @@ class Game extends React.Component {
     // game setting
     return (
     <div className="App">
-        <header className="App-header">
+        <header className="App-header" id='header'>
         <Container class="teams">
             <Row>
             <Col>
