@@ -167,6 +167,8 @@ class Game extends React.Component {
       isCorrect: false,
       waiter1: {},
       waiter2: {},
+      // timer usage only,
+      completions: 0
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
@@ -977,7 +979,7 @@ class Game extends React.Component {
   Timer() {
     return (
       <div>
-        <Countdown date={Date.now() + 5000} renderer={this.renderer} />,
+        <Countdown key={this.state.completions} date={Date.now() + 5000} renderer={this.renderer} onComplete={this.onComplete}/>,
       </div>
     );
   }
@@ -1261,6 +1263,15 @@ class Game extends React.Component {
     }
     return idx;
   }
+
+  onComplete = () => {
+    this.setState({
+      completions: this.state.completions + 1
+    },
+    () => console.log('completions', this.state.completions)
+    )
+  }
+
   render() {
     const currentId = this.state.id;
     const idx = this.lookForidx(currentId);
