@@ -47,9 +47,9 @@ let userIds = [1, 2, 3, 4, 5, 6];
 let team1 = [];
 let team2 = [];
 let questions = ["Birthday", "JavaScript", "Sucks"];
-let team1Competing;
+// let team1Competing;
 // let w;
-let scores = [];
+// question from datachannel
 let question = "";
 
 let GlobalPeopleID = [];
@@ -150,12 +150,14 @@ class Game extends React.Component {
     // console.log(this.state)
     // this.pickQuestion();
     // w = new Set();
-    team1Competing = true;
+    // team1Competing = true;
 
     // member variables
     this.state = {
       // player: {},
       // observer: {},
+
+      // question from database
       question: question,
       GlobalPeopleID: [],
       // round: 1,
@@ -913,7 +915,7 @@ class Game extends React.Component {
                 if (json["textroom"] === "jointeam") {
                   players.get(json["username"]).team = json["team"];
                   updateTeamStatus();
-                } else if (json["textroom"] === "question"){
+                } else if (json["textroom"] === "question" && json["team"] === players.get(userName).team){
                   question = json["question"];
                 } else if (json["textroom"] === "startgame"){
                   remoteStart = true;
@@ -960,7 +962,7 @@ class Game extends React.Component {
         {this.Timer()};
         <header className="App-header">
           <p>
-            Current Score: <span id="scores">0 : 0</span>
+            Current Score: <span id="scoreA">0</span> : <span id="scoreB">0</span>
           </p>
         </header>
         <Container>
@@ -1112,17 +1114,22 @@ class Game extends React.Component {
 
   startGame = () => {
     if(!remoteStart){
-    // notify remote players
-    var message = {
-      textroom: "startgame",
-      room: myroom,
-    };
-    this.sendData(message);
-  }
+      // notify remote players
+      var message = {
+        textroom: "startgame",
+        room: myroom,
+      };
+      this.sendData(message);
+    }
 
-    // use adding order as id
-    this.id = myIndexInRoom + 1;
-    console.log("[Jyn] id = ", this.id);
+    // use adding order as id and form team
+    for (var i = 0; i < GlobalPeopleID.length; i++){
+      if(GlobalPeopleID[i].name == userName){
+        this.id = i + 1;
+        console.log("[Jyn] id = ", this.id);
+      }
+    }
+    players.get(userName).team = this.id > 3 ? "B" : "A";
 
     // TODO: auto generate playbooks
     var playbooks = [
@@ -1276,7 +1283,7 @@ class Game extends React.Component {
 
   handleSubmit(event) {
     let word = question;
-    let correct = this.state.question === this.state.answer;
+    let correct = question === this.state.answer;
     axios
       .put(
         `https://www.seattle8520.xyz/api/updateCorrectRate?word=${word}&correct=${correct}`
@@ -1288,12 +1295,21 @@ class Game extends React.Component {
         // });
       });
     if (correct) {
-      let newScore = team1Competing
+      let newScore = players.get(userName).team == 'A'
         ? this.state.score[0] + 1
         : this.state.score[1] + 1;
       this.setState({
         score: newScore,
       });
+      // TODO: update scores
+      // if (players.get(userName).team == 'A'){
+      //   var element = document.getElementById("scoreA").innerHTML;
+      //   element = parseInt(element) + 1;
+      // } else {
+      //   var element = document.getElementById("scoreB").innerHTML;
+      //   element = parseInt(element) + 1;
+      // }
+
       alert("Good job! You save your team");
     } else {
       alert("BOOM!!! Wrong answer");
