@@ -172,7 +172,7 @@ class Game extends React.Component {
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id =2;
+    this.state.id = 4;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -185,10 +185,7 @@ class Game extends React.Component {
     this.state.allVideos = [1, 1, 1, 1, 1, 1];
     this.state.generalVideoSwitch = this.generalVideoSwitch.bind(this);
 
-    this.state.video1 = 1;
-    this.switchVideo1 = this.switchVideo1.bind(this);
-    this.state.video0 = 1;
-    this.switchVideo0 = this.switchVideo0.bind(this);
+
   }
 
   pickQuestion() {
@@ -624,11 +621,6 @@ class Game extends React.Component {
                     // only form team usage
                     players.get(userName).id = myid;
 
-                    // console.log($('#callername0'));
-                    // console.log(userName);
-                    // $('#callername1').innerHTML = {userName}
-                    // $('#callername1').focus()
-                    // newRemoteFeed(myid, userName, )
 
                     // Any new feed to attach to already joined members
                     if (
@@ -790,12 +782,7 @@ class Game extends React.Component {
                         alert(msg["error"]);
                       }
                     }
-                    // for(let i= 0; i<6;i++){
-                    //     console.log("I wanna know the caller")
-                    //     console.log(document.getElementById('#callername'+i).innerHTML)
-                    //     document.getElementById('#callername'+i).innerHTML = this.state.GlobalPeopleID[i] ? this.state.GlobalPeopleID[i].name : "participant"+i;
-                    //     document.getElementById('#callername'+i).focus();
-                    // }
+
                   }
                 }
                 if (jsep !== undefined && jsep !== null) {
@@ -868,13 +855,7 @@ class Game extends React.Component {
                 document.querySelector("video#localvideo").muted = true;
                 document.querySelector("video#localvideo").style.visibility =
                   "hidden";
-                // if(!$('#caller0')){
-                //     $('#videoremote0').append(<h3 id="caller0" >{userName}</h3>)
-                // }
-                // console.log($('#callername0'));
-                // console.log(userName);
-                // $('#callername0').innerHTML = {userName}
-                // $('#callername0').focus()
+
               },
               onremotestream: function () {
                 // second priority
@@ -1061,25 +1042,7 @@ class Game extends React.Component {
   }
 
   Playing() {
-    return (
-      <Container>
-        <Row>
-          {arr1.map((value, index) => {
-            return (
-              <Col>
-                <div id={"videoremote" + value} className="container">
-                  {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                </div>
-                <h3 id={"callername" + value}> no name </h3>
-              </Col>
-            );
-          })}
-        </Row>
-      </Container>
-      // <div id="myvideo" className="container shorter">
-      //     <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-      // </div>
-    );
+    return <h1> </h1>;
   }
 
   startGame = () => {
@@ -1103,37 +1066,6 @@ class Game extends React.Component {
     }
   };
 
-  switchVideo1 = () => {
-    if (document.querySelector("video#remotevideo1") == null) {
-      alert("No such video1 item yet");
-      return;
-    }
-    if (this.state.video1 == 1) {
-      document.querySelector("video#remotevideo1").muted = true;
-      document.querySelector("video#remotevideo1").style.visibility = "hidden";
-      this.state.video1 = 0;
-    } else {
-      document.querySelector("video#remotevideo1").muted = false;
-      document.querySelector("video#remotevideo1").style.visibility = "visible";
-      this.state.video1 = 1;
-    }
-  };
-
-  switchVideo0 = () => {
-    if (document.querySelector("video#remotevideo0") == null) {
-      alert("No such video0 item yet");
-      return;
-    }
-    if (this.state.video0 == 1) {
-      document.querySelector("video#remotevideo0").muted = true;
-      document.querySelector("video#remotevideo0").style.visibility = "hidden";
-      this.state.video0 = 0;
-    } else {
-      document.querySelector("video#remotevideo0").muted = true;
-      document.querySelector("video#remotevideo0").style.visibility = "visible";
-      this.state.video0 = 1;
-    }
-  };
 
   generalVideoSwitch = (e) => {
     let id;
@@ -1285,6 +1217,8 @@ class Game extends React.Component {
     )
   }
 
+
+
   allcase = () =>{
     const currentId = this.state.id;
     const idx = this.lookForidx(currentId);
@@ -1300,6 +1234,7 @@ class Game extends React.Component {
         return(<p> Hi </p>);
     // waiting
     } else if (!flag) {
+        // supress all
         if (this.state.round === 1) {
           return (
             <div>
@@ -1316,6 +1251,7 @@ class Game extends React.Component {
           );
         }
       } else if (this.state.waiting.has(currentId)) {
+        // supress all
         this.waitForPeople();
         return (
           <div className="App">
@@ -1325,22 +1261,11 @@ class Game extends React.Component {
               Wait for <span id="wait"> </span> people
             </h2>
             {this.Timer()}
-            {/* {this.teamtemplate2()}
-            <div id="myvideo" className="container shorter">
-              <video
-                id="localvideo"
-                className="rounded centered"
-                width="5%"
-                height="5%"
-                autoPlay
-                playsInline
-                muted="muted"
-              ></video>
-            </div> */}
           </div>
         );
         // starting round
       } else if (userIds.length / 2 - 1 === this.state.waiting.size) {
+        // supress all
         return (
           <div className="App">
             <h1>Please perform this topic only by body language:</h1>
@@ -1349,28 +1274,20 @@ class Game extends React.Component {
         );
         // playing
       } else if (this.state.player.id === currentId) {
+        // look i and i+1
+
         // be the publisher
         return (
           <div>
             <h1>player</h1>
             {this.Playing()}
             {this.Timer()}
-            {/* {this.teamtemplate2()}
-            <div id="myvideo" className="container shorter">
-              <video
-                id="localvideo"
-                className="rounded centered"
-                width="5%"
-                height="5%"
-                autoPlay
-                playsInline
-                muted="muted"
-              ></video>
-            </div> */}
           </div>
         );
         // observing
       } else if (this.state.observer.id === currentId) {
+        //look i-1  and i
+        
         // be the subscriber
         return (
           <div>
@@ -1378,18 +1295,6 @@ class Game extends React.Component {
             {this.Timer()}
             <h3> {this.props.round} </h3>
             <h3> {this.props.question} </h3>
-            {this.teamtemplate2()}
-            {/* <div id="myvideo" className="container shorter">
-              <video
-                id="localvideo"
-                className="rounded centered"
-                width="5%"
-                height="5%"
-                autoPlay
-                playsInline
-                muted="muted"
-              ></video>
-            </div> */}
           </div>
         );
   
@@ -1399,24 +1304,29 @@ class Game extends React.Component {
         this.state.observer.id !== currentId &&
         this.state.observer.index < team1.length
       ) {
+        // video : playerid and observer id
+
         return (
           <div className="App">
             <h1>Guess what?</h1>
             {this.Competing()}
           </div>
         );
-        // answering
+        // waiting for answer
       } else if (
         this.state.observer.index >= team1.length &&
         idx < team1.length - 1
       ) {
+          // supress all
         return (
           <div>
             <h1>Waiting for the last person to answer the question!</h1>
             {this.answerTimer()}
           </div>
         );
+        // answering 
       } else {
+          // supress all
         return (
           <div>
             <form onSubmit={this.handleSubmit}>
