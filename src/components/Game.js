@@ -172,7 +172,7 @@ class Game extends React.Component {
     };
     this.splitTeams(userIds);
     this.scores = [0, 0];
-    this.state.id = 4;
+    this.state.id = 3;
 
     this.addWaiting = this.addWaiting.bind(this);
     this.removeWaiting = this.removeWaiting.bind(this);
@@ -251,6 +251,11 @@ class Game extends React.Component {
     let numMembers = userIds.length / 2;
     // prevent starting round
     const newWait = new Set(this.state.waiting);
+    if (this.state.round === 2){
+        this.deleteObj(this.state.observer);
+        this.deleteObj(this.state.player);
+        return;
+    }
     if (this.state.waiting.size !== numMembers - 1) {
       let newIndex = this.state.observer.index;
       let newPlayer = userIds[newIndex];
@@ -965,7 +970,7 @@ class Game extends React.Component {
   Timer() {
     return (
       <div>
-        <Countdown key={this.state.completions} date={Date.now() + 5000} renderer={this.renderer} onComplete={this.onComplete}/>,
+        <Countdown key={this.state.completions} date={Date.now() + frequency} renderer={this.renderer} onComplete={this.onComplete}/>,
       </div>
     );
   }
@@ -1094,7 +1099,6 @@ class Game extends React.Component {
   answerRenderer = ({ seconds, completed }) => {
     if (completed) {
       // Render a completed state
-    //   alert(`Time's up! We will store your last answer!`);
       this.switchTeam();
       return <span>Time's up</span>
     } else {
@@ -1528,7 +1532,6 @@ class Game extends React.Component {
       );
       // answering
     } else if (
-      this.state.observer.index >= team1.length &&
       idx < team1.length - 1
     ) {
       return (
