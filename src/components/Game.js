@@ -70,6 +70,12 @@ let listReq = null;
 // only form team usage, date structure would be {username => {id: id, team: team}}
 let players = new Map(); 
 
+// only for start button, if ready == total player number => start the game, 
+// data structure would be {username => {id: id, ready: 0 or 1 }}
+let readyPlayers = new Map();
+let startGame = 0;
+
+
 // before loading
 window.onload = function(){
 
@@ -115,6 +121,19 @@ function updateTeamStatus() {
         }
     }
     
+}
+
+function updateReadyStatus(){
+    let cnt = 0
+    for( const[key, value] of readyPlayers.entries()){
+        if(value.ready == '1'){
+            cnt += 1
+        }
+    }
+    if(cnt == GlobalPeopleID.length){
+        return true;
+    }
+    return false;
 }
 
 class Game extends React.Component{
@@ -169,7 +188,7 @@ class Game extends React.Component{
         };
         this.splitTeams(userIds);
         this.scores = [0, 0];
-        this.state.id = 4;
+        this.state.id = 1;
 
         this.addWaiting = this.addWaiting.bind(this);
         this.removeWaiting = this.removeWaiting.bind(this);
@@ -177,6 +196,8 @@ class Game extends React.Component{
 
         // only form team usage
         players.set(userName, {})
+        // only form ready usage
+        readyPlayers.set(userName, {})
 
         this.state.startGame = 0
         this.state.allVideos = [1,1,1,1,1,1]
@@ -436,6 +457,11 @@ class Game extends React.Component{
                             players.get(json["username"]).team = json["team"];
                             updateTeamStatus();
                         }
+                        if (json["textroom"] === "readyStatus")
+                        {
+                            readyPlayers.get(json["username"]).ready = json["ready"];
+                            updateReadyStatus();
+                        }
                     },
                     oncleanup: function() {
                         Janus.log(" ::: Got a cleanup notification (remote feed " + id + ") :::");
@@ -500,7 +526,8 @@ class Game extends React.Component{
                                                 publishOwnFeed(true);
                                                 // only form team usage
                                                 players.get(userName).id = myid
-
+                                                // only for ready status
+                                                readyPlayers.get(userName).id = myid
 
                                                 // Any new feed to attach to already joined members
                                                 if (msg["publishers"] !== undefined && msg["publishers"] !== null) {
@@ -518,6 +545,8 @@ class Game extends React.Component{
 
                                                         // only form team usage
                                                         players.set(display, {id: id});
+                                                        // only for ready status
+                                                        readyPlayers.set(display, {id:id})
 
                                                         newRemoteFeed(id, display, audio, video);
                                                     }                                    
@@ -549,6 +578,7 @@ class Game extends React.Component{
 
                                                         // only form team usage
                                                         players.set(display, {id: id});
+                                                        readyPlayers.set(display, {id:id});
 
                                                         newRemoteFeed(id, display, audio, video);
                                                     }
@@ -677,7 +707,12 @@ class Game extends React.Component{
                                         {
                                             players.get(json["username"]).team = json["team"];
                                             updateTeamStatus();
-                                        }                
+                                        }
+                                        if (json["textroom"] === "readyStatus")
+                                        {
+                                            readyPlayers.get(json["username"]).ready = json["ready"];
+                                            updateReadyStatus();
+                                        }                 
                                     },
                                     oncleanup: function(){
                                         Janus.log(" ::: Got a cleanup notification: we are unpublished now :::");
@@ -782,6 +817,24 @@ class Game extends React.Component{
             team: teamId
         };
         this.sendData(message);
+    }
+
+    handleReadyClick = (e) =>{
+        let readyStatus = '1';
+        readyPlayers.get(userName).ready = readyStatus;
+        var message = {
+            textroom: "readyStatus",
+            room: myroom,
+            username : userName,
+            ready: readyStatus
+        }
+        this.sendData(message);
+
+        let readyResult = updateReadyStatus();
+        if (readyResult == true){
+            this.setState({startGame : 1})
+            // startGame = 1
+        }
     }
 
     sendData = (message) => {
@@ -1138,6 +1191,7 @@ class Game extends React.Component{
 
                     <Row>
                         <Col><button id="start"  onClick={this.startGame}> set thisStateStart = 1 </button> </Col>
+                        <Col><button id="status" ready="1" onClick={this.handleReadyClick}> Let's GO </button> </Col>
                     </Row>
                     <Row>
                     {/* <Col><button id="0" onClick={this.switchVideo0}> turn Off video 0  </button></Col>
@@ -1158,6 +1212,9 @@ class Game extends React.Component{
                     <code>guessture</code> video room, Name = {userName} , room = {myroom}
                 </p>
                     {this.teamtemplate2()}
+                    {/* <this.updateNameTag nameList={this.state.nameList}/> */}
+                    {/* {this.updateNameTag(this.state.nameList)} */}
+                    {/* <updateReadyStatus /> */}
                     <this.allCase id={this.state.id} round={this.state.round} observerId={this.state.observer.id} waitingSet={this.state.waiting} playerId={this.state.player.id}/>
     
             </div>
