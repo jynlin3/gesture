@@ -176,6 +176,8 @@ class Game extends React.Component {
     this.scores = [0, 0];
     this.id = 1;
 
+    // this.state.id = 3;
+
     // this.startGame = this.startGame.bind(this);
 
     // only form team usage
@@ -185,11 +187,13 @@ class Game extends React.Component {
     this.state.allVideos = [1, 1, 1, 1, 1, 1];
     this.state.generalVideoSwitch = this.generalVideoSwitch.bind(this);
 
-    this.state.video1 = 1;
-    this.switchVideo1 = this.switchVideo1.bind(this);
-    this.state.video0 = 1;
-    this.switchVideo0 = this.switchVideo0.bind(this);
+
+    // this.state.video1 = 1;
+    // this.switchVideo1 = this.switchVideo1.bind(this);
+    // this.state.video0 = 1;
+    // this.switchVideo0 = this.switchVideo0.bind(this);
     this.playbook = null;
+
   }
 
   pickQuestion() {
@@ -649,11 +653,6 @@ class Game extends React.Component {
                     // only form team usage
                     players.get(userName).id = myid;
 
-                    // console.log($('#callername0'));
-                    // console.log(userName);
-                    // $('#callername1').innerHTML = {userName}
-                    // $('#callername1').focus()
-                    // newRemoteFeed(myid, userName, )
 
                     // Any new feed to attach to already joined members
                     if (
@@ -815,12 +814,7 @@ class Game extends React.Component {
                         alert(msg["error"]);
                       }
                     }
-                    // for(let i= 0; i<6;i++){
-                    //     console.log("I wanna know the caller")
-                    //     console.log(document.getElementById('#callername'+i).innerHTML)
-                    //     document.getElementById('#callername'+i).innerHTML = this.state.GlobalPeopleID[i] ? this.state.GlobalPeopleID[i].name : "participant"+i;
-                    //     document.getElementById('#callername'+i).focus();
-                    // }
+
                   }
                 }
                 if (jsep !== undefined && jsep !== null) {
@@ -893,13 +887,7 @@ class Game extends React.Component {
                 document.querySelector("video#localvideo").muted = true;
                 document.querySelector("video#localvideo").style.visibility =
                   "hidden";
-                // if(!$('#caller0')){
-                //     $('#videoremote0').append(<h3 id="caller0" >{userName}</h3>)
-                // }
-                // console.log($('#callername0'));
-                // console.log(userName);
-                // $('#callername0').innerHTML = {userName}
-                // $('#callername0').focus()
+
               },
               onremotestream: function () {
                 // second priority
@@ -1091,25 +1079,7 @@ class Game extends React.Component {
   // }
 
   Playing() {
-    return (
-      <Container>
-        <Row>
-          {arr1.map((value, index) => {
-            return (
-              <Col>
-                <div id={"videoremote" + value} className="container">
-                  {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
-                </div>
-                <h3 id={"callername" + value}> no name </h3>
-              </Col>
-            );
-          })}
-        </Row>
-      </Container>
-      // <div id="myvideo" className="container shorter">
-      //     <video id="localvideo" className="rounded centered" width="5%" height="5%" autoPlay playsInline muted="muted"></video>
-      // </div>
-    );
+    return <h1> </h1>;
   }
 
   startGame = () => {
@@ -1168,37 +1138,6 @@ class Game extends React.Component {
     }
   };
 
-  switchVideo1 = () => {
-    if (document.querySelector("video#remotevideo1") == null) {
-      alert("No such video1 item yet");
-      return;
-    }
-    if (this.state.video1 == 1) {
-      document.querySelector("video#remotevideo1").muted = true;
-      document.querySelector("video#remotevideo1").style.visibility = "hidden";
-      this.state.video1 = 0;
-    } else {
-      document.querySelector("video#remotevideo1").muted = false;
-      document.querySelector("video#remotevideo1").style.visibility = "visible";
-      this.state.video1 = 1;
-    }
-  };
-
-  switchVideo0 = () => {
-    if (document.querySelector("video#remotevideo0") == null) {
-      alert("No such video0 item yet");
-      return;
-    }
-    if (this.state.video0 == 1) {
-      document.querySelector("video#remotevideo0").muted = true;
-      document.querySelector("video#remotevideo0").style.visibility = "hidden";
-      this.state.video0 = 0;
-    } else {
-      document.querySelector("video#remotevideo0").muted = true;
-      document.querySelector("video#remotevideo0").style.visibility = "visible";
-      this.state.video0 = 1;
-    }
-  };
 
   generalVideoSwitch = (e) => {
     let id;
@@ -1366,249 +1305,353 @@ class Game extends React.Component {
       }
   }
 
-  render() {
-    console.log("[Game] render");
+  mapping = (stateId) =>{
+    // need to mapping 1-index player state id to video 0-indexing
+    return stateId-1;
+  }
+
+  localToGlobal = (id) =>{
+    // since everyone in his own room would require an index to be 0 locally,
+    // I need to compare with globalPeppleId to identify my index globally
+    // e.g. If I am the third one into this room,
+    // then my video rendering would be 2 1 0 4 5 6 in this order, 
+    // so locally, I will be the video 0, and the first guy in the room would be in my video 2
+    // but those people that come later than me will be in the right order locally
+    // args: 
+    //       id : local id, already convert to 0-indexing
+    let globalOrder = -1
+    let orderArr = []
+    for(let i = 0; i< GlobalPeopleID.length;i++){
+        if(GlobalPeopleID[i] && GlobalPeopleID[i].id == myid){
+            globalOrder = i;
+            break
+        }
+    }  
+    if(globalOrder == -1){
+        alert(" I'm not in my room ")
+        return;
+    }
+    for(let i = globalOrder; i > -1;i--){
+        orderArr.push(i)
+    }
+    for(let i = globalOrder+1; i< GlobalPeopleID.length;i ++){
+        orderArr.push(i)
+    }
+    return orderArr;
+
+  }
+
+  suppresAllVideo = () =>{
+    if(document.getElementById('header')){
+        document.getElementById('header').style.display = 'none'
+    }
+    for(let i=0;i<GlobalPeopleID.length; i++){
+        if(!document.querySelector('video#remotevideo'+i)) {continue;}
+        document.querySelector('video#remotevideo'+i).muted= true;
+        document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+        document.querySelector('video#remotevideo'+i).style.width= "5%";
+        document.querySelector('video#remotevideo'+i).style.height= "5%"
+    }
+  }
+
+  playerObserverVideo = (id) =>{
+    id = this.mapping(id)
+    let orderArr = this.localToGlobal(id)
+    if(document.getElementById('header')){
+        document.getElementById('header').style.display = 'none'
+    }
+    let i;
+    for(let k=0;k<GlobalPeopleID.length; k++){
+        i = orderArr[k]
+        if(!document.querySelector('video#remotevideo'+i)){ continue;}
+        if(this.playbook[this.state.step] == "PLAY" || this.playbook[this.state.step] == "OBSERVE" ){
+            document.querySelector('video#remotevideo'+i).muted= false;
+            document.querySelector('video#remotevideo'+i).style.visibility= "visible";
+            document.querySelector('video#remotevideo'+i).style.width= "100%";
+            document.querySelector('video#remotevideo'+i).style.height= "100%"
+        }else{
+            document.querySelector('video#remotevideo'+i).muted= true;
+            document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+            document.querySelector('video#remotevideo'+i).style.width= "5%";
+            document.querySelector('video#remotevideo'+i).style.height= "5%"
+        }
+    }
+    if(document.querySelector('video#remotevideo'+id)){
+        document.querySelector('video#remotevideo'+id).muted= true;
+    }
+  }
+
+
+  allcase = () =>{
     const currentId = this.id;
     // const idx = this.lookForidx(currentId);
     // const flag = this.yourTeamCompeting();
-
+    // console.log("round: ", this.state.round);
+    // console.log("flag: ", flag);
+    // console.log("idx: ", idx);
+    // console.log("Current id: ", currentId);
+    // console.log("player: ", this.state.player);
+    // console.log("observer: ", this.state.observer);
+    // console.log("waiting: ", this.state.waiting);
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
 
-    // game setting
     if (this.state.step == -1) {
-      return (
-        <div className="App">
-          <header className="App-header">
-            <Container class="teams">
-              <Row>
-                <Col>
-                  {" "}
-                  <h1> Team A</h1>{" "}
-                </Col>{" "}
-                <Col>
-                  {" "}
-                  <h1> Team B</h1>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <button id="A" onClick={this.handleJoinClick}>
-                    {" "}
-                    Join{" "}
-                  </button>{" "}
-                </Col>
-                <Col>
-                  <button id="B" onClick={this.handleJoinClick}>
-                    {" "}
-                    Join{" "}
-                  </button>{" "}
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <p id="Ateam1">""</p>
-                </Col>
-                <Col>
-                  <p id="Bteam1">""</p>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <p id="Ateam2">""</p>
-                </Col>
-                <Col>
-                  <p id="Bteam2">""</p>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <p id="Ateam3">""</p>
-                </Col>
-                <Col>
-                  <p id="Bteam3">""</p>
-                </Col>
-              </Row>
-
-              <Row>
-                <Col>
-                  <button id="start" onClick={this.startGame}>
-                    {" "}
-                    Start{" "}
-                  </button>{" "}
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <button id="0" onClick={this.generalVideoSwitch}>
-                    {" "}
-                    switch video 0
-                  </button>
-                </Col>
-                <Col>
-                  <button id="1" onClick={this.generalVideoSwitch}>
-                    {" "}
-                    switch video 1
-                  </button>
-                </Col>
-                <Col>
-                  <button id="2" onClick={this.generalVideoSwitch}>
-                    {" "}
-                    switch video 2
-                  </button>
-                </Col>
-                <Col>
-                  <button id="3" onClick={this.generalVideoSwitch}>
-                    {" "}
-                    switch video 3
-                  </button>
-                </Col>
-                <Col>
-                  <button id="4" onClick={this.generalVideoSwitch}>
-                    {" "}
-                    switch video 4
-                  </button>
-                </Col>
-                <Col>
-                  <button id="5" onClick={this.generalVideoSwitch}>
-                    {" "}
-                    switch video 5
-                  </button>
-                </Col>
-              </Row>
-            </Container>
-            <div id="myvideo" className="container shorter">
-              <video
-                id="localvideo"
-                className="rounded centered"
-                width="5%"
-                height="5%"
-                autoPlay
-                playsInline
-                muted="muted"
-              ></video>
-            </div>
-          </header>
+        return(<p> End </p>);
+    // // waiting
+    // } else if (!flag) {
+    //     // supress all
+    //     this.suppresAllVideo();
+    //     if (this.state.round === 1) {
+    //       return (
+    //         <div>
+    //           <h1>Wait other team's first player is reading the question!!</h1>
+    //           {this.Timer()}
+    //         </div>
+    //       );
+    //     } else {
+    //       return (
+    //         <div>
+    //           <div>{this.Competing()}</div>
+    //           {this.Timer()}
+    //         </div>
+    //       );
+    //     }
+      } else if (currentStatus == "WAIT") {
+        // supress all
+        this.suppresAllVideo();
+        // this.waitForPeople();
+        return (
+          <div className="App">
+            <h1> WAIT.....</h1>
+            <h2>
+              {" "}
+              Wait for <span id="wait">{this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
+            </h2>
+            {this.Timer()}
+          </div>
+        );
+         // get topic round
+      } else if (currentStatus == "READ_TOPIC") {
+        // supress all
+        this.suppresAllVideo();
+        return (
+          <div className="App">
+            <h1>Please perform this topic only by body language:</h1>
+            {this.Question()}
+          </div>
+        );
+        // playing
+      } else if (currentStatus == "PLAY") {
+        // be the publisher
+        // look i and i+1
+        this.playerObserverVideo(currentId)
+        // be the publisher
+        return (
           <div>
-            <p width="100%" height="100%">
-              <code>guessture</code> video room, Name = {userName} , room ={" "}
-              {myroom}
-              {this.teamtemplate2()}
-            </p>
+            <h1>player</h1>
+            {this.Playing()}
+            {this.Timer()}
           </div>
-        </div>
-      );
-    } else if (currentStatus == "WAIT") {
-      return (
-        <div className="App">
-          <h1> WAIT.....</h1>
-          <h2>
-            {" "}
-      Wait for <span id="wait"> {this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
-          </h2>
-          {this.Timer()}
-          {this.teamtemplate2()}
-          <div id="myvideo" className="container shorter">
-            <video
-              id="localvideo"
-              className="rounded centered"
-              width="5%"
-              height="5%"
-              autoPlay
-              playsInline
-              muted="muted"
-            ></video>
-          </div>
-        </div>
-      );
-      // get topic round
-    } else if (currentStatus == "READ_TOPIC") {
-      return (
-        <div className="App">
-          <h1>Please perform this topic only by body language:</h1>
-          {this.Question()}
-        </div>
-      );
-      // playing
-    } else if (currentStatus == "PLAY") {
-      // be the publisher
-      return (
-        <div>
-          <h1>player</h1>
-          {this.Playing()}
-          {this.Timer()}
-          {this.teamtemplate2()}
-          <div id="myvideo" className="container shorter">
-            <video
-              id="localvideo"
-              className="rounded centered"
-              width="5%"
-              height="5%"
-              autoPlay
-              playsInline
-              muted="muted"
-            ></video>
-          </div>
-        </div>
-      );
+        );
       // observing
     } else if (currentStatus === "OBSERVE") {
-      // be the subscriber
-      return (
-        <div>
-          <h1> observer</h1>
-          {this.Timer()}
-          {/* <h3> {this.props.round} </h3> */}
-          {/* <h3> {this.props.question} </h3> */}
-          {this.teamtemplate2()}
-          <div id="myvideo" className="container shorter">
-            <video
-              id="localvideo"
-              className="rounded centered"
-              width="5%"
-              height="5%"
-              autoPlay
-              playsInline
-              muted="muted"
-            ></video>
+        //look i-1  and i
+        this.playerObserverVideo(currentId)
+        // be the subscriber
+        return (
+          <div>
+            <h1> observer</h1>
+            {this.Timer()}
+            {/* <h3> {this.props.round} </h3>
+            <h3> {this.props.question} </h3> */}
           </div>
-        </div>
-      );
+        );
+  
+        // audience
+      } else if (currentStatus === "AUDIENCE") {
+        // video : playerid and observer id
+        this.playerObserverVideo(currentId)
+        return (
+          <div className="App">
+            <h1>Guess what?</h1>
+            {this.Competing()}
+          </div>
+        );
+      //   // waiting for answer
+      // } else if (currentStatus === "ANSWER") {
+      //     // supress all video
+      //   this.suppresAllVideo();
+      //   return (
+      //     <div>
+      //       <h1>Waiting for the last person to answer the question!</h1>
+      //       {this.answerTimer()}
+      //     </div>
+      //   );
+        // answering 
+      } else {
+          // supress all video
+          this.suppresAllVideo()
+        return (
+          <div>
+            {/* <form onSubmit={this.handleSubmit}>
+              <label>
+                Answer:
+                <input
+                  type="text"
+                  value={this.state.value}
+                  onChange={this.handleChange}
+                />
+              </label>
+              <input type="submit" value="Submit" />
+            </form>
+            {this.answerTimer()} */}
+            <label for="answer"> Answer: </label>
+            <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
+            <button id="submit" onClick={this.handleSubmit}>
+                Submit
+            </button>
+            {this.Timer()}
+          </div>
+        );
+      }
+  }
 
-      // audience
-    } else if (
-      currentStatus == "AUDIENCE"
-    ) {
-      return (
-        <div className="App">
-          <h1>Guess what?</h1>
-          {this.Competing()}
-        </div>
 
-      )
-      // answering
-    } else {
-      return (
-        <div>
-          {/* <form onSubmit={this.handleSubmit}>
-            <label>
-              Answer:
-              <input
-                type="text"
-                value={this.state.value}
-                onChange={this.handleChange}
-              />
-            </label>
-            <input type="submit" value="Submit" />
-          </form> */}
-                <label for="answer"> Answer: </label>
-                <input type="text" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
-                <button id="submit" onClick={this.handleSubmit}>
-                    Submit
+  render() {
+    // const currentId = this.state.id;
+    // const idx = this.lookForidx(currentId);
+    // const flag = this.yourTeamCompeting();
+    // console.log("round: ", this.state.round);
+    // console.log("flag: ", flag);
+    // console.log("idx: ", idx);
+    // console.log("Current id: ", currentId);
+    // console.log("player: ", this.state.player);
+    // console.log("observer: ", this.state.observer);
+    // console.log("waiting: ", this.state.waiting);
+    // game setting
+    return (
+    <div className="App">
+        <header className="App-header" id='header'>
+        <Container class="teams">
+            <Row>
+            <Col>
+                {" "}
+                <h1> Team A</h1>{" "}
+            </Col>{" "}
+            <Col>
+                {" "}
+                <h1> Team B</h1>
+            </Col>
+            </Row>
+            <Row>
+            <Col>
+                <button id="A" onClick={this.handleJoinClick}>
+                {" "}
+                Join{" "}
+                </button>{" "}
+            </Col>
+            <Col>
+                <button id="B" onClick={this.handleJoinClick}>
+                {" "}
+                Join{" "}
+                </button>{" "}
+            </Col>
+            </Row>
+            <Row>
+            <Col>
+                <p id="Ateam1"></p>
+            </Col>
+            <Col>
+                <p id="Bteam1"></p>
+            </Col>
+            </Row>
+            <Row>
+            <Col>
+                <p id="Ateam2"></p>
+            </Col>
+            <Col>
+                <p id="Bteam2"></p>
+            </Col>
+            </Row>
+            <Row>
+            <Col>
+                <p id="Ateam3"></p>
+            </Col>
+            <Col>
+                <p id="Bteam3"></p>
+            </Col>
+            </Row>
+
+            <Row>
+            <Col>
+                <button id="start" onClick={this.startGame}>
+                {" "}
+                Start{" "}
+                </button>{" "}
+            </Col>
+            </Row>
+            <Row>
+            <Col>
+                <button id="0" onClick={this.generalVideoSwitch}>
+                {" "}
+                switch video 0
                 </button>
-          {this.Timer()}
+            </Col>
+            <Col>
+                <button id="1" onClick={this.generalVideoSwitch}>
+                {" "}
+                switch video 1
+                </button>
+            </Col>
+            <Col>
+                <button id="2" onClick={this.generalVideoSwitch}>
+                {" "}
+                switch video 2
+                </button>
+            </Col>
+            <Col>
+                <button id="3" onClick={this.generalVideoSwitch}>
+                {" "}
+                switch video 3
+                </button>
+            </Col>
+            <Col>
+                <button id="4" onClick={this.generalVideoSwitch}>
+                {" "}
+                switch video 4
+                </button>
+            </Col>
+            <Col>
+                <button id="5" onClick={this.generalVideoSwitch}>
+                {" "}
+                switch video 5
+                </button>
+            </Col>
+            </Row>
+        </Container>
+        <div id="myvideo" className="container shorter">
+            <video
+            id="localvideo"
+            className="rounded centered"
+            width="5%"
+            height="5%"
+            autoPlay
+            playsInline
+            muted="muted"
+            ></video>
         </div>
-      );
-    }
+        </header>
+        <div>
+        <p width="100%" height="100%">
+            <code>guessture</code> video room, Name = {userName} , room ={" "}
+            {myroom}
+            {this.teamtemplate2()}
+            <this.allcase/>
+        </p>
+        </div>
+    </div>
+    );
+
   }
 }
 
