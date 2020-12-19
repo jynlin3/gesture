@@ -974,7 +974,7 @@ class Game extends React.Component {
         <header className="jumbotron">
           <p>Current Score: {scoreA}: {scoreB}</p>
         </header>
-        <Container>
+        {/* <Container>
           <Row>
             <Col>
               <h3> Player video </h3>
@@ -983,7 +983,7 @@ class Game extends React.Component {
               <h3> Observer video </h3>
             </Col>
           </Row>
-        </Container>
+        </Container> */}
       </div>
     );
   }
@@ -1431,13 +1431,11 @@ class Game extends React.Component {
             document.querySelector('video#remotevideo'+k).style.visibility= "visible";
             document.querySelector('video#remotevideo'+k).style.width= "100%";
             document.querySelector('video#remotevideo'+k).style.height= "100%"
-            document.getElementById('callername'+k).innerHTML = k
         }else{
             document.querySelector('video#remotevideo'+k).muted= true;
             document.querySelector('video#remotevideo'+k).style.visibility= "hidden";
             document.querySelector('video#remotevideo'+k).style.width= "5%";
             document.querySelector('video#remotevideo'+k).style.height= "5%"
-            document.getElementById('callername'+k).innerHTML = k
 
         }
     }
@@ -1506,7 +1504,7 @@ class Game extends React.Component {
         return (
           <div className="App">
             {this.Timer()}
-            <header className="App-header">
+            <header className="jumbotron">
               <p>Current Score: {scoreA}: {scoreB}</p>
             </header>
             <h1>Please perform this topic only by body language:</h1>
