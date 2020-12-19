@@ -1052,7 +1052,7 @@ class Game extends React.Component {
                 <div id={"videoremote" + value} className="container">
                   {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                 </div>
-                <h3 id={"callername" + value}> no name </h3>
+                <h3 id={"callername" + value}> </h3>
               </Col>
             );
           })}
@@ -1064,7 +1064,7 @@ class Game extends React.Component {
                 <div id={"videoremote" + value} className="container">
                   {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                 </div>
-                <h3 id={"callername" + value}> no name </h3>
+                <h3 id={"callername" + value}> </h3>
               </Col>
             );
           })}
@@ -1076,7 +1076,7 @@ class Game extends React.Component {
                 <div id={"videoremote" + value} className="container">
                   {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                 </div>
-                <h3 id={"callername" + value}> no name</h3>
+                <h3 id={"callername" + value}> </h3>
               </Col>
             );
           })}
@@ -1459,7 +1459,7 @@ class Game extends React.Component {
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
 
     if (this.state.step == -1) {
-        return(<p> End </p>);
+        return(<p>  </p>);
     // // waiting
     // } else if (!flag) {
     //     // supress all
@@ -1503,7 +1503,7 @@ class Game extends React.Component {
         return (
           <div className="App">
             {this.Timer()}
-            <header className="jumbotron">
+            <header className="App-header">
               <p>Current Score: {scoreA}: {scoreB}</p>
             </header>
             <h1>Please perform this topic only by body language:</h1>
@@ -1611,26 +1611,27 @@ class Game extends React.Component {
     return (
     <div className="App">
         <header className="App-header" id='header'>
-        <Container class="teams">
+            <p className="p2"> Online Guessture Game room, Name = {userName} , room ={myroom}</p>
+        <Container class="teams" className="p2">
             <Row>
             <Col>
                 {" "}
-                <h1> Team A</h1>{" "}
+                <h1 className="p2"> Team A</h1>{" "}
             </Col>{" "}
             <Col>
                 {" "}
-                <h1> Team B</h1>
+                <h1 className="p2"> Team B</h1>
             </Col>
             </Row>
             <Row>
             <Col>
-                <button id="A" onClick={this.handleJoinClick}>
+                <button id="A" onClick={this.handleJoinClick} className="button btn btn-link p2">
                 {" "}
                 Join{" "}
                 </button>{" "}
             </Col>
             <Col>
-                <button id="B" onClick={this.handleJoinClick}>
+                <button id="B" onClick={this.handleJoinClick} className="button btn btn-link p2">
                 {" "}
                 Join{" "}
                 </button>{" "}
@@ -1663,51 +1664,15 @@ class Game extends React.Component {
 
             <Row>
             <Col>
-                <button id="start" onClick={this.startGame}>
+                <button id="start" onClick={this.startGame} className="button button3 btn btn-link p2">
                 {" "}
                 Start{" "}
                 </button>{" "}
             </Col>
-            </Row>
-            <Row>
-            <Col>
-                <button id="0" onClick={this.generalVideoSwitch}>
-                {" "}
-                switch video 0
-                </button>
-            </Col>
-            <Col>
-                <button id="1" onClick={this.generalVideoSwitch}>
-                {" "}
-                switch video 1
-                </button>
-            </Col>
-            <Col>
-                <button id="2" onClick={this.generalVideoSwitch}>
-                {" "}
-                switch video 2
-                </button>
-            </Col>
-            <Col>
-                <button id="3" onClick={this.generalVideoSwitch}>
-                {" "}
-                switch video 3
-                </button>
-            </Col>
-            <Col>
-                <button id="4" onClick={this.generalVideoSwitch}>
-                {" "}
-                switch video 4
-                </button>
-            </Col>
-            <Col>
-                <button id="5" onClick={this.generalVideoSwitch}>
-                {" "}
-                switch video 5
-                </button>
-            </Col>
-            </Row>
+            </Row>            
         </Container>
+        </header>
+
         <div id="myvideo" className="container shorter">
             <video
             id="localvideo"
@@ -1719,14 +1684,12 @@ class Game extends React.Component {
             muted="muted"
             ></video>
         </div>
-        </header>
+
         <div>
-        <p width="100%" height="100%">
-            <code>guessture</code> video room, Name = {userName} , room ={" "}
-            {myroom}
-            {this.teamtemplate2()}
-            <this.allcase/>
-        </p>
+            <p width="100%" height="100%">
+                {this.teamtemplate2()}
+                <this.allcase/>
+            </p>
         </div>
     </div>
     );

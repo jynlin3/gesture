@@ -24,7 +24,7 @@ class Home extends React.Component {
 												Welcome to Online Guessture Game video room (powered by Janus).
 										</p>
 								</header>
-								<button onClick={this.handleJoinRoom} className="button button3 btn btn-link"> Join Room </button>
+								<button onClick={this.handleJoinRoom} className="button btn btn-link p2"> Join Room </button>
 						</div>
 				)
 		}
