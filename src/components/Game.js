@@ -431,7 +431,7 @@ class Game extends React.Component {
                 .show();
             }
             console.log("all people here");
-            // console.log(GlobalPeopleID)
+            console.log(GlobalPeopleID);
             console.log(feeds);
             // console.log(this.state)
             // this.state.changePlayers();
@@ -782,7 +782,7 @@ class Game extends React.Component {
                         remoteFeed.detach();
                       }
                       console.log("all people here");
-                      // console.log(GlobalPeopleID);
+                      console.log(GlobalPeopleID);
                       console.log(feeds);
 
                       let tmp = 0;
