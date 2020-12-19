@@ -9,11 +9,18 @@
 
 .App-logo {
   height: 40vmin;
+  height: 40vmin;
+  object-fit: cover;
   pointer-events: none;
 }
 
 .school-logo{
   height: 10vmin;
+}
+
+.centered-and-cropped { 
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 
@@ -123,4 +130,9 @@ ul {
 #B{
   width: 50%;
   height: 100%;
+}
+
+.topic{
+  color:blue;
+  size: 6;
 }

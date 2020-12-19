@@ -431,7 +431,7 @@ class Game extends React.Component {
                 .show();
             }
             console.log("all people here");
-            console.log(GlobalPeopleID);
+            console.log(GlobalPeopleID)
             console.log(feeds);
             // console.log(this.state)
             // this.state.changePlayers();
@@ -1486,15 +1486,15 @@ class Game extends React.Component {
         // this.waitForPeople();
         return (
           <div className="App">
-            {this.Timer()}
-            <header className="jumbotron">
+            <header className="jumbotron p2 App-header">
+              <h1> WAIT.....</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
+              {this.Timer()}
             </header>
-            <h1> WAIT.....</h1>
-            <h2>
-              {" "}
-              Wait for <span id="wait">{this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
-            </h2>
+              <h2 className="p2">
+                {" "}
+                Wait for <span id="wait">{this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
+              </h2>
           </div>
         );
          // get topic round
@@ -1503,13 +1503,11 @@ class Game extends React.Component {
         this.suppresAllVideo();
         return (
           <div className="App">
-            {this.Timer()}
-            <header className="jumbotron">
+            <header className="App-header p2">
+              <h1>Please perform this topic only by body language: <b class="topic"> {this.state.question}</b> </h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
+              {this.Timer()}
             </header>
-            <h1>Please perform this topic only by body language:</h1>
-            {/* {this.Question()} */}
-            {JSON.stringify(this.state.question)}
           </div>
         );
         // playing
@@ -1522,11 +1520,12 @@ class Game extends React.Component {
         // be the publisher
         return (
           <div className="App">
-            {this.Timer()}
-            <header className="jumbotron">
+            <header className="jumbotron App-header p2">
+              <h1> It's time for you to perform.</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
+              {this.Timer()}
             </header>
-            <h1>player</h1>
+            {/* <h1>player</h1> */}
             {/* {this.Playing()} */}            
           </div>
         );
@@ -1539,11 +1538,12 @@ class Game extends React.Component {
         // be the subscriber
         return (
           <div className="App">
-            {this.Timer()}
-            <header className="jumbotron">
+            <header className="jumbotron App-header p2">
+            <h1> It's time for you to observe.</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
+              {this.Timer()}
             </header>
-            <h1> observer</h1>
+            {/* <h1> observer</h1> */}
             {/* {this.Timer()} */}
             {/* <h3> {this.props.round} </h3>
             <h3> {this.props.question} </h3> */}
@@ -1558,8 +1558,12 @@ class Game extends React.Component {
         var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
           <div className="App">
-            <h1>Guess what? {showTopic ? "Their Topic: "+theirQuestion: ""}</h1>
-            {this.Competing()}
+            <header className="jumbotron App-header p2">
+              <h1>Audience {showTopic ? "Their Topic: "+theirQuestion: ""}</h1>
+              <p>Current Score: {scoreA}: {scoreB}</p>
+              {this.Timer()}
+              {/* {this.Competing()} */}
+            </header>
           </div>
         );
       //   // waiting for answer
@@ -1577,7 +1581,7 @@ class Game extends React.Component {
           // supress all video
           this.suppresAllVideo()
         return (
-          <div>
+          <div className="App">
             {/* <form onSubmit={this.handleSubmit}>
               <label>
                 Answer:
@@ -1590,12 +1594,25 @@ class Game extends React.Component {
               <input type="submit" value="Submit" />
             </form>
             {this.answerTimer()} */}
-            <label for="answer"> Answer: </label>
-            <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
-            <button id="submit" onClick={this.handleSubmit}>
-                Submit
-            </button>
-            {this.Timer()}
+            <header className="jumbotron App-header p2">
+              Do you know what the answer is ;)
+              <p>Current Score: {scoreA}: {scoreB}</p>
+              {this.Timer()}
+            </header>
+            <ul>
+              <li>
+                <label for="answer"> Answer: </label>
+              </li>
+              <li>
+                <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
+              </li>
+              <li>
+                <button id="submit" onClick={this.handleSubmit} className="button btn btn-link p2">
+                    Submit
+                </button>
+
+              </li>
+            </ul>
           </div>
         );
       }
@@ -1679,6 +1696,12 @@ class Game extends React.Component {
         </Container>
         </header>
 
+        <div>
+            <p width="100%" height="100%">
+                {this.teamtemplate2()}
+                <this.allcase/>
+            </p>
+        </div>
         <div id="myvideo" className="container shorter">
             <video
             id="localvideo"
@@ -1691,12 +1714,7 @@ class Game extends React.Component {
             ></video>
         </div>
 
-        <div>
-            <p width="100%" height="100%">
-                {this.teamtemplate2()}
-                <this.allcase/>
-            </p>
-        </div>
+
     </div>
     );
 
