@@ -1415,6 +1415,7 @@ class Game extends React.Component {
 
   playerObserverVideo = (step, id) =>{
     id = this.mapping(id)
+
     let orderArr = this.localToGlobal(id);
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
@@ -1425,7 +1426,7 @@ class Game extends React.Component {
     for(let i=0;i<GlobalPeopleID.length; i++){
         let k = orderArr[i];
         if(!document.querySelector('video#remotevideo'+k)){ continue;}
-        if(k == playerID || k == observerID){
+        if(k == orderArr[playerID] ||  k == orderArr[observerID]){
             document.querySelector('video#remotevideo'+k).muted= false;
             document.querySelector('video#remotevideo'+k).style.visibility= "visible";
             document.querySelector('video#remotevideo'+k).style.width= "100%";
@@ -1437,8 +1438,10 @@ class Game extends React.Component {
             document.querySelector('video#remotevideo'+k).style.width= "5%";
             document.querySelector('video#remotevideo'+k).style.height= "5%"
             document.getElementById('callername'+k).innerHTML = k
+
         }
     }
+    console.log('debugging observer and player end')
     if(document.querySelector('video#remotevideo'+id)){
         document.querySelector('video#remotevideo'+id).muted= true;
     }
@@ -1515,7 +1518,9 @@ class Game extends React.Component {
       } else if (currentStatus == "PLAY") {
         // be the publisher
         // look i and i+1
+
         this.playerObserverVideo(this.state.step, this.id)
+
         // be the publisher
         return (
           <div className="App">
@@ -1530,7 +1535,9 @@ class Game extends React.Component {
       // observing
     } else if (currentStatus === "OBSERVE") {
         //look i-1  and i
+
         this.playerObserverVideo(this.state.step, this.id);
+
         // be the subscriber
         return (
           <div className="App">
@@ -1548,6 +1555,7 @@ class Game extends React.Component {
         // audience
       } else if (currentStatus === "AUDIENCE") {
         // video : playerid and observer id
+
         this.playerObserverVideo(this.state.step, this.id);
         var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
