@@ -1504,11 +1504,10 @@ class Game extends React.Component {
         return (
           <div className="App">
             <header className="App-header p2">
-              <h1>Please perform this topic only by body language:</h1>
+              <h1>Please perform this topic only by body language: <b class="topic"> {this.state.question}</b> </h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
               {this.Timer()}
             </header>
-            {JSON.stringify(this.state.question)}
           </div>
         );
         // playing
@@ -1522,6 +1521,7 @@ class Game extends React.Component {
         return (
           <div className="App">
             <header className="jumbotron App-header p2">
+              <h1> It's time for you to perform.</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
               {this.Timer()}
             </header>
@@ -1539,6 +1539,7 @@ class Game extends React.Component {
         return (
           <div className="App">
             <header className="jumbotron App-header p2">
+            <h1> It's time for you to observe.</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
               {this.Timer()}
             </header>
