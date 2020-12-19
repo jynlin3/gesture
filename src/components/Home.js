@@ -19,7 +19,7 @@ class Home extends React.Component {
 				return (
 						<div className="App">
 								<header className="App-header">
-										<img src={logo} className="App-logo" alt="logo" />
+											<img src={logo} class="centered-and-cropped" width="120" height = "100" />
 										<p className="p2">
 												Welcome to Online Guessture Game video room (powered by Janus).
 										</p>
