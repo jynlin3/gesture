@@ -52,16 +52,6 @@ class App extends React.Component {
               </React.Fragment>
             </div>
           </Router>
-          <footer id="footer">
-            <img src={logo_2} className="school-logo" alt="logo" style={{float : 'left', paddingRight : '1px'}}/>
-            <p className="p3">
-              Author:
-              Fang-Chun Lin
-              Yao-Chung Liang 
-              Chia-Ning Lee
-                
-            </p>
-          </footer>
          </div>
     )
   }
