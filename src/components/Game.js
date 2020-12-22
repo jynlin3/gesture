@@ -53,7 +53,7 @@ let questions = ["Birthday", "JavaScript", "Sucks"];
 let question = "";
 let theirQuestion = "";
 
-let GlobalPeopleID = [];
+// let GlobalPeopleID = [];
 let myIndexInRoom = 0;
 let userName = "";
 let teamA = [0, 2, 4];
@@ -166,7 +166,7 @@ class Game extends React.Component {
 
       // question from database
       question: question,
-      GlobalPeopleID: [],
+    //   GlobalPeopleID: [],
       // round: 1,
       // userIds: [1, 2, 3, 4, 5, 6],
       score: [0, 0],
@@ -335,12 +335,12 @@ class Game extends React.Component {
     // }
   }
 
-  updatePlayers() {
-    this.state.changePlayers(this.state.GlobalPeopleID);
-    while (this.state.players.length < 6) {
-      this.state.players.push({ id: null, id: "uknown" });
-    }
-  }
+//   updatePlayers() {
+//     this.state.changePlayers(this.state.GlobalPeopleID);
+//     while (this.state.players.length < 6) {
+//       this.state.players.push({ id: null, id: "uknown" });
+//     }
+//   }
 
   GameServerRoomStart() {
     function publishOwnFeed(useAudio) {
@@ -436,7 +436,7 @@ class Game extends React.Component {
                 .show();
             }
             console.log("all people here");
-            console.log(GlobalPeopleID)
+            // console.log(GlobalPeopleID)
             console.log(feeds);
             // console.log(this.state)
             // this.state.changePlayers();
@@ -662,7 +662,7 @@ class Game extends React.Component {
                       " with ID " +
                       myid
                     );
-                    GlobalPeopleID.unshift({ id: myid, name: userName });
+                    // GlobalPeopleID.unshift({ id: myid, name: userName });
                     publishOwnFeed(true);
 
                     // only form team usage
@@ -694,7 +694,7 @@ class Game extends React.Component {
                           ")"
                         );
                         console.log("somebody in the same room : " + { id });
-                        GlobalPeopleID.unshift({ id: id, name: display });
+                        // GlobalPeopleID.unshift({ id: id, name: display });
 
                         // only form team usage
                         players.set(display, { id: id });
@@ -740,7 +740,7 @@ class Game extends React.Component {
                           video +
                           ")"
                         );
-                        GlobalPeopleID.push({ id: id, name: display });
+                        // GlobalPeopleID.push({ id: id, name: display });
 
                         // only form team usage
                         players.set(display, { id: id });
@@ -785,27 +785,27 @@ class Game extends React.Component {
                         remoteFeed.detach();
                       }
                       console.log("all people here");
-                      console.log(GlobalPeopleID);
+                    //   console.log(GlobalPeopleID);
                       console.log(feeds);
 
-                      let tmp = 0;
-                      for (let i = 0; i < GlobalPeopleID.length; i++) {
-                        tmp = 0;
-                        for (let f in feeds) {
-                          if (
-                            (f != null || f != undefined) &&
-                            f.rfid == GlobalPeopleID[i].id
-                          ) {
-                            tmp += 1;
-                            break;
-                          }
-                        }
-                        if (tmp == 0 && GlobalPeopleID[i].id != myid) {
-                          GlobalPeopleID.splice(i, 1);
-                        }
-                      }
+                    //   let tmp = 0;
+                    //   for (let i = 0; i < GlobalPeopleID.length; i++) {
+                    //     tmp = 0;
+                    //     for (let f in feeds) {
+                    //       if (
+                    //         (f != null || f != undefined) &&
+                    //         f.rfid == GlobalPeopleID[i].id
+                    //       ) {
+                    //         tmp += 1;
+                    //         break;
+                    //       }
+                    //     }
+                    //     if (tmp == 0 && GlobalPeopleID[i].id != myid) {
+                    //       GlobalPeopleID.splice(i, 1);
+                    //     }
+                    //   }
                       console.log("all people here");
-                      console.log(GlobalPeopleID);
+                    //   console.log(GlobalPeopleID);
                       console.log(feeds);
 
                       // this.state.changePlayers();
@@ -1148,7 +1148,7 @@ class Game extends React.Component {
     this.setState({
       // round: 0,
       startGame: 1,
-      GlobalPeopleID: GlobalPeopleID,
+    //   GlobalPeopleID: GlobalPeopleID,
       step: 0
     });
 
@@ -1352,36 +1352,36 @@ class Game extends React.Component {
     return stateId-1;
   }
 
-  localToGlobal = (id) =>{
-    // since everyone in his own room would require an index to be 0 locally,
-    // I need to compare with globalPeppleId to identify my index globally
-    // e.g. If I am the third one into this room,
-    // then my video rendering would be 2 1 0 4 5 6 in this order, 
-    // so locally, I will be the video 0, and the first guy in the room would be in my video 2
-    // but those people that come later than me will be in the right order locally
-    // args: 
-    //       id : local id, already convert to 0-indexing
-    let globalOrder = -1
-    let orderArr = []
-    for(let i = 0; i< GlobalPeopleID.length;i++){
-        if(GlobalPeopleID[i] && GlobalPeopleID[i].id == myid){
-            globalOrder = i;
-            break
-        }
-    }  
-    if(globalOrder == -1){
-        alert(" I'm not in my room ")
-        return;
-    }
-    for(let i = globalOrder; i > -1;i--){
-        orderArr.push(i)
-    }
-    for(let i = globalOrder+1; i< GlobalPeopleID.length;i ++){
-        orderArr.push(i)
-    }
-    return orderArr;
+//   localToGlobal = (id) =>{
+//     // since everyone in his own room would require an index to be 0 locally,
+//     // I need to compare with globalPeppleId to identify my index globally
+//     // e.g. If I am the third one into this room,
+//     // then my video rendering would be 2 1 0 4 5 6 in this order, 
+//     // so locally, I will be the video 0, and the first guy in the room would be in my video 2
+//     // but those people that come later than me will be in the right order locally
+//     // args: 
+//     //       id : local id, already convert to 0-indexing
+//     let globalOrder = -1
+//     let orderArr = []
+//     for(let i = 0; i< GlobalPeopleID.length;i++){
+//         if(GlobalPeopleID[i] && GlobalPeopleID[i].id == myid){
+//             globalOrder = i;
+//             break
+//         }
+//     }  
+//     if(globalOrder == -1){
+//         alert(" I'm not in my room ")
+//         return;
+//     }
+//     for(let i = globalOrder; i > -1;i--){
+//         orderArr.push(i)
+//     }
+//     for(let i = globalOrder+1; i< GlobalPeopleID.length;i ++){
+//         orderArr.push(i)
+//     }
+//     return orderArr;
 
-  }
+//   }
 
   // TODO: refine code for general use cases
   getPlayId = (step) =>{
@@ -1441,7 +1441,7 @@ class Game extends React.Component {
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
-    for(let i=0;i<GlobalPeopleID.length; i++){
+    for(let i=0;i<6; i++){
         if(!document.querySelector('video#remotevideo'+i)) {continue;}
         document.querySelector('video#remotevideo'+i).muted= true;
         document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
