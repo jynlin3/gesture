@@ -1,32 +1,11 @@
 import React, { useState } from "react";
-// import ReactDOM from "react-dom";
 import Janus from "./Janus";
-// import { withRouter } from "react-router-dom";
-// import offline from "../images/offline.jpg";
 import $ from "jquery";
 import { Container, Row, Col, ThemeProvider } from "react-bootstrap";
-// import { findAllByTestId } from "@testing-library/react";
 import Countdown from "react-countdown";
-// import { connect } from "react-redux";
-// import { Word } from "./Word";
 import axios from "axios";
 
 let server;
-/**
- * have a set of ids arrays
- * randomly divide into two parts
- *
- * take one as the
- * 1st 30 sec to look the questions
- * 1st->2nd : show gussture to the next one. 30 sec to perform
- * 2nd->3rd : show guessture to the next one
- * ...
- * last: 30 sec to answer
- *
- * input has the question
- * output: right or wrong to Jyn
- *
- */
 
 try {
   server = require("./config.json").janusServer;
@@ -39,25 +18,16 @@ let vroomHandle = null;
 let myroom = null;
 let opaqueId = "videoroom-" + Janus.randomString(12);
 let mypvtid = null;
-let myusername = null;
 let feeds = [];
 let myid = null;
 let mystream = null;
-let userIds = [1, 2, 3, 4, 5, 6];
-let team1 = [];
-let team2 = [];
-let questions = ["Birthday", "JavaScript", "Sucks"];
-// let team1Competing;
-// let w;
+
 // question from datachannel
 let question = "";
 let theirQuestion = "";
 
-// let GlobalPeopleID = [];
 let myIndexInRoom = 0;
 let userName = "";
-let teamA = [0, 2, 4];
-let teamB = [1, 3, 5];
 let arr1 = [0, 1];
 let arr2 = [2, 3];
 let arr3 = [4, 5];
@@ -74,20 +44,6 @@ let teams = {A: [], B: []};
 
 // start game usage only
 let remoteStart = false; 
-
-// // before loading
-// window.onload = function () {
-//   let q = document.getElementById("question");
-//   if (q !== null && q !== "undefined") {
-//     let idx = Math.floor(Math.random() * questions.length);
-//     q.innerHTML = questions[idx];
-//     question = questions[idx];
-//   }
-//   scores.values = document.getElementById("scores");
-//   if (scores !== null && scores !== "undefined") {
-//     scores.innerHTML = this.scores;
-//   }
-// };
 
 function updateTeamStatus(playerName, teamID) {
 	// remove from the original team
@@ -150,48 +106,24 @@ class Game extends React.Component {
     // bind functions
     this.handleJoinClick = this.handleJoinClick.bind(this);
     this.startGame = this.startGame.bind(this);
-    this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    // this.askServer = this.askServer.bind(this);
-    // console.log("My name is :" + this.props.name)
-    // console.log(this.state)
-    // this.pickQuestion();
-    // w = new Set();
-    // team1Competing = true;
 
     // member variables
     this.state = {
-      // player: {},
-      // observer: {},
-
       // question from database
       question: question,
-    //   GlobalPeopleID: [],
-      // round: 1,
-      // userIds: [1, 2, 3, 4, 5, 6],
-      score: [0, 0],
-      // totalGameRound: 1,
-      // isCorrect: false,
-
       // timer usage only,
       completions: 0,
       // game logic
       step: -1,
-      // answer: null
     };
-    // this.splitTeams(userIds);
-	this.scores = [0, 0];
 	// playbook index, default is audience (6)
-    this.id = 6;
+	this.id = 6;
+	this.playbook = null;
 
-    // this.state.id = 3;
-
-    // this.startGame = this.startGame.bind(this);
-
-    // only form team usage
+    // form team usage only
     players.set(userName, {});
 
-    this.state.startGame = 0;
     this.state.allVideos = [1, 1, 1, 1, 1, 1];
     this.state.generalVideoSwitch = this.generalVideoSwitch.bind(this);
 
@@ -200,8 +132,6 @@ class Game extends React.Component {
     // this.switchVideo1 = this.switchVideo1.bind(this);
     // this.state.video0 = 1;
     // this.switchVideo0 = this.switchVideo0.bind(this);
-    this.playbook = null;
-
   }
 
   pickQuestion() {
@@ -209,7 +139,6 @@ class Game extends React.Component {
       console.log(res);
       question = res.data.item;
       this.setState({
-        // the generated word is stored in `res.data.item`
         question: question,
       });
       
@@ -224,50 +153,9 @@ class Game extends React.Component {
     });
   }
 
-  // addWaiting(id) {
-  //   this.setState((waiting) => ({
-  //     waiting: new Set(waiting).add(id),
-  //   }));
-  // }
-
-  // removeWaiting(id) {
-  //   this.setState(({ waiting }) => {
-  //     const newWait = new Set(waiting);
-  //     newWait.delete(id);
-  //     return {
-  //       waiting: newWait,
-  //     };
-  //   });
-  // }
-
   componentDidMount() {
     this.GameServerRoomStart();
-    // this.interval = setInterval(
-    //   () => this.setState({ time: Date.now() }),
-    //   frequency + 500
-    // );
   }
-
-  componentWillUnmount() {
-    // clearInterval(this.interval);
-  }
-
-  // splitTeams(userIds) {
-  //   let numMembers = userIds.length / 2;
-  //   team1 = userIds.slice(0, numMembers);
-  //   team2 = userIds.slice(numMembers);
-  //   if (team1Competing) {
-  //     for (let i = 1; i < team1.length; ++i) {
-  //       this.state.waiting.add(team1[i]);
-  //       // this.addWaiting(team1[i]);
-  //     }
-  //   } else {
-  //     for (let i = 1; i < team2.length; ++i) {
-  //       this.state.waiting.add(team2[i]);
-  //       // this.addWaiting(team2[i]);
-  //     }
-  //   }
-  // }
 
   updateRole() {
     console.log("[Game] update role");
@@ -275,72 +163,7 @@ class Game extends React.Component {
     this.setState({
       step: newStep > 7 ? -1 : newStep
     });
-    // let numMembers = userIds.length / 2;
-    // // prevent starting round
-    // const newWait = new Set(this.state.waiting);
-    // if (this.state.round === 2){
-    //     this.deleteObj(this.state.observer);
-    //     this.deleteObj(this.state.player);
-    //     return;
-    // }
-    // if (this.state.waiting.size !== numMembers - 1) {
-    //   let newIndex = this.state.observer.index;
-    //   let newPlayer = userIds[newIndex];
-    //   let newObserIdx = newIndex + 1;
-    //   //   console.log();
-    //   this.setState({
-    //     player: {
-    //       id: newPlayer,
-    //       index: newIndex,
-    //     },
-    //     observer: {
-    //       id: userIds[newObserIdx],
-    //       index: newObserIdx,
-    //     },
-    //     waiting: new Set(),
-    //     round: this.state.round + 1,
-    //   });
-    // } else {
-    //   // first round after waiting, update the player and observer
-    //   if (team1Competing) {
-    //     console.log("first round");
-    //     newWait.delete(team1[1]);
-    //     this.setState({
-    //       player: {
-    //         id: team1[0],
-    //         index: 0,
-    //       },
-    //       observer: {
-    //         id: team1[1],
-    //         index: 1,
-    //       },
-    //       waiting: newWait,
-    //       round: this.state.round + 1,
-    //     });
-    //   } else {
-    //     newWait.delete(team2[1]);
-    //     this.setState({
-    //       player: {
-    //         id: team1[0],
-    //         index: 0,
-    //       },
-    //       observer: {
-    //         id: team1[1],
-    //         index: 1,
-    //       },
-    //       waiting: newWait,
-    //       round: this.state.round + 1,
-    //     });
-    //   }
-    // }
   }
-
-//   updatePlayers() {
-//     this.state.changePlayers(this.state.GlobalPeopleID);
-//     while (this.state.players.length < 6) {
-//       this.state.players.push({ id: null, id: "uknown" });
-//     }
-//   }
 
   GameServerRoomStart() {
     function publishOwnFeed(useAudio) {
@@ -960,18 +783,6 @@ class Game extends React.Component {
     });
   }
 
-  // conditional rendering`
-  // Question() {
-  //   return (
-  //     <div className="App">
-        
-  //       {JSON.stringify(this.state.question)}
-  //       {this.Timer()}
-        
-  //     </div>
-  //   );
-  // }
-
   Competing() {
     return (
       <div className="App">
@@ -998,7 +809,6 @@ class Game extends React.Component {
     if (completed) {
       // Render a completed state
       this.updateRole();
-      // this.props.timeUp();
       return <span> You are good to go! </span>
     } else {
       // Render a countdown
@@ -1146,9 +956,6 @@ class Game extends React.Component {
 
     // update state
     this.setState({
-      // round: 0,
-      startGame: 1,
-    //   GlobalPeopleID: GlobalPeopleID,
       step: 0
     });
 
@@ -1297,10 +1104,6 @@ class Game extends React.Component {
     }
     // this.switchTeam();
     // event.preventDefault();
-  }
-
-  handleChange(event) {
-    // this.setState({ answer: event.target.value });
   }
 
   // lookForidx(id) {
@@ -1640,7 +1443,7 @@ class Game extends React.Component {
                 <label for="answer"> Answer: </label>
               </li>
               <li>
-                <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} onChange={this.handleChange}  placeholder="Type your Answer" />
+                <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} placeholder="Type your Answer" />
               </li>
               <li>
                 <button id="submit" onClick={this.handleSubmit} className="button btn btn-link p2">
