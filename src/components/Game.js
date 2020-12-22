@@ -37,7 +37,7 @@ let frequency = 5000 * 6;
 let scoreA = 0;
 let scoreB = 0;
 
-// form team usage only, date structure would be {username => {id: id, team: team}}
+// form team usage only, date structure would be {playername => {id: rfid, team: team, videoindex: rfindex}}
 let players = new Map();
 // form team usage only, data structure would be {A: ['jyn', ...]}, B: ['debo', ...]}
 let teams = {A: [], B: []};
@@ -864,7 +864,6 @@ class Game extends React.Component {
             return (
               <Col>
                 <div id={"videoremote" + value} className="container">
-                  {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                 </div>
                 <h3 id={"callername" + value}> </h3>
               </Col>
@@ -876,7 +875,6 @@ class Game extends React.Component {
             return (
               <Col>
                 <div id={"videoremote" + value} className="container">
-                  {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                 </div>
                 <h3 id={"callername" + value}> </h3>
               </Col>
@@ -888,7 +886,6 @@ class Game extends React.Component {
             return (
               <Col>
                 <div id={"videoremote" + value} className="container">
-                  {/* <img src={offline} id="img1" className="card-media-image" style={{ width: "300px", height: "250px" }}></img> */}
                 </div>
                 <h3 id={"callername" + value}> </h3>
               </Col>
@@ -898,24 +895,6 @@ class Game extends React.Component {
       </Container>
     );
   }
-
-  // waitForPeople() {
-  //   let idx = document.createElement("wait");
-  //   for (let i = 0; i < userIds.length; ++i) {
-  //     if (userIds[i] === this.state.id) {
-  //       if (Object.keys(this.state.player).length === 0) {
-  //         idx.innerHTML = i;
-  //       } else {
-  //         idx.innerHTML = this.state.player.index - i;
-  //       }
-  //       break;
-  //     }
-  //   }
-  // }
-
-  // Playing() {
-  //   return <h1> </h1>;
-  // }
 
   startGame = () => {
     if(!remoteStart){
@@ -958,14 +937,11 @@ class Game extends React.Component {
     this.setState({
       step: 0
     });
-
-    // this.render();
   };
 
   answerRenderer = ({ seconds, completed }) => {
     if (completed) {
       // Render a completed state
-      // this.switchTeam();
       return <span>Time's up</span>
     } else {
       // Render a countdown
@@ -1033,28 +1009,6 @@ class Game extends React.Component {
     );
   }
 
-  // deleteObj(obj) {
-  //   for (var member in obj) {
-  //     delete obj[member];
-  //   }
-  // }
-
-  // switchTeam() {
-  //   team1Competing = !team1Competing;
-  //   this.splitTeams(userIds);
-  //   this.deleteObj(this.state.player);
-  //   this.deleteObj(this.state.observer);
-  //   this.setState({
-  //     player: {},
-  //     observer: {},
-  //     totalGameRound: this.state.totalGameRound + 1,
-  //     round: 1,
-  //   });
-  //   if (this.state.totalGameRound === 6) {
-  //     // render to another page
-  //   }
-  // }
-
   handleSubmit(event) {
     let word = question;
     let correct = question === document.getElementById("answer").value;
@@ -1064,17 +1018,8 @@ class Game extends React.Component {
       )
       .then((state) => {
         console.log(state);
-        // this.setState({
-        //   update_result: state.data.message,
-        // });
       });
     if (correct) {
-      // let newScore = players.get(userName).team == 'A'
-      //   ? this.state.score[0] + 1
-      //   : this.state.score[1] + 1;
-      // this.setState({
-      //   score: newScore,
-      // });
       if (players.get(userName).team == 'A'){
         scoreA += 1;
 
@@ -1102,39 +1047,7 @@ class Game extends React.Component {
     } else {
       alert("BOOM!!! Wrong answer");
     }
-    // this.switchTeam();
-    // event.preventDefault();
   }
-
-  // lookForidx(id) {
-  //   let idx;
-  //   for (let i = 0; i < team1.length; ++i) {
-  //     if (team1[i] === id) {
-  //       idx = i;
-  //       break;
-  //     }
-  //   }
-
-  //   for (let i = 0; i < team2.length; ++i) {
-  //     if (team2[i] === id) {
-  //       idx = i;
-  //       break;
-  //     }
-  //   }
-  //   return idx;
-  // }
-
-  // yourTeamCompeting() {
-  //   let currentId = this.state.id;
-  //   for (let i = 0; i < team1.length; ++i) {
-  //     // in team1
-  //     if (team1[i] === currentId) {
-  //       return team1Competing;
-  //     }
-  //   }
-  //   // id in team2
-  //   return !team1Competing;
-  // }
 
   onComplete = () => {
     this.setState({
@@ -1149,42 +1062,6 @@ class Game extends React.Component {
           document.getElementById("submit").click();
       }
   }
-
-  mapping = (stateId) =>{
-    // need to mapping 1-index player state id to video 0-indexing
-    return stateId-1;
-  }
-
-//   localToGlobal = (id) =>{
-//     // since everyone in his own room would require an index to be 0 locally,
-//     // I need to compare with globalPeppleId to identify my index globally
-//     // e.g. If I am the third one into this room,
-//     // then my video rendering would be 2 1 0 4 5 6 in this order, 
-//     // so locally, I will be the video 0, and the first guy in the room would be in my video 2
-//     // but those people that come later than me will be in the right order locally
-//     // args: 
-//     //       id : local id, already convert to 0-indexing
-//     let globalOrder = -1
-//     let orderArr = []
-//     for(let i = 0; i< GlobalPeopleID.length;i++){
-//         if(GlobalPeopleID[i] && GlobalPeopleID[i].id == myid){
-//             globalOrder = i;
-//             break
-//         }
-//     }  
-//     if(globalOrder == -1){
-//         alert(" I'm not in my room ")
-//         return;
-//     }
-//     for(let i = globalOrder; i > -1;i--){
-//         orderArr.push(i)
-//     }
-//     for(let i = globalOrder+1; i< GlobalPeopleID.length;i ++){
-//         orderArr.push(i)
-//     }
-//     return orderArr;
-
-//   }
 
   // TODO: refine code for general use cases
   getPlayId = (step) =>{
@@ -1254,9 +1131,6 @@ class Game extends React.Component {
   }
 
   playerObserverVideo = (step, id) =>{
-    // id = this.mapping(id)
-
-    // let orderArr = this.localToGlobal(id);
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
@@ -1278,7 +1152,6 @@ class Game extends React.Component {
 			document.querySelector('video#remotevideo'+i).style.height= "5%"
         }
     }
-    // console.log('debugging observer and player end')
 	if(document.querySelector('video#remotevideo'+playerID)){
 		document.querySelector('video#remotevideo'+playerID).muted= true;
     }
@@ -1286,43 +1159,13 @@ class Game extends React.Component {
 
 
   allcase = () =>{
-    // const currentId = this.id;
-    // const idx = this.lookForidx(currentId);
-    // const flag = this.yourTeamCompeting();
-    // console.log("round: ", this.state.round);
-    // console.log("flag: ", flag);
-    // console.log("idx: ", idx);
-    // console.log("Current id: ", currentId);
-    // console.log("player: ", this.state.player);
-    // console.log("observer: ", this.state.observer);
-    // console.log("waiting: ", this.state.waiting);
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
 
     if (this.state.step == -1) {
         return(<p>  </p>);
-    // // waiting
-    // } else if (!flag) {
-    //     // supress all
-    //     this.suppresAllVideo();
-    //     if (this.state.round === 1) {
-    //       return (
-    //         <div>
-    //           <h1>Wait other team's first player is reading the question!!</h1>
-    //           {this.Timer()}
-    //         </div>
-    //       );
-    //     } else {
-    //       return (
-    //         <div>
-    //           <div>{this.Competing()}</div>
-    //           {this.Timer()}
-    //         </div>
-    //       );
-    //     }
-      } else if (currentStatus == "WAIT") {
+    } else if (currentStatus == "WAIT") {
         // supress all
         this.suppresAllVideo();
-        // this.waitForPeople();
         return (
           <div className="App">
             <header className="jumbotron p2 App-header">
@@ -1352,7 +1195,6 @@ class Game extends React.Component {
         // playing
       } else if (currentStatus == "PLAY") {
         // be the publisher
-        // look i and i+1
 
         this.playerObserverVideo(this.state.step, this.id)
 
@@ -1370,7 +1212,6 @@ class Game extends React.Component {
         );
       // observing
     } else if (currentStatus === "OBSERVE") {
-        //look i-1  and i
 
         this.playerObserverVideo(this.state.step, this.id);
 
@@ -1405,16 +1246,6 @@ class Game extends React.Component {
             </header>
           </div>
         );
-      //   // waiting for answer
-      // } else if (currentStatus === "ANSWER") {
-      //     // supress all video
-      //   this.suppresAllVideo();
-      //   return (
-      //     <div>
-      //       <h1>Waiting for the last person to answer the question!</h1>
-      //       {this.answerTimer()}
-      //     </div>
-      //   );
         // answering 
       } else {
           // supress all video
@@ -1459,16 +1290,6 @@ class Game extends React.Component {
 
 
   render() {
-    // const currentId = this.state.id;
-    // const idx = this.lookForidx(currentId);
-    // const flag = this.yourTeamCompeting();
-    // console.log("round: ", this.state.round);
-    // console.log("flag: ", flag);
-    // console.log("idx: ", idx);
-    // console.log("Current id: ", currentId);
-    // console.log("player: ", this.state.player);
-    // console.log("observer: ", this.state.observer);
-    // console.log("waiting: ", this.state.waiting);
     // game setting
     return (
     <div className="App">
@@ -1552,8 +1373,6 @@ class Game extends React.Component {
             muted="muted"
             ></video>
         </div>
-
-
     </div>
     );
 
