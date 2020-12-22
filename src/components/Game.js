@@ -67,10 +67,12 @@ let frequency = 5000 * 6;
 let scoreA = 0;
 let scoreB = 0;
 
-// only form team usage, date structure would be {username => {id: id, team: team}}
+// form team usage only, date structure would be {username => {id: id, team: team}}
 let players = new Map();
+// form team usage only, data structure would be {A: ['jyn', ...]}, B: ['debo', ...]}
+let teams = {A: [], B: []};
 
-// only start game usage
+// start game usage only
 let remoteStart = false; 
 
 // // before loading
@@ -87,30 +89,32 @@ let remoteStart = false;
 //   }
 // };
 
-function updateTeamStatus() {
-  // clear the team status
-  for (let i = 1; i < 4; i++) {
-    document.getElementById("Ateam" + i).innerHTML = "";
-    document.getElementById("Bteam" + i).innerHTML = "";
-  }
+function updateTeamStatus(playerName, teamID) {
+	// remove from the original team
+	if ('team' in players.get(playerName)) {
+		let oldTeam = players.get(playerName).team;
+		let pos = teams[oldTeam].indexOf(playerName);
+		teams[oldTeam].splice(pos, 1);
+	}
 
-  // create a variable to count # players in team A
-  // create a variable to count # players in team B
-  let playerCntA = 0;
-  let playerCntB = 0;
+	teams[teamID].push(playerName);
+	players.get(playerName).team = teamID;
 
-  // itreate over the players
-  for (const [key, value] of players.entries()) {
-    // console.log(key, value);
-    // let team = value.team;
-    if (value.team === "A") {
-      playerCntA += 1;
-      document.getElementById("Ateam" + playerCntA).innerHTML = key;
-    } else if (value.team === "B") {
-      playerCntB += 1;
-      document.getElementById("Bteam" + playerCntB).innerHTML = key;
-    }
-  }
+	console.log("[Jyn] players = ", players);
+	console.log("[Jyn] team = ", teams);
+
+  	// update the team status
+  	for (let i = 0; i < 3; i++) {
+		if (i < teams.A.length)
+			document.getElementById("Ateam" + (i+1)).innerHTML = teams.A[i];
+		else
+			document.getElementById("Ateam" + (i+1)).innerHTML = "";
+
+		if (i < teams.B.length)
+			document.getElementById("Bteam" + (i+1)).innerHTML = teams.B[i];
+		else
+			document.getElementById("Bteam" + (i+1)).innerHTML = "";
+  	}
 }
 
 class Game extends React.Component {
@@ -176,8 +180,9 @@ class Game extends React.Component {
       // answer: null
     };
     // this.splitTeams(userIds);
-    this.scores = [0, 0];
-    this.id = 1;
+	this.scores = [0, 0];
+	// playbook index, default is audience (6)
+    this.id = 6;
 
     // this.state.id = 3;
 
@@ -478,11 +483,10 @@ class Game extends React.Component {
           // console.log("I'm in onlocal stream")
         },
         onremotestream: function (stream) {
-          console.log(
-            "Remote feed #" + remoteFeed.rfindex + ", stream:",
-            stream
-          );
-          let addButtons = false;
+		  console.log("Remote feed #" + remoteFeed.rfindex + ", stream:", stream);
+
+		  players.get(remoteFeed.rfdisplay).videoindex = remoteFeed.rfindex;
+		  
           if ($("#remotevideo" + remoteFeed.rfindex).length === 0) {
             // No remote video yet
             // $('#videoremote'+remoteFeed.rfindex).children('img').remove();
@@ -554,8 +558,7 @@ class Game extends React.Component {
           console.log("[Jyn] Attach ondata:", data);
           var json = JSON.parse(data);
           if (json["textroom"] === "jointeam") {
-            players.get(json["username"]).team = json["team"];
-            updateTeamStatus();
+            updateTeamStatus(json["username"], json["team"]);
           } else if (json["textroom"] === "question"){
             if (json["team"] == players.get(userName).team)
               question = json["question"];
@@ -873,7 +876,10 @@ class Game extends React.Component {
                 // top priority
                 console.log(" ::: Got a local stream :::", stream);
                 mystream = stream;
-                console.log("my index in room : " + myIndexInRoom);
+				console.log("my index in room : " + myIndexInRoom);
+				
+				players.get(userName).videoindex = myIndexInRoom;
+
                 const video = document.querySelector("video#localvideo");
 
                 // $('#videoremote'+myIndexInRoom).children('img').remove();
@@ -913,8 +919,7 @@ class Game extends React.Component {
                 console.log("[Jyn] Attach ondata:", data);
                 var json = JSON.parse(data);
                 if (json["textroom"] === "jointeam") {
-                  players.get(json["username"]).team = json["team"];
-                  updateTeamStatus();
+                  updateTeamStatus(json["username"], json["team"]);
                 } else if (json["textroom"] === "question"){
                   if (json["team"] == players.get(userName).team)
                     question = json["question"];
@@ -1011,8 +1016,7 @@ class Game extends React.Component {
 
   handleJoinClick = (e) => {
     let teamId = e.target.id;
-    players.get(userName).team = teamId;
-    updateTeamStatus();
+    updateTeamStatus(userName, teamId);
 
     // send to remotes
     var message = {
@@ -1113,14 +1117,16 @@ class Game extends React.Component {
       this.sendData(message);
     }
 
-    // use adding order as id and form team
-    for (var i = 0; i < GlobalPeopleID.length; i++){
-      if(GlobalPeopleID[i].name == userName){
-        this.id = i + 1;
-        console.log("[Jyn] id = ", this.id);
-      }
-    }
-    players.get(userName).team = this.id > 3 ? "B" : "A";
+	// use team order as id
+	switch(players.get(userName).team){
+		case 'A':
+			this.id = teams.A.indexOf(userName);
+			break;
+		case 'B':
+			this.id = teams.B.indexOf(userName) + 3;
+			break;
+	}
+	console.log("[Jyn] id = ", this.id);
 
     // TODO: auto generate playbooks
     var playbooks = [
@@ -1129,11 +1135,12 @@ class Game extends React.Component {
       ["WAIT",        "WAIT",     "OBSERVE",  "ANSWER",   "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
       ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY",     "AUDIENCE", "AUDIENCE"],
       ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "OBSERVE",  "PLAY",     "AUDIENCE"],
-      ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "WAIT",     "OBSERVE",  "ANSWER"]
+	  ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "WAIT",     "OBSERVE",  "ANSWER"],
+	  ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
     ];
 
     // generate playbook
-    this.playbook = playbooks[this.id - 1];
+    this.playbook = playbooks[this.id];
     if(this.playbook.includes("READ_TOPIC"))
       this.pickQuestion();
 
@@ -1378,26 +1385,56 @@ class Game extends React.Component {
 
   // TODO: refine code for general use cases
   getPlayId = (step) =>{
-    if (step < 3)
-      return step;
-    else if (step < 7)
-      return step - 1;
-    else
-      return step - 2; 
+	let playerName;
+	switch(step){
+		case 0:
+			if (teams.A.length < 1)
+				return null;
+			playerName = teams.A[0];
+			return players.get(playerName).videoindex;
+		case 1:
+		case 2:
+		case 3:
+			if (teams.A.length < step)
+				return null;
+			playerName = teams.A[step-1];
+			return players.get(playerName).videoindex;
+		case 4:
+			if (teams.B.length < 1)
+				return null;
+			playerName = teams.B[0];
+			return players.get(playerName).videoindex;
+		case 5:
+		case 6:
+		case 7:
+			if (teams.B.length < step-4)
+				return null;
+			playerName = teams.B[step-5];
+			return players.get(playerName).videoindex;
+		default:
+			return null;
+	}
   }
 
   // TODO: refine code for general use cases
   getObserveId = (step) =>{
-    switch(step){
-      case 1:
-      case 2:
-        return step - 1;
-      case 5:
-      case 6:
-        return step - 2;
-      default:
-        return null
-    }
+	let playerName;
+	switch(step){
+		case 1:
+		case 2:
+			if (teams.A.length < step+1)
+				return null;
+			playerName = teams.A[step];
+			return players.get(playerName).videoindex;
+		case 5:
+		case 6:
+			if (teams.B.length < step-3)
+				return null
+			playerName = teams.B[step-4];
+			return players.get(playerName).videoindex;
+		default:
+			return null;
+	}
   }
 
   suppresAllVideo = () =>{
@@ -1414,40 +1451,39 @@ class Game extends React.Component {
   }
 
   playerObserverVideo = (step, id) =>{
-    id = this.mapping(id)
+    // id = this.mapping(id)
 
-    let orderArr = this.localToGlobal(id);
+    // let orderArr = this.localToGlobal(id);
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
     let playerID = this.getPlayId(step);
     let observerID = this.getObserveId(step);
 
-    for(let i=0;i<GlobalPeopleID.length; i++){
-        let k = orderArr[i];
-        if(!document.querySelector('video#remotevideo'+k)){ continue;}
-        if(k == orderArr[playerID] ||  k == orderArr[observerID]){
-            document.querySelector('video#remotevideo'+k).muted= false;
-            document.querySelector('video#remotevideo'+k).style.visibility= "visible";
-            document.querySelector('video#remotevideo'+k).style.width= "100%";
-            document.querySelector('video#remotevideo'+k).style.height= "100%"
+// TODO: refine code for general use cases
+	for(let i=0;i<6; i++){
+		if(!document.querySelector('video#remotevideo'+i)){ continue;}
+		if(i == playerID || i == observerID){
+			document.querySelector('video#remotevideo'+i).muted= false;
+			document.querySelector('video#remotevideo'+i).style.visibility= "visible";
+			document.querySelector('video#remotevideo'+i).style.width= "100%";
+			document.querySelector('video#remotevideo'+i).style.height= "100%";
         }else{
-            document.querySelector('video#remotevideo'+k).muted= true;
-            document.querySelector('video#remotevideo'+k).style.visibility= "hidden";
-            document.querySelector('video#remotevideo'+k).style.width= "5%";
-            document.querySelector('video#remotevideo'+k).style.height= "5%"
-
+			document.querySelector('video#remotevideo'+i).muted= true;
+			document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
+			document.querySelector('video#remotevideo'+i).style.width= "5%";
+			document.querySelector('video#remotevideo'+i).style.height= "5%"
         }
     }
-    console.log('debugging observer and player end')
-    if(document.querySelector('video#remotevideo'+id)){
-        document.querySelector('video#remotevideo'+id).muted= true;
+    // console.log('debugging observer and player end')
+	if(document.querySelector('video#remotevideo'+playerID)){
+		document.querySelector('video#remotevideo'+playerID).muted= true;
     }
   }
 
 
   allcase = () =>{
-    const currentId = this.id;
+    // const currentId = this.id;
     // const idx = this.lookForidx(currentId);
     // const flag = this.yourTeamCompeting();
     // console.log("round: ", this.state.round);
@@ -1493,7 +1529,7 @@ class Game extends React.Component {
             </header>
               <h2 className="p2">
                 {" "}
-                Wait for <span id="wait">{this.id <= 3 ? this.id - this.state.step - 1 : this.id - this.state.step + 1}</span> people
+                Wait for <span id="wait">{this.id < 3 ? this.id - this.state.step : this.id - this.state.step + 1}</span> people
               </h2>
           </div>
         );
