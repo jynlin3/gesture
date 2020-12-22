@@ -259,11 +259,7 @@ class Game extends React.Component {
                 .show();
             }
             console.log("all people here");
-            // console.log(GlobalPeopleID)
             console.log(feeds);
-            // console.log(this.state)
-            // this.state.changePlayers();
-            // console.log(this.state);
           }
           if (jsep) {
             Janus.debug("Handling SDP as well...", jsep);
@@ -308,6 +304,7 @@ class Game extends React.Component {
         onremotestream: function (stream) {
 		  console.log("Remote feed #" + remoteFeed.rfindex + ", stream:", stream);
 
+		  // form team usage
 		  players.get(remoteFeed.rfdisplay).videoindex = remoteFeed.rfindex;
 		  
           if ($("#remotevideo" + remoteFeed.rfindex).length === 0) {
@@ -485,12 +482,10 @@ class Game extends React.Component {
                       " with ID " +
                       myid
                     );
-                    // GlobalPeopleID.unshift({ id: myid, name: userName });
                     publishOwnFeed(true);
 
-                    // only form team usage
+					// form team usage
                     players.get(userName).id = myid;
-
 
                     // Any new feed to attach to already joined members
                     if (
@@ -517,9 +512,8 @@ class Game extends React.Component {
                           ")"
                         );
                         console.log("somebody in the same room : " + { id });
-                        // GlobalPeopleID.unshift({ id: id, name: display });
 
-                        // only form team usage
+                        // form team usage
                         players.set(display, { id: id });
 
                         newRemoteFeed(id, display, audio, video);
@@ -563,9 +557,8 @@ class Game extends React.Component {
                           video +
                           ")"
                         );
-                        // GlobalPeopleID.push({ id: id, name: display });
 
-                        // only form team usage
+                        // form team usage
                         players.set(display, { id: id });
 
                         newRemoteFeed(id, display, audio, video);
@@ -608,31 +601,7 @@ class Game extends React.Component {
                         remoteFeed.detach();
                       }
                       console.log("all people here");
-                    //   console.log(GlobalPeopleID);
                       console.log(feeds);
-
-                    //   let tmp = 0;
-                    //   for (let i = 0; i < GlobalPeopleID.length; i++) {
-                    //     tmp = 0;
-                    //     for (let f in feeds) {
-                    //       if (
-                    //         (f != null || f != undefined) &&
-                    //         f.rfid == GlobalPeopleID[i].id
-                    //       ) {
-                    //         tmp += 1;
-                    //         break;
-                    //       }
-                    //     }
-                    //     if (tmp == 0 && GlobalPeopleID[i].id != myid) {
-                    //       GlobalPeopleID.splice(i, 1);
-                    //     }
-                    //   }
-                      console.log("all people here");
-                    //   console.log(GlobalPeopleID);
-                      console.log(feeds);
-
-                      // this.state.changePlayers();
-                      // console.log(this.state);
                     } else if (
                       msg["unpublished"] !== undefined &&
                       msg["unpublished"] !== null
@@ -701,6 +670,7 @@ class Game extends React.Component {
                 mystream = stream;
 				console.log("my index in room : " + myIndexInRoom);
 				
+				// form team usage
 				players.get(userName).videoindex = myIndexInRoom;
 
                 const video = document.querySelector("video#localvideo");
