@@ -56,8 +56,8 @@ function updateTeamStatus(playerName, teamID) {
 	teams[teamID].push(playerName);
 	players.get(playerName).team = teamID;
 
-	console.log("[Jyn] players = ", players);
-	console.log("[Jyn] team = ", teams);
+	console.log("[updateTeamStatus] players = ", players);
+	console.log("[updateTeamStatus] team = ", teams);
 
   	// update the team status
   	for (let i = 0; i < 3; i++) {
@@ -371,11 +371,11 @@ class Game extends React.Component {
         },
         ondataopen: function (data) {
           Janus.log("The DataChannel is available");
-          console.log("[Jyn] The DataChannel is available", data);
+          console.log("[ondataopen] The DataChannel is available", data);
         },
         ondata: function (data) {
           Janus.debug("We got data from the DataChannel! ", data);
-          console.log("[Jyn] Attach ondata:", data);
+          console.log("[ondata] Attach ondata:", data);
           var json = JSON.parse(data);
           if (json["textroom"] === "jointeam") {
             updateTeamStatus(json["username"], json["team"]);
@@ -520,7 +520,7 @@ class Game extends React.Component {
                       }
                     }
                     console.log(
-                      "[Jyn] get already joined event, players ",
+                      "[onmessage] get already joined event, players ",
                       players
                     );
                   } else if (event === "destroyed") {
@@ -564,7 +564,7 @@ class Game extends React.Component {
                         newRemoteFeed(id, display, audio, video);
                       }
                       console.log(
-                        "[Jyn] get new joined event, players ",
+                        "[onmessage] get new joined event, players ",
                         players
                       );
 
@@ -705,11 +705,11 @@ class Game extends React.Component {
               },
               ondataopen: function (data) {
                 Janus.log("The DataChannel is available");
-                console.log("[Jyn] The DataChannel is available", data);
+                console.log("[ondataopen] The DataChannel is available", data);
               },
               ondata: function (data) {
                 Janus.debug("We got data from the DataChannel! ", data);
-                console.log("[Jyn] Attach ondata:", data);
+                console.log("[ondata] Attach ondata:", data);
                 var json = JSON.parse(data);
                 if (json["textroom"] === "jointeam") {
                   updateTeamStatus(json["username"], json["team"]);
@@ -820,7 +820,7 @@ class Game extends React.Component {
         alert(reason);
       },
       success: function () {
-        console.log("[Jyn] sendData success");
+        console.log("[sendData] success");
       },
     });
   };
@@ -885,7 +885,7 @@ class Game extends React.Component {
 			this.id = teams.B.indexOf(userName) + 3;
 			break;
 	}
-	console.log("[Jyn] id = ", this.id);
+	console.log("[startGame] playbook id = ", this.id);
 
     // TODO: auto generate playbooks
     var playbooks = [
