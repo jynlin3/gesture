@@ -866,6 +866,60 @@ class Game extends React.Component {
     );
   }
 
+  /*
+  Get the play's role on differect steps.
+  The role would be "READ_TOPIC" or "ANSWER" or "PLAY" or "AUDIENCE" or "WAIT" or "OBSERVE".
+  */
+ getRole = (memberCnt, order, step) => {
+   let roles = null;
+   switch(memberCnt) {
+     case 1:
+       roles = [["READ_TOPIC", "ANSWER"]];
+       break;
+     case 2:
+       roles = [
+          ["READ_TOPIC","PLAY",   "AUDIENCE"],
+          ["WAIT",      "OBSERVE","ANSWER"]
+       ];
+       break;
+     case 3:
+       roles = [
+         ["READ_TOPIC", "PLAY",    "AUDIENCE","AUDIENCE"],
+         ["WAIT",       "OBSERVE", "PLAY",    "AUDIENCE"],
+         ["WAIT",       "WAIT",    "OBSERVE", "ANSWER"]
+       ];
+       break; 
+     default:
+       break;
+   }
+   console.log("[getRole] roles = ", roles);
+   return roles == null ? "AUDIENCE" : roles[order][step];
+ }
+
+  /*
+  Generate playbook based on the player's team and his/her order.
+  The playbook's data structure would be like ["READ_TOPIC",  "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"]
+  */
+  generatePlaybook = () =>{
+    let teamASteps = teams.A.length > 0 ? teams.A.length + 1 : 0;
+    let teamBSteps = teams.B.length > 0 ? teams.B.length + 1 : 0;
+
+    this.playbook = Array.apply(null, new Array(teamASteps+teamBSteps));
+    this.playbook = this.playbook.map((element, index) => "AUDIENCE");
+
+    let playerTeam = players.get(userName).team;
+    if (playerTeam == 'A') {
+      for (let i = 0; i < teamASteps; i++){
+        this.playbook[i] = this.getRole(teams.A.length, teams.A.indexOf(userName), i);
+      }
+    } else if (playerTeam == 'B') {
+      for (let i = 0; i < teamBSteps; i++){
+        this.playbook[teamASteps + i] = this.getRole(teams.B.length, teams.B.indexOf(userName), i);
+      }
+    }
+    console.log('[generatePlaybook] playbook = ', this.playbook);
+  }
+
   startGame = () => {
     if(!remoteStart){
       // notify remote players
@@ -876,30 +930,32 @@ class Game extends React.Component {
       this.sendData(message);
     }
 
-	// use team order as id
-	switch(players.get(userName).team){
-		case 'A':
-			this.id = teams.A.indexOf(userName);
-			break;
-		case 'B':
-			this.id = teams.B.indexOf(userName) + 3;
-			break;
-	}
-	console.log("[startGame] playbook id = ", this.id);
+	// // use team order as id
+	// switch(players.get(userName).team){
+	// 	case 'A':
+	// 		this.id = teams.A.indexOf(userName);
+	// 		break;
+	// 	case 'B':
+	// 		this.id = teams.B.indexOf(userName) + 3;
+	// 		break;
+	// }
+	// console.log("[startGame] playbook id = ", this.id);
 
-    // TODO: auto generate playbooks
-    var playbooks = [
-      ["READ_TOPIC",  "PLAY",     "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-      ["WAIT",        "OBSERVE",  "PLAY",     "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-      ["WAIT",        "WAIT",     "OBSERVE",  "ANSWER",   "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-      ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY",     "AUDIENCE", "AUDIENCE"],
-      ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "OBSERVE",  "PLAY",     "AUDIENCE"],
-	  ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "WAIT",     "OBSERVE",  "ANSWER"],
-	  ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-    ];
+  //   // TODO: auto generate playbooks
+  //   var playbooks = [
+  //     ["READ_TOPIC",  "PLAY",     "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+  //     ["WAIT",        "OBSERVE",  "PLAY",     "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+  //     ["WAIT",        "WAIT",     "OBSERVE",  "ANSWER",   "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+  //     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY",     "AUDIENCE", "AUDIENCE"],
+  //     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "OBSERVE",  "PLAY",     "AUDIENCE"],
+	//     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "WAIT",     "OBSERVE",  "ANSWER"],
+	//     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
+  //   ];
 
-    // generate playbook
-    this.playbook = playbooks[this.id];
+  //   // generate playbook
+  //   this.playbook = playbooks[this.id];
+    this.generatePlaybook();
+
     if(this.playbook.includes("READ_TOPIC"))
       this.pickQuestion();
 
@@ -1033,58 +1089,38 @@ class Game extends React.Component {
       }
   }
 
-  // TODO: refine code for general use cases
-  getPlayId = (step) =>{
-	let playerName;
-	switch(step){
-		case 0:
-			if (teams.A.length < 1)
-				return null;
-			playerName = teams.A[0];
-			return players.get(playerName).videoindex;
-		case 1:
-		case 2:
-		case 3:
-			if (teams.A.length < step)
-				return null;
-			playerName = teams.A[step-1];
-			return players.get(playerName).videoindex;
-		case 4:
-			if (teams.B.length < 1)
-				return null;
-			playerName = teams.B[0];
-			return players.get(playerName).videoindex;
-		case 5:
-		case 6:
-		case 7:
-			if (teams.B.length < step-4)
-				return null;
-			playerName = teams.B[step-5];
-			return players.get(playerName).videoindex;
-		default:
-			return null;
-	}
-  }
+/*
+Check the current role is from team A or Team B
+Use getRole to check which person is the wanted role
+*/
+  getVideoindexByRole = (step, role) =>{
+    let teamASteps = teams.A.length > 0 ? teams.A.length + 1 : 0;
+    
+    let name = null;
+    // the current player is from team A
+    if (step < teamASteps)  {
+      for(let i = 0; i < teams.A.length; i++){
+        let curRole = this.getRole(teams.A.length, i, step);
 
-  // TODO: refine code for general use cases
-  getObserveId = (step) =>{
-	let playerName;
-	switch(step){
-		case 1:
-		case 2:
-			if (teams.A.length < step+1)
-				return null;
-			playerName = teams.A[step];
-			return players.get(playerName).videoindex;
-		case 5:
-		case 6:
-			if (teams.B.length < step-3)
-				return null
-			playerName = teams.B[step-4];
-			return players.get(playerName).videoindex;
-		default:
-			return null;
-	}
+        if (curRole == role){
+          name = teams.A[i];
+          break;
+        }
+      }
+    // the current player is from team B
+    } else {
+      for(let i = 0; i < teams.B.length; i++){
+        let curRole = this.getRole(teams.B.length, i, step-teamASteps);
+
+        if (curRole == role){
+          name = teams.B[i];
+          break;
+        }
+      }
+    }
+
+    console.log("[getVideoindexByRole] name = ", name);
+    return name == null ? null : players.get(name).videoindex;
   }
 
   suppresAllVideo = () =>{
@@ -1104,13 +1140,16 @@ class Game extends React.Component {
     if(document.getElementById('header')){
         document.getElementById('header').style.display = 'none'
     }
-    let playerID = this.getPlayId(step);
-    let observerID = this.getObserveId(step);
+
+    let playerIdx = this.getVideoindexByRole(step, "PLAY");
+    let observerIdx = this.getVideoindexByRole(step, "OBSERVE");
+    let readerIdx = this.getVideoindexByRole(step, "READ_TOPIC");
+    let answererIdx = this.getVideoindexByRole(step, "ANSWER");
 
 // TODO: refine code for general use cases
 	for(let i=0;i<6; i++){
 		if(!document.querySelector('video#remotevideo'+i)){ continue;}
-		if(i == playerID || i == observerID){
+		if(i == playerIdx || i == observerIdx || i == readerIdx || i == answererIdx){
 			document.querySelector('video#remotevideo'+i).muted= false;
 			document.querySelector('video#remotevideo'+i).style.visibility= "visible";
 			document.querySelector('video#remotevideo'+i).style.width= "100%";
@@ -1122,8 +1161,8 @@ class Game extends React.Component {
 			document.querySelector('video#remotevideo'+i).style.height= "5%"
         }
     }
-	if(document.querySelector('video#remotevideo'+playerID)){
-		document.querySelector('video#remotevideo'+playerID).muted= true;
+	if(document.querySelector('video#remotevideo'+playerIdx)){
+		document.querySelector('video#remotevideo'+playerIdx).muted= true;
     }
   }
 
@@ -1145,7 +1184,7 @@ class Game extends React.Component {
             </header>
               <h2 className="p2">
                 {" "}
-                Wait for <span id="wait">{this.id < 3 ? this.id - this.state.step : this.id - this.state.step + 1}</span> people
+                Wait for <span id="wait">{this.playbook.indexOf("OBSERVE") - this.state.step}</span> people
               </h2>
           </div>
         );
@@ -1164,7 +1203,6 @@ class Game extends React.Component {
         );
         // playing
       } else if (currentStatus == "PLAY") {
-        // be the publisher
 
         this.playerObserverVideo(this.state.step, this.id)
 
