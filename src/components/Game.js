@@ -930,30 +930,7 @@ class Game extends React.Component {
       this.sendData(message);
     }
 
-	// // use team order as id
-	// switch(players.get(userName).team){
-	// 	case 'A':
-	// 		this.id = teams.A.indexOf(userName);
-	// 		break;
-	// 	case 'B':
-	// 		this.id = teams.B.indexOf(userName) + 3;
-	// 		break;
-	// }
-	// console.log("[startGame] playbook id = ", this.id);
 
-  //   // TODO: auto generate playbooks
-  //   var playbooks = [
-  //     ["READ_TOPIC",  "PLAY",     "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-  //     ["WAIT",        "OBSERVE",  "PLAY",     "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-  //     ["WAIT",        "WAIT",     "OBSERVE",  "ANSWER",   "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-  //     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "READ_TOPIC", "PLAY",     "AUDIENCE", "AUDIENCE"],
-  //     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "OBSERVE",  "PLAY",     "AUDIENCE"],
-	//     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "WAIT",       "WAIT",     "OBSERVE",  "ANSWER"],
-	//     ["AUDIENCE",    "AUDIENCE", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"],
-  //   ];
-
-  //   // generate playbook
-  //   this.playbook = playbooks[this.id];
     this.generatePlaybook();
 
     if(this.playbook.includes("READ_TOPIC"))
