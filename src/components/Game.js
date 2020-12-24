@@ -161,7 +161,7 @@ class Game extends React.Component {
     console.log("[Game] update role");
     let newStep = this.state.step + 1
     this.setState({
-      step: newStep > 7 ? -1 : newStep
+      step: newStep >= this.playbook.length ? -1 : newStep
     });
   }
 
@@ -753,27 +753,6 @@ class Game extends React.Component {
     });
   }
 
-  Competing() {
-    return (
-      <div className="App">
-        {this.Timer()};
-        <header className="jumbotron">
-          <p>Current Score: {scoreA}: {scoreB}</p>
-        </header>
-        {/* <Container>
-          <Row>
-            <Col>
-              <h3> Player video </h3>
-            </Col>
-            <Col>
-              <h3> Observer video </h3>
-            </Col>
-          </Row>
-        </Container> */}
-      </div>
-    );
-  }
-
   // Renderer callback with condition
   renderer = ({ seconds, completed }) => {
     if (completed) {
@@ -826,7 +805,6 @@ class Game extends React.Component {
   };
 
   teamtemplate2() {
-    console.log(this.state);
     return (
       <Container>
         <Row>
@@ -929,7 +907,6 @@ class Game extends React.Component {
       };
       this.sendData(message);
     }
-
 
     this.generatePlaybook();
 
@@ -1100,30 +1077,23 @@ Use getRole to check which person is the wanted role
     return name == null ? null : players.get(name).videoindex;
   }
 
-  suppresAllVideo = () =>{
-    if(document.getElementById('header')){
-        document.getElementById('header').style.display = 'none'
-    }
+  suppresAllVideo = (isVisible) =>{
     for(let i=0;i<6; i++){
         if(!document.querySelector('video#remotevideo'+i)) {continue;}
-        document.querySelector('video#remotevideo'+i).muted= true;
-        document.querySelector('video#remotevideo'+i).style.visibility= "hidden";
-        document.querySelector('video#remotevideo'+i).style.width= "5%";
-        document.querySelector('video#remotevideo'+i).style.height= "5%"
+        document.querySelector('video#remotevideo'+i).muted= !isVisible;
+        document.querySelector('video#remotevideo'+i).style.visibility= isVisible ? "visible":"hidden";
+        document.querySelector('video#remotevideo'+i).style.width= isVisible ? "100%":"5%";
+        document.querySelector('video#remotevideo'+i).style.height= isVisible ? "100%":"5%";
     }
   }
 
   playerObserverVideo = (step, id) =>{
-    if(document.getElementById('header')){
-        document.getElementById('header').style.display = 'none'
-    }
 
     let playerIdx = this.getVideoindexByRole(step, "PLAY");
     let observerIdx = this.getVideoindexByRole(step, "OBSERVE");
     let readerIdx = this.getVideoindexByRole(step, "READ_TOPIC");
     let answererIdx = this.getVideoindexByRole(step, "ANSWER");
 
-// TODO: refine code for general use cases
 	for(let i=0;i<6; i++){
 		if(!document.querySelector('video#remotevideo'+i)){ continue;}
 		if(i == playerIdx || i == observerIdx || i == readerIdx || i == answererIdx){
@@ -1147,28 +1117,28 @@ Use getRole to check which person is the wanted role
   allcase = () =>{
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
 
+    // game setting
     if (this.state.step == -1) {
-        return(<p>  </p>);
+        // show all videos
+        this.suppresAllVideo(true);
+        return(<div>  </div>);
+    // wait
     } else if (currentStatus == "WAIT") {
-        // supress all
-        this.suppresAllVideo();
+        // hide all videos
+        this.suppresAllVideo(false);
         return (
           <div className="App">
             <header className="jumbotron p2 App-header">
-              <h1> WAIT.....</h1>
+              <h1> Wait for {this.playbook.indexOf("OBSERVE") - this.state.step} people</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
               {this.Timer()}
             </header>
-              <h2 className="p2">
-                {" "}
-                Wait for <span id="wait">{this.playbook.indexOf("OBSERVE") - this.state.step}</span> people
-              </h2>
           </div>
         );
-         // get topic round
-      } else if (currentStatus == "READ_TOPIC") {
-        // supress all
-        this.suppresAllVideo();
+    // get topic round
+    } else if (currentStatus == "READ_TOPIC") {
+        // hide all videos
+        this.suppresAllVideo(false);
         return (
           <div className="App">
             <header className="App-header p2">
@@ -1178,8 +1148,8 @@ Use getRole to check which person is the wanted role
             </header>
           </div>
         );
-        // playing
-      } else if (currentStatus == "PLAY") {
+    // playing
+    } else if (currentStatus == "PLAY") {
 
         this.playerObserverVideo(this.state.step, this.id)
 
@@ -1195,7 +1165,7 @@ Use getRole to check which person is the wanted role
             {/* {this.Playing()} */}            
           </div>
         );
-      // observing
+    // observing
     } else if (currentStatus === "OBSERVE") {
 
         this.playerObserverVideo(this.state.step, this.id);
@@ -1215,10 +1185,36 @@ Use getRole to check which person is the wanted role
           </div>
         );
   
-        // audience
-      } else if (currentStatus === "AUDIENCE") {
-        // video : playerid and observer id
-
+    // answering
+    } else if (currentStatus === "ANSWER"){
+         // hide all video
+         this.suppresAllVideo(false);
+         return (
+           <div className="App">
+             {/* {this.answerTimer()} */}
+             <header className="jumbotron App-header p2">
+               Do you know what the answer is ;)
+               <p>Current Score: {scoreA}: {scoreB}</p>
+               {this.Timer()}
+             </header>
+             <ul>
+               <li>
+                 <label for="answer"> Answer: </label>
+               </li>
+               <li>
+                 <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} placeholder="Type your Answer" />
+               </li>
+               <li>
+                 <button id="submit" onClick={this.handleSubmit} className="button btn btn-link p2">
+                     Submit
+                 </button>
+ 
+               </li>
+             </ul>
+           </div>
+         );
+    // audience
+    } else {
         this.playerObserverVideo(this.state.step, this.id);
         var showTopic = this.state.step > 3 ? players.get(userName).team == 'A' : players.get(userName).team == 'B';
         return (
@@ -1227,120 +1223,87 @@ Use getRole to check which person is the wanted role
               <h1>Audience {showTopic ? "Their Topic: "+theirQuestion: ""}</h1>
               <p>Current Score: {scoreA}: {scoreB}</p>
               {this.Timer()}
-              {/* {this.Competing()} */}
             </header>
           </div>
         );
-        // answering 
-      } else {
-          // supress all video
-          this.suppresAllVideo()
-        return (
-          <div className="App">
-            {/* <form onSubmit={this.handleSubmit}>
-              <label>
-                Answer:
-                <input
-                  type="text"
-                  value={this.state.value}
-                  onChange={this.handleChange}
-                />
-              </label>
-              <input type="submit" value="Submit" />
-            </form>
-            {this.answerTimer()} */}
-            <header className="jumbotron App-header p2">
-              Do you know what the answer is ;)
-              <p>Current Score: {scoreA}: {scoreB}</p>
-              {this.Timer()}
-            </header>
-            <ul>
-              <li>
-                <label for="answer"> Answer: </label>
-              </li>
-              <li>
-                <input type="text" id="answer" onKeyPress={this._handleKeyUp.bind(this)} placeholder="Type your Answer" />
-              </li>
-              <li>
-                <button id="submit" onClick={this.handleSubmit} className="button btn btn-link p2">
-                    Submit
-                </button>
-
-              </li>
-            </ul>
-          </div>
-        );
-      }
+    }
   }
 
+  gameSetting(){
+    if (this.state.step >= 0)
+      return (<div></div>);
+    else {
+      return (
+        <div className="App-header" id='header'>
+          <p className="p2"> Online Guessture Game room, Name = {userName} , room ={myroom}</p>
+          <Container class="teams" className="p2">
+              <Row>
+              <Col>
+                  {" "}
+                  <h1 className="p2"> Team A</h1>{" "}
+              </Col>{" "}
+              <Col>
+                  {" "}
+                  <h1 className="p2"> Team B</h1>
+              </Col>
+              </Row>
+              <Row>
+              <Col>
+                  <button id="A" onClick={this.handleJoinClick} className="button btn btn-link p2">
+                  {" "}
+                  Join{" "}
+                  </button>{" "}
+              </Col>
+              <Col>
+                  <button id="B" onClick={this.handleJoinClick} className="button btn btn-link p2">
+                  {" "}
+                  Join{" "}
+                  </button>{" "}
+              </Col>
+              </Row>
+              <Row>
+              <Col>
+                  <p id="Ateam1">{teams.A.length > 0 ? teams.A[0]: ""}</p>
+              </Col>
+              <Col>
+                  <p id="Bteam1">{teams.B.length > 0 ? teams.B[0]: ""}</p>
+              </Col>
+              </Row>
+              <Row>
+              <Col>
+                  <p id="Ateam2">{teams.A.length > 1 ? teams.A[1]: ""}</p>
+              </Col>
+              <Col>
+                  <p id="Bteam2">{teams.B.length > 1 ? teams.B[1]: ""}</p>
+              </Col>
+              </Row>
+              <Row>
+              <Col>
+                  <p id="Ateam3">{teams.A.length > 2 ? teams.A[2]: ""}</p>
+              </Col>
+              <Col>
+                  <p id="Bteam3">{teams.B.length > 2 ? teams.B[2]: ""}</p>
+              </Col>
+              </Row>
+
+              <Row>
+              <Col>
+                  <button id="start" onClick={this.startGame} className="button button3 btn btn-link p2">
+                  {" "}
+                  Start{" "}
+                  </button>{" "}
+              </Col>
+              </Row>            
+          </Container>
+        </div>
+      );
+    }
+  }
 
   render() {
-    // game setting
     return (
     <div className="App">
-        <header className="App-header" id='header'>
-            <p className="p2"> Online Guessture Game room, Name = {userName} , room ={myroom}</p>
-        <Container class="teams" className="p2">
-            <Row>
-            <Col>
-                {" "}
-                <h1 className="p2"> Team A</h1>{" "}
-            </Col>{" "}
-            <Col>
-                {" "}
-                <h1 className="p2"> Team B</h1>
-            </Col>
-            </Row>
-            <Row>
-            <Col>
-                <button id="A" onClick={this.handleJoinClick} className="button btn btn-link p2">
-                {" "}
-                Join{" "}
-                </button>{" "}
-            </Col>
-            <Col>
-                <button id="B" onClick={this.handleJoinClick} className="button btn btn-link p2">
-                {" "}
-                Join{" "}
-                </button>{" "}
-            </Col>
-            </Row>
-            <Row>
-            <Col>
-                <p id="Ateam1"></p>
-            </Col>
-            <Col>
-                <p id="Bteam1"></p>
-            </Col>
-            </Row>
-            <Row>
-            <Col>
-                <p id="Ateam2"></p>
-            </Col>
-            <Col>
-                <p id="Bteam2"></p>
-            </Col>
-            </Row>
-            <Row>
-            <Col>
-                <p id="Ateam3"></p>
-            </Col>
-            <Col>
-                <p id="Bteam3"></p>
-            </Col>
-            </Row>
-
-            <Row>
-            <Col>
-                <button id="start" onClick={this.startGame} className="button button3 btn btn-link p2">
-                {" "}
-                Start{" "}
-                </button>{" "}
-            </Col>
-            </Row>            
-        </Container>
-        </header>
-
+        {this.gameSetting()}
         <div>
             <p width="100%" height="100%">
                 {this.teamtemplate2()}
