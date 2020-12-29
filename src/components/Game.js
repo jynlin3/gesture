@@ -34,7 +34,7 @@ let arr2 = [2, 3];
 let arr3 = [4, 5];
 let res = null;
 let listReq = null;
-let frequency = 5000 * 6;
+let frequency = 5000 * 1;
 let scoreA = 0;
 let scoreB = 0;
 
@@ -161,6 +161,8 @@ class Game extends React.Component {
   updateRole() {
     console.log("[Game] update role");
     let newStep = this.state.step + 1
+    console.log("new Step: ", newStep);
+    console.log("play book len: ", this.playbook.length);
     this.setState({
       step: newStep >= this.playbook.length ? -1 : newStep
     });
@@ -859,21 +861,22 @@ class Game extends React.Component {
        break;
      case 2:
        roles = [
-          ["READ_TOPIC","PLAY",   "AUDIENCE"],
-          ["WAIT",      "OBSERVE","ANSWER"]
+          ["READ_TOPIC","PLAY",   "AUDIENCE", "REPLAY"],
+          ["WAIT",      "OBSERVE","ANSWER",   "REPLAY"]
        ];
        break;
      case 3:
        roles = [
-         ["READ_TOPIC", "PLAY",    "AUDIENCE","AUDIENCE"],
-         ["WAIT",       "OBSERVE", "PLAY",    "AUDIENCE"],
-         ["WAIT",       "WAIT",    "OBSERVE", "ANSWER"]
+         ["READ_TOPIC", "PLAY",    "AUDIENCE","AUDIENCE", "REPLAY", "REPLAY"],
+         ["WAIT",       "OBSERVE", "PLAY",    "AUDIENCE", "REPLAY", "REPLAY"],
+         ["WAIT",       "WAIT",    "OBSERVE", "ANSWER",   "REPLAY", "REPLAY"]
        ];
        break; 
      default:
        break;
    }
    console.log("[getRole] roles = ", roles);
+   
    return roles == null ? "AUDIENCE" : roles[order][step];
  }
 
@@ -882,9 +885,8 @@ class Game extends React.Component {
   The playbook's data structure would be like ["READ_TOPIC",  "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"]
   */
   generatePlaybook = () =>{
-    let teamASteps = teams.A.length > 0 ? teams.A.length + 1 : 0;
-    let teamBSteps = teams.B.length > 0 ? teams.B.length + 1 : 0;
-
+    let teamASteps = teams.A.length > 0 ? teams.A.length * 2 : 0;
+    let teamBSteps = teams.B.length > 0 ? teams.B.length * 2 : 0;
     this.playbook = Array.apply(null, new Array(teamASteps+teamBSteps));
     this.playbook = this.playbook.map((element, index) => "AUDIENCE");
 
@@ -893,10 +895,14 @@ class Game extends React.Component {
       for (let i = 0; i < teamASteps; i++){
         this.playbook[i] = this.getRole(teams.A.length, teams.A.indexOf(userName), i);
       }
+      this.playbook[teamASteps + teamBSteps - 1] = "REPLAY";
+      this.playbook[teamASteps + teamBSteps - 2] = "REPLAY";
     } else if (playerTeam == 'B') {
       for (let i = 0; i < teamBSteps; i++){
         this.playbook[teamASteps + i] = this.getRole(teams.B.length, teams.B.indexOf(userName), i);
       }
+      this.playbook[teamASteps - 1] = "REPLAY";
+      this.playbook[teamASteps - 2] = "REPLAY";
     }
     console.log('[generatePlaybook] playbook = ', this.playbook);
   }
@@ -1126,15 +1132,14 @@ Use getRole to check which person is the wanted role
 
   allcase = () =>{
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
-
     // game setting
     if (this.state.step == -1) {
         // show all videos
         this.suppresAllVideo(true);
         
-        return(<div> {this.replay()} </div>);
+        return(<div> </div>);
     // wait
-    } else if (currentStatus == "WAIT") {
+    } else if (currentStatus === "WAIT") {
         // hide all videos
         this.suppresAllVideo(false);
         return (
@@ -1147,7 +1152,7 @@ Use getRole to check which person is the wanted role
           </div>
         );
     // get topic round
-    } else if (currentStatus == "READ_TOPIC") {
+    } else if (currentStatus === "READ_TOPIC") {
         // hide all videos
         this.suppresAllVideo(false);
         return (
@@ -1160,7 +1165,7 @@ Use getRole to check which person is the wanted role
           </div>
         );
     // playing
-    } else if (currentStatus == "PLAY") {
+    } else if (currentStatus === "PLAY") {
 
         this.playerObserverVideo(this.state.step, this.id)
 
@@ -1224,6 +1229,13 @@ Use getRole to check which person is the wanted role
              </ul>
            </div>
          );
+    } else if (currentStatus === "REPLAY"){
+      return (
+        <div>
+          {this.replay()}
+          {this.Timer()}
+        </div>
+      )
     // audience
     } else {
         this.playerObserverVideo(this.state.step, this.id);
