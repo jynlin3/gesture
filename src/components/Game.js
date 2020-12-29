@@ -3,6 +3,7 @@ import Janus from "./Janus";
 import $ from "jquery";
 import { Container, Row, Col, ThemeProvider } from "react-bootstrap";
 import Countdown from "react-countdown";
+import Replay from "./Replay";
 import axios from "axios";
 
 let server;
@@ -202,6 +203,8 @@ class Game extends React.Component {
       gestureGameroom.attach({
         plugin: "janus.plugin.videoroom",
         opaqueId: opaqueId,
+        // record: true,
+        // rec_dir:'.',
         success: function (pluginHandle) {
           remoteFeed = pluginHandle;
           console.log(
@@ -1113,6 +1116,13 @@ Use getRole to check which person is the wanted role
     }
   }
 
+  replay(){
+    return (
+      <div>
+        <Replay />
+      </div>
+    )
+  }
 
   allcase = () =>{
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
@@ -1121,7 +1131,8 @@ Use getRole to check which person is the wanted role
     if (this.state.step == -1) {
         // show all videos
         this.suppresAllVideo(true);
-        return(<div>  </div>);
+        
+        return(<div> {this.replay()} </div>);
     // wait
     } else if (currentStatus == "WAIT") {
         // hide all videos
