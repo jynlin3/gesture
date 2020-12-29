@@ -9,13 +9,88 @@
 
 .App-logo {
   height: 40vmin;
+  height: 40vmin;
+  object-fit: cover;
   pointer-events: none;
+}
+
+.school-logo{
+  height: 10vmin;
+}
+
+.centered-and-cropped { 
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+
+.left {
+  float: left;
+  width: 300px;
+  border: 3px solid #73AD21;
+  padding: 10px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+}
+
+.button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+
+.p3 {
+  font-family: "Lucida Console", "Courier New", monospace;
+}
+a:link, a:visited {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 15px;
+}
+
+a:hover, a:active {
+  background-color: greenyellow;
+}
+.p2{
+  font-family: fantasy;
+  font-style: italic;
+  color: black;
+}
+
+ul {
+  list-style-type: none;
+}
+
+#stylized input{
+  display: block;
+  font-size:11px;
+  padding:4px 2px;
+  border:solid 1px #aacfe4;
+  width:70px;
+  margin:2px 0 20px 10px;
+}
+#footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 2.5rem;            /* Footer height */
 }
 
 .App-header {
@@ -38,14 +113,14 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
+/* @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
   }
-}
+} */
 
 
 #A{
@@ -55,4 +130,9 @@
 #B{
   width: 50%;
   height: 100%;
+}
+
+.topic{
+  color:blue;
+  size: 6;
 }

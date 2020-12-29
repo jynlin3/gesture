@@ -6,6 +6,9 @@ import Home from './components/Home';
 import Game from './components/Game';
 import Word from './components/Word';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import logo from "../src/images/logo.png";
+import logo_2 from "../src/images/logo_2.png";
+
 
 class App extends React.Component {
   
@@ -33,22 +36,34 @@ class App extends React.Component {
     console.log(this.state)
     let room = this.state.room;
     return (
-        <Router>
-          <div className="main-container">
-            <React.Fragment>
-              <Switch>
-                <Route exaxt path="/" exact component={Home} />
-                {/* <Route path="/room" component={Room} /> */}
-                <Route exact path="/entry" render={()=> <Entry name={this.state.name} room={this.state.room} changeName={this.changeName} changeRoom={this.changeRoom} />} />
-                <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room}
-                                                changeRoom={this.changeRoom}  changeName={this.changeName}
-                                                players={this.state.players} changePlayers={this.changePlayers}/>} />
-                <Route exact path="/word" exact component={Word} />
-              </Switch>
-            </React.Fragment>
-          </div>
-        </Router>)
+         <div>
+          <Router>
+            <div className="main-container">
+              <React.Fragment>
+                <Switch>
+                  <Route exaxt path="/" exact component={Home} />
+                  {/* <Route path="/room" component={Room} /> */}
+                  <Route exact path="/entry" render={()=> <Entry name={this.state.name} room={this.state.room} changeName={this.changeName} changeRoom={this.changeRoom} />} />
+                  <Route exact path="/game/:room" render={()=><Game name= {this.state.name} room={this.state.room}
+                                                  changeRoom={this.changeRoom}  changeName={this.changeName}
+                                                  players={this.state.players} changePlayers={this.changePlayers}/>} />
+                  <Route exact path="/word" exact component={Word} />
+                </Switch>
+              </React.Fragment>
+            </div>
+          </Router>
+         </div>
+    )
   }
 }
 
+class Header extends React.Component {
+   render() {
+      return (
+         <div>
+            <h1>Header</h1>
+         </div>
+      );
+   }
+}
 export default App;
