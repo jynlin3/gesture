@@ -26,8 +26,6 @@ let mystream = null;
 let question = "";
 let theirQuestion = "";
 let localMessage = "";
-let remoteMessage = "";
-let remoteSender = "";
 
 let myIndexInRoom = 0;
 let userName = "";
@@ -400,10 +398,8 @@ class Game extends React.Component {
               scoreB += 1;
             }
           }else if(json["textroom"] === "chatBox"){
-			remoteMessage = json["chat"]
-			remoteSender  = json["sender"]
 			document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
-													'<br>'+ remoteSender + ":" + remoteMessage;
+													'<br>'+ json["sender"]+ ":" + json["chat"];
 			var objDiv = document.getElementById("chatBox");
 			objDiv.scrollTop = objDiv.scrollHeight;
 		  }
@@ -742,10 +738,8 @@ class Game extends React.Component {
                     scoreB += 1;
                   }
 				}else if(json["textroom"] === "chatBox"){
-				remoteMessage = json["chat"]
-				remoteSender  = json["sender"]
 				document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
-													'<br>'+ remoteSender + ":" + remoteMessage;
+													'<br>'+ json["sender"] + ":" + json["chat"];
 				var objDiv = document.getElementById("chatBox");
 				objDiv.scrollTop = objDiv.scrollHeight;
 			
