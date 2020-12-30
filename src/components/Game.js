@@ -25,7 +25,9 @@ let mystream = null;
 // question from datachannel
 let question = "";
 let theirQuestion = "";
-let sendMessage = "";
+let localMessage = "";
+let remoteMessage = "";
+let remoteSender = "";
 
 let myIndexInRoom = 0;
 let userName = "";
@@ -396,7 +398,14 @@ class Game extends React.Component {
             } else if ('scoreB' in json){
               scoreB += 1;
             }
-          }
+          }else if(json["textroom"] === "chatBox"){
+			remoteMessage = json["chat"]
+			remoteSender  = json["sender"]
+			document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+													'<br>'+ remoteSender + ":" + remoteMessage;
+			var objDiv = document.getElementById("chatBox");
+			objDiv.scrollTop = objDiv.scrollHeight;
+		  }
         },
         oncleanup: function () {
           Janus.log(
@@ -731,7 +740,15 @@ class Game extends React.Component {
                   } else if ('scoreB' in json){
                     scoreB += 1;
                   }
-				}
+				}else if(json["textroom"] === "chatBox"){
+				remoteMessage = json["chat"]
+				remoteSender  = json["sender"]
+				document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+													'<br>'+ remoteSender + ":" + remoteMessage;
+				var objDiv = document.getElementById("chatBox");
+				objDiv.scrollTop = objDiv.scrollHeight;
+			
+		  }
 				
               },
               oncleanup: function () {
@@ -845,10 +862,7 @@ class Game extends React.Component {
             );
           })}
         </Row>
-		<div id="chatBox" className="scrollbox">
-			As you can see, once there's enough text in this box, the box will grow scroll bars... 
-			that's why we call it a scroll box! You could also place an image into the scroll box.
-		</div>
+		<div id="chatBox" className="scrollbox"></div>
 		<input id="sendMessage" className="stylized input" type="text" onChange={this.updateInnerHTML.bind(this)} placeholder="send some message"/>
 		<button id="sendBtn" onClick={this.handleSendText} className="button btn btn-link">
         	{" "}send{" "}
@@ -1046,15 +1060,23 @@ class Game extends React.Component {
 
   handleSendText(event){
 	console.log('text sent');
-	let a = document.getElementById("chatBox")
-	let b = document.getElementById("sendMessage")
-	document.getElementById('chatBox').innerHTML = 
-		document.getElementById('chatBox').innerHTML +'<br>'+ userName + ":" + sendMessage;
-	sendMessage = "";
+	document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+													'<br>'+ userName + ":" + localMessage;
+	var objDiv = document.getElementById("chatBox");
+	objDiv.scrollTop = objDiv.scrollHeight;
+	// send to remotes
+    var message = {
+        textroom: "chatBox",
+		room: myroom,
+		sender: userName,
+        chat: localMessage
+    };
+    this.sendData(message);
+	localMessage = "";
   }
 
   updateInnerHTML(event){
-	  sendMessage = event.target.value;
+	  localMessage = event.target.value;
   }
 
   onComplete = () => {
