@@ -136,3 +136,27 @@ ul {
   color:blue;
   size: 6;
 }
+
+.scrollbox {
+  /* display: flex; */
+  /* justify-content: center; */
+  text-align: left;
+  width:100%;
+  height:10rem;
+  line-height:1rem;
+  overflow:scroll;
+  padding:5px;
+  
+}
+.scrollbox1 {
+  display: flex;
+  justify-content: center;
+  /* border-color: coral; */
+  border: 1rem solid coral ;
+  border-radius: 2rem;
+ 
+}
+
+.chatroom{
+  text-align: center;
+}
