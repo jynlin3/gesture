@@ -136,3 +136,12 @@ ul {
   color:blue;
   size: 6;
 }
+
+.scrollbox {
+  text-align: center;
+  width:150px;
+  height:150px;
+  line-height:3em;
+  overflow:scroll;
+  padding:5px;
+}
