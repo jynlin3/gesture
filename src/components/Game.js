@@ -26,6 +26,7 @@ let mystream = null;
 // question from datachannel
 let question = "";
 let theirQuestion = "";
+let localMessage = "";
 
 let myIndexInRoom = 0;
 let userName = "";
@@ -92,6 +93,7 @@ class Game extends React.Component {
       alert("room ID should be an integer" + { roomID });
     }
 
+
     // check user name
     if (props.name === "debo") {
       userName = prompt("Please enter your name");
@@ -108,6 +110,8 @@ class Game extends React.Component {
     this.handleJoinClick = this.handleJoinClick.bind(this);
     this.startGame = this.startGame.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+	this.handleSendText = this.handleSendText.bind(this);
+	this._textKeyEnter = this._textKeyEnter.bind(this);
 
     // member variables
     this.state = {
@@ -395,7 +399,12 @@ class Game extends React.Component {
             } else if ('scoreB' in json){
               scoreB += 1;
             }
-          }
+          }else if(json["textroom"] === "chatBox"){
+			document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+													'<br>'+ json["sender"]+ ":" + json["chat"];
+			var objDiv = document.getElementById("chatBox");
+			objDiv.scrollTop = objDiv.scrollHeight;
+		  }
         },
         oncleanup: function () {
           Janus.log(
@@ -445,6 +454,7 @@ class Game extends React.Component {
                   ptype: "publisher",
                   display: userName,
                 };
+
                 vroomHandle.send({ message: joinRegister });
               },
               error: function (err) {
@@ -740,7 +750,14 @@ class Game extends React.Component {
                   } else if ('scoreB' in json){
                     scoreB += 1;
                   }
-                }
+				}else if(json["textroom"] === "chatBox"){
+				document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+													'<br>'+ json["sender"] + ":" + json["chat"];
+				var objDiv = document.getElementById("chatBox");
+				objDiv.scrollTop = objDiv.scrollHeight;
+			
+		  }
+				
               },
               oncleanup: function () {
                 Janus.log(
@@ -820,6 +837,14 @@ class Game extends React.Component {
   teamtemplate2() {
     return (
       <Container>
+		<p className="chatroom"> chat room</p>
+		<div className="scrollbox1">
+		<div id="chatBox" className="scrollbox"></div>
+		</div>
+		<input id="sendMessage" className="stylized input" type="text" onKeyPress={this._textKeyEnter.bind(this)} onChange={this.updateInnerHTML.bind(this)} placeholder="send some message"/>
+		<button id="sendBtn" onClick={this.handleSendText} className="button btn btn-link">
+			{" "}send{" "}
+		</button>
         <Row>
           {arr1.map((value, index) => {
             return (
@@ -853,7 +878,9 @@ class Game extends React.Component {
             );
           })}
         </Row>
+		{" "}
       </Container>
+
     );
   }
 
@@ -981,6 +1008,7 @@ class Game extends React.Component {
       return;
     }
 
+
     if (this.state.allVideos[id] == 1) {
       document.querySelector("video#remotevideo" + id).muted = true;
       document.querySelector("video#remotevideo" + id).style.visibility =
@@ -1046,6 +1074,38 @@ class Game extends React.Component {
     }
   }
 
+	handleSendText(){
+		if(localMessage === ""){
+			alert("don't send empty message")
+			return
+		}
+		console.log('text sent');
+		document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+														'<br>'+ userName + ":" + localMessage;
+		var objDiv = document.getElementById("chatBox");
+		objDiv.scrollTop = objDiv.scrollHeight;
+		// send to remotes
+		var message = {
+			textroom: "chatBox",
+			room: myroom,
+			sender: userName,
+			chat: localMessage
+		};
+		this.sendData(message);
+		document.getElementById('sendMessage').value = '';
+		localMessage = "";
+	}
+
+	updateInnerHTML(event){
+		localMessage = event.target.value;
+	}
+
+	_textKeyEnter =(e) =>{
+		if(e.key==='Enter' || e.keyCode === 13){
+			this.handleSendText();
+		}
+	}
+
   onComplete = () => {
     this.setState({
       completions: this.state.completions + 1
@@ -1089,6 +1149,7 @@ Use getRole to check which person is the wanted role
         }
       }
     }
+
 
     console.log("[getVideoindexByRole] name = ", name);
     return name == null ? null : players.get(name).videoindex;
@@ -1143,6 +1204,7 @@ Use getRole to check which person is the wanted role
       </div>
     )
   }
+
 
   allcase = () =>{
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
@@ -1332,6 +1394,7 @@ Use getRole to check which person is the wanted role
               </Row>            
           </Container>
         </div>
+
       );
     }
   }
