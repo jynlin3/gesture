@@ -112,6 +112,7 @@ class Game extends React.Component {
     this.startGame = this.startGame.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
 	this.handleSendText = this.handleSendText.bind(this);
+	this._textKeyEnter = this._textKeyEnter.bind(this);
 
     // member variables
     this.state = {
@@ -829,6 +830,14 @@ class Game extends React.Component {
   teamtemplate2() {
     return (
       <Container>
+		<p className="chatroom"> chat room</p>
+		<div className="scrollbox1">
+		<div id="chatBox" className="scrollbox"></div>
+		</div>
+		<input id="sendMessage" className="stylized input" type="text" onKeyPress={this._textKeyEnter.bind(this)} onChange={this.updateInnerHTML.bind(this)} placeholder="send some message"/>
+		<button id="sendBtn" onClick={this.handleSendText} className="button btn btn-link">
+			{" "}send{" "}
+		</button>
         <Row>
           {arr1.map((value, index) => {
             return (
@@ -862,11 +871,7 @@ class Game extends React.Component {
             );
           })}
         </Row>
-		<div id="chatBox" className="scrollbox"></div>
-		<input id="sendMessage" className="stylized input" type="text" onChange={this.updateInnerHTML.bind(this)} placeholder="send some message"/>
-		<button id="sendBtn" onClick={this.handleSendText} className="button btn btn-link">
-        	{" "}send{" "}
-        </button>{" "}
+		{" "}
       </Container>
 
     );
@@ -1058,26 +1063,37 @@ class Game extends React.Component {
     }
   }
 
-  handleSendText(event){
-	console.log('text sent');
-	document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
-													'<br>'+ userName + ":" + localMessage;
-	var objDiv = document.getElementById("chatBox");
-	objDiv.scrollTop = objDiv.scrollHeight;
-	// send to remotes
-    var message = {
-        textroom: "chatBox",
-		room: myroom,
-		sender: userName,
-        chat: localMessage
-    };
-    this.sendData(message);
-	localMessage = "";
-  }
+	handleSendText(){
+		if(localMessage === ""){
+			alert("don't send empty message")
+			return
+		}
+		console.log('text sent');
+		document.getElementById('chatBox').innerHTML =  document.getElementById('chatBox').innerHTML +
+														'<br>'+ userName + ":" + localMessage;
+		var objDiv = document.getElementById("chatBox");
+		objDiv.scrollTop = objDiv.scrollHeight;
+		// send to remotes
+		var message = {
+			textroom: "chatBox",
+			room: myroom,
+			sender: userName,
+			chat: localMessage
+		};
+		this.sendData(message);
+		document.getElementById('sendMessage').value = '';
+		localMessage = "";
+	}
 
-  updateInnerHTML(event){
-	  localMessage = event.target.value;
-  }
+	updateInnerHTML(event){
+		localMessage = event.target.value;
+	}
+
+	_textKeyEnter =(e) =>{
+		if(e.key==='Enter' || e.keyCode === 13){
+			this.handleSendText();
+		}
+	}
 
   onComplete = () => {
     this.setState({
