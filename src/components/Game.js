@@ -1144,43 +1144,6 @@ Use getRole to check which person is the wanted role
     )
   }
 
-
-  startRecording(){
-    console.log("start recording");
-    // vroomHandle.send({
-    //   message:{
-    //     request: 'configure', 
-    //     'video-keyframe-interval': 15000
-    //   }
-    // })
-
-    vroomHandle.createOffer(
-			{
-				// By default, it's sendrecv for audio and video... no datachannels,
-				// unless we've passed the query string argument to record those too
-				// media: { data: (recordData != null) },
-				// If you want to test simulcasting (Chrome and Firefox only), then
-				// pass a ?simulcast=true when opening this demo page: it will turn
-				// the following 'simulcast' property to pass to janus.js to true
-				// simulcast: doSimulcast,
-				success: function(jsep) {
-					Janus.debug("Got SDP!", jsep);
-					var body = { request: "record", id: 1};
-					// For the codecs that support them (VP9 and H.264) you can specify a codec
-					// profile as well (e.g., ?vprofile=2 for VP9, or ?vprofile=42e01f for H.264)
-					// if(vprofile)
-					// 	body["videoprofile"] = vprofile;
-					// // If we're going to send binary data, let's tell the plugin
-					// if(recordData === "binary")
-					// 	body["textdata"] = false;
-					vroomHandle.send({ message: body, jsep: jsep });
-				},
-				error: function(error) {
-					Janus.error("WebRTC error...", error);
-					vroomHandle.hangup();
-				}
-			});
-  }
   allcase = () =>{
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
     // game setting
@@ -1219,7 +1182,6 @@ Use getRole to check which person is the wanted role
     } else if (currentStatus === "PLAY") {
 
         this.playerObserverVideo(this.state.step, this.id)
-        // this.startRecording();
         // be the publisher
         return (
           <div className="App">
