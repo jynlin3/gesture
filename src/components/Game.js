@@ -139,7 +139,7 @@ class Game extends React.Component {
   }
 
   pickQuestion() {
-    axios.get("/api/getRandomWord").then((res) => {
+    axios.get("http://localhost:4000/getRandomWord").then((res) => {
       console.log(res);
       question = res.data.item;
       this.setState({
@@ -1022,7 +1022,7 @@ class Game extends React.Component {
     let correct = question === document.getElementById("answer").value;
     axios
       .put(
-        `/api/updateCorrectRate?word=${word}&correct=${correct}`
+        `http://localhost:4000/updateCorrectRate?word=${word}&correct=${correct}`
       )
       .then((state) => {
         console.log(state);
