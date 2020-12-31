@@ -445,7 +445,7 @@ class Game extends React.Component {
                   is_private: false,
                   publishers: 6,
                   // record: true,
-                  // rec_dir: '/'
+                  // rec_dir: '/',
                 };
                 vroomHandle.send({ message: createRegister });
                 const joinRegister = {
@@ -454,8 +454,7 @@ class Game extends React.Component {
                   ptype: "publisher",
                   display: userName,
                 };
-
-                vroomHandle.send({ message: joinRegister });
+                vroomHandle.send({ message: joinRegister });                
               },
               error: function (err) {
                 Janus.error("  -- Error attaching plugin...", err);
@@ -926,21 +925,53 @@ class Game extends React.Component {
     this.playbook = this.playbook.map((element, index) => "AUDIENCE");
 
     let playerTeam = players.get(userName).team;
-    if (playerTeam == 'A') {
+    if (playerTeam === 'A') {
       for (let i = 0; i < teamASteps; i++){
         this.playbook[i] = this.getRole(teams.A.length, teams.A.indexOf(userName), i);
       }
-      this.playbook[teamASteps + teamBSteps - 1] = "REPLAY";
-      this.playbook[teamASteps + teamBSteps - 2] = "REPLAY";
-    } else if (playerTeam == 'B') {
+    } else if (playerTeam === 'B') {
       for (let i = 0; i < teamBSteps; i++){
         this.playbook[teamASteps + i] = this.getRole(teams.B.length, teams.B.indexOf(userName), i);
       }
-      this.playbook[teamASteps - 1] = "REPLAY";
-      this.playbook[teamASteps - 2] = "REPLAY";
+    }
+
+    // only set replay when there are more than 2 players
+    if (teamASteps + teamBSteps > 2){
+      this.fetchReplay(teamASteps, teamBSteps);
     }
     console.log('[generatePlaybook] playbook = ', this.playbook);
   }
+
+  /**
+   * Base on the number of member for each team. We will have different REPLAY role
+   * One player: 0 REPLAY
+   * Two Player: 1 REPLAY at the end
+   * Three Player: 2 REPLAY at the bottom two
+   * 
+   */
+  fetchReplay (teamASteps, teamBSteps){
+    let teamA = this.playbook.slice(0, teamASteps);
+    let teamB = this.playbook.slice(teamASteps);
+    function helper(team, steps){
+      switch(steps){
+        case 4:
+          team[steps - 1] = 'REPLAY';
+          break;
+        case 6:
+          team[steps - 1] = 'REPLAY';
+          team[steps - 2] = 'REPLAY';
+          break;
+        default:
+          break;
+      }
+      return team;
+    }
+    teamA = helper(teamA, teamASteps);
+    teamB = helper(teamB, teamBSteps);
+    this.playbook = teamA.concat(teamB);
+  }
+
+
 
   startGame = () => {
     if(!remoteStart){
@@ -1200,6 +1231,7 @@ Use getRole to check which person is the wanted role
     // vroomHandle.send({message: replayRegister});
     return (
       <div>
+        {/* <Replay roomId="myroom" id="myid"/> */}
         <Replay />
       </div>
     )
