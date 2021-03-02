@@ -3,6 +3,7 @@ import Janus from "./Janus";
 import $ from "jquery";
 import { Container, Row, Col, ThemeProvider } from "react-bootstrap";
 import Countdown from "react-countdown";
+import Replay from "./Replay";
 import axios from "axios";
 
 let server;
@@ -233,8 +234,9 @@ class Game extends React.Component {
         },
         onmessage: function (msg, jsep) {
           Janus.debug(" ::: Got a message (subscriber) :::", msg);
+          Janus.log("[MSG]", msg);
           let event = msg["videoroom"];
-          console.log("Event: " + event);
+          Janus.log("[Event]", event);
           if (event) {
             if (event === "attached") {
               console.log(`subscriber created and attached!`);
@@ -442,6 +444,8 @@ class Game extends React.Component {
                   permanent: false,
                   is_private: false,
                   publishers: 6,
+                  // record: true,
+                  // rec_dir: '/',
                 };
                 vroomHandle.send({ message: createRegister });
                 const joinRegister = {
@@ -450,8 +454,7 @@ class Game extends React.Component {
                   ptype: "publisher",
                   display: userName,
                 };
-
-                vroomHandle.send({ message: joinRegister });
+                vroomHandle.send({ message: joinRegister });                
               },
               error: function (err) {
                 Janus.error("  -- Error attaching plugin...", err);
@@ -479,8 +482,9 @@ class Game extends React.Component {
               onmessage: function (msg, jsep) {
                 Janus.debug(" ::: Got a message (publisher) :::");
                 Janus.debug(msg);
+                Janus.log("[MSG]", msg);
                 let event = msg["videoroom"];
-                Janus.debug("Event: " + event);
+                Janus.log("[Event]", event);
                 if (event != undefined && event != null) {
                   if (event === "joined") {
                     // Publisher/manager created, negotiate WebRTC and attach to existing feeds, if any
@@ -632,6 +636,14 @@ class Game extends React.Component {
                       }
                     }
 
+                  } else if (event === "recording"){
+                    if (jsep){
+                      vroomHandle.handleRemoteJsep({jsep: jsep});
+                    }
+                    var id = msg["id"];
+                    if (id){
+                      console.log("[Recording id]", id);
+                    }
                   }
                 }
                 if (jsep !== undefined && jsep !== null) {
@@ -883,21 +895,22 @@ class Game extends React.Component {
        break;
      case 2:
        roles = [
-          ["READ_TOPIC","PLAY",   "AUDIENCE"],
-          ["WAIT",      "OBSERVE","ANSWER"]
+          ["READ_TOPIC","PLAY",   "AUDIENCE", "REPLAY"],
+          ["WAIT",      "OBSERVE","ANSWER",   "REPLAY"]
        ];
        break;
      case 3:
        roles = [
-         ["READ_TOPIC", "PLAY",    "AUDIENCE","AUDIENCE"],
-         ["WAIT",       "OBSERVE", "PLAY",    "AUDIENCE"],
-         ["WAIT",       "WAIT",    "OBSERVE", "ANSWER"]
+         ["READ_TOPIC", "PLAY",    "AUDIENCE","AUDIENCE", "REPLAY", "REPLAY"],
+         ["WAIT",       "OBSERVE", "PLAY",    "AUDIENCE", "REPLAY", "REPLAY"],
+         ["WAIT",       "WAIT",    "OBSERVE", "ANSWER",   "REPLAY", "REPLAY"]
        ];
        break; 
      default:
        break;
    }
    console.log("[getRole] roles = ", roles);
+   
    return roles == null ? "AUDIENCE" : roles[order][step];
  }
 
@@ -906,24 +919,59 @@ class Game extends React.Component {
   The playbook's data structure would be like ["READ_TOPIC",  "PLAY", "AUDIENCE", "AUDIENCE", "AUDIENCE",   "AUDIENCE", "AUDIENCE", "AUDIENCE"]
   */
   generatePlaybook = () =>{
-    let teamASteps = teams.A.length > 0 ? teams.A.length + 1 : 0;
-    let teamBSteps = teams.B.length > 0 ? teams.B.length + 1 : 0;
-
+    let teamASteps = teams.A.length > 0 ? teams.A.length * 2 : 0;
+    let teamBSteps = teams.B.length > 0 ? teams.B.length * 2 : 0;
     this.playbook = Array.apply(null, new Array(teamASteps+teamBSteps));
     this.playbook = this.playbook.map((element, index) => "AUDIENCE");
 
     let playerTeam = players.get(userName).team;
-    if (playerTeam == 'A') {
+    if (playerTeam === 'A') {
       for (let i = 0; i < teamASteps; i++){
         this.playbook[i] = this.getRole(teams.A.length, teams.A.indexOf(userName), i);
       }
-    } else if (playerTeam == 'B') {
+    } else if (playerTeam === 'B') {
       for (let i = 0; i < teamBSteps; i++){
         this.playbook[teamASteps + i] = this.getRole(teams.B.length, teams.B.indexOf(userName), i);
       }
     }
+
+    // only set replay when there are more than 2 players
+    if (teamASteps + teamBSteps > 2){
+      this.fetchReplay(teamASteps, teamBSteps);
+    }
     console.log('[generatePlaybook] playbook = ', this.playbook);
   }
+
+  /**
+   * Base on the number of member for each team. We will have different REPLAY role
+   * One player: 0 REPLAY
+   * Two Player: 1 REPLAY at the end
+   * Three Player: 2 REPLAY at the bottom two
+   * 
+   */
+  fetchReplay (teamASteps, teamBSteps){
+    let teamA = this.playbook.slice(0, teamASteps);
+    let teamB = this.playbook.slice(teamASteps);
+    function helper(team, steps){
+      switch(steps){
+        case 4:
+          team[steps - 1] = 'REPLAY';
+          break;
+        case 6:
+          team[steps - 1] = 'REPLAY';
+          team[steps - 2] = 'REPLAY';
+          break;
+        default:
+          break;
+      }
+      return team;
+    }
+    teamA = helper(teamA, teamASteps);
+    teamB = helper(teamB, teamBSteps);
+    this.playbook = teamA.concat(teamB);
+  }
+
+
 
   startGame = () => {
     if(!remoteStart){
@@ -1174,18 +1222,32 @@ Use getRole to check which person is the wanted role
     }
   }
 
+  replay(){
+    const replayRegister = {
+      request: "play", 
+      room: myroom,
+      // need a unique record id
+    }
+    // vroomHandle.send({message: replayRegister});
+    return (
+      <div>
+        {/* <Replay roomId="myroom" id="myid"/> */}
+        <Replay />
+      </div>
+    )
+  }
 
 
   allcase = () =>{
     let currentStatus = this.state.step < 0 ? null : this.playbook[this.state.step];
-
     // game setting
     if (this.state.step == -1) {
         // show all videos
         this.suppresAllVideo(true);
-        return(<div>  </div>);
+        
+        return(<div> </div>);
     // wait
-    } else if (currentStatus == "WAIT") {
+    } else if (currentStatus === "WAIT") {
         // hide all videos
         this.suppresAllVideo(false);
         return (
@@ -1198,7 +1260,7 @@ Use getRole to check which person is the wanted role
           </div>
         );
     // get topic round
-    } else if (currentStatus == "READ_TOPIC") {
+    } else if (currentStatus === "READ_TOPIC") {
         // hide all videos
         this.suppresAllVideo(false);
         return (
@@ -1211,10 +1273,9 @@ Use getRole to check which person is the wanted role
           </div>
         );
     // playing
-    } else if (currentStatus == "PLAY") {
+    } else if (currentStatus === "PLAY") {
 
         this.playerObserverVideo(this.state.step, this.id)
-
         // be the publisher
         return (
           <div className="App">
@@ -1275,6 +1336,13 @@ Use getRole to check which person is the wanted role
              </ul>
            </div>
          );
+    } else if (currentStatus === "REPLAY"){
+      return (
+        <div>
+          {this.replay()}
+          {this.Timer()}
+        </div>
+      )
     // audience
     } else {
         this.playerObserverVideo(this.state.step, this.id);
